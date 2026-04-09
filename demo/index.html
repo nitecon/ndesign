@@ -263,6 +263,211 @@
     </section>
 
     <!-- ================================================================== -->
+    <!-- Navigation                                                         -->
+    <!-- ================================================================== -->
+    <section class="demo-section" id="nav">
+      <h2>Navigation</h2>
+      <p class="nd-text-secondary nd-mb-lg">Top bar and sidebar navigation with mobile collapse.</p>
+
+      <div class="nd-row">
+        <!-- Top nav bar example -->
+        <div class="nd-col-6">
+          <div class="demo-label">Top Nav Bar</div>
+          <nav style="position: relative">
+            <span class="nd-nav-brand">AppName</span>
+            <button class="nd-nav-toggle" aria-label="Toggle navigation">&#9776;</button>
+            <ul class="nd-nav-menu">
+              <li><a href="#" class="nd-active">Dashboard</a></li>
+              <li><a href="#">Analytics</a></li>
+              <li><a href="#">Reports</a></li>
+              <li><a href="#">Settings</a></li>
+            </ul>
+            <div class="nd-nav-end">
+              <button class="nd-btn-primary nd-btn-sm">New Project</button>
+            </div>
+          </nav>
+        </div>
+
+        <!-- Sidebar nav description -->
+        <div class="nd-col-6">
+          <div class="demo-label">Side Nav</div>
+          <div class="nd-well">
+            <p><strong>Sidebar Navigation</strong></p>
+            <p class="nd-text-secondary">The side nav (<code>.nd-nav.nd-nav-side</code>) is a fixed 16rem column with section headers, vertical link lists, and mobile slide-in behavior with an overlay backdrop.</p>
+            <p class="nd-text-secondary nd-mt-md">See <a href="app-shell.html" class="nd-link"><strong>demo/app-shell.html</strong></a> for a full sidebar layout demo.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Dropdowns                                                          -->
+    <!-- ================================================================== -->
+    <section class="demo-section" id="dropdowns">
+      <h2>Dropdowns</h2>
+      <p class="nd-text-secondary nd-mb-lg">Click-triggered menus for actions and navigation.</p>
+
+      <div class="demo-btn-row">
+        <!-- Default dropdown -->
+        <div class="nd-dropdown">
+          <button class="nd-btn-secondary">Options &#9662;</button>
+          <ul class="nd-dropdown-menu" role="menu">
+            <li><a href="#" role="menuitem">Edit</a></li>
+            <li><a href="#" role="menuitem">Duplicate</a></li>
+            <li><a href="#" role="menuitem">Archive</a></li>
+            <li><a href="#" role="menuitem">Export</a></li>
+          </ul>
+        </div>
+
+        <!-- Dropdown with divider and danger item -->
+        <div class="nd-dropdown">
+          <button class="nd-btn-secondary">Actions &#9662;</button>
+          <ul class="nd-dropdown-menu" role="menu">
+            <li><a href="#" role="menuitem">Rename</a></li>
+            <li><a href="#" role="menuitem">Move to folder</a></li>
+            <li class="nd-dropdown-divider"></li>
+            <li><a href="#" role="menuitem" style="color: var(--nd-danger)">Delete permanently</a></li>
+          </ul>
+        </div>
+
+        <!-- Right-aligned dropdown -->
+        <div class="nd-dropdown nd-dropdown-right">
+          <button class="nd-btn-secondary">Right-aligned &#9662;</button>
+          <ul class="nd-dropdown-menu" role="menu">
+            <li><a href="#" role="menuitem">Profile</a></li>
+            <li><a href="#" role="menuitem">Preferences</a></li>
+            <li class="nd-dropdown-divider"></li>
+            <li><a href="#" role="menuitem">Sign out</a></li>
+          </ul>
+        </div>
+
+        <!-- Primary button trigger -->
+        <div class="nd-dropdown">
+          <button class="nd-btn-primary">Create New &#9662;</button>
+          <ul class="nd-dropdown-menu" role="menu">
+            <li><a href="#" role="menuitem">New Project</a></li>
+            <li><a href="#" role="menuitem">New Team</a></li>
+            <li><a href="#" role="menuitem">New Report</a></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Modals                                                             -->
+    <!-- ================================================================== -->
+    <section class="demo-section" id="modals">
+      <h2>Modals</h2>
+      <p class="nd-text-secondary nd-mb-lg">Native &lt;dialog&gt; elements &mdash; focus trapping and backdrop handled by the browser.</p>
+
+      <div class="demo-btn-row">
+        <button class="nd-btn-primary" data-nd-modal="#modal-default">Default Modal</button>
+        <button class="nd-btn-secondary" data-nd-modal="#modal-sm">Small Confirmation</button>
+        <button class="nd-btn-secondary" data-nd-modal="#modal-lg">Large Form Modal</button>
+      </div>
+
+      <!-- Default modal -->
+      <dialog id="modal-default">
+        <header>
+          <h3>Default Modal</h3>
+          <button class="nd-modal-close" aria-label="Close">&times;</button>
+        </header>
+        <div class="nd-modal-body">
+          <p>This is a standard modal dialog using the native <code>&lt;dialog&gt;</code> element. Focus trapping, backdrop, and Escape key handling are all built in by the browser.</p>
+          <p class="nd-text-secondary">Click the backdrop or press Escape to close.</p>
+        </div>
+        <footer>
+          <button class="nd-btn-ghost" data-nd-dismiss>Cancel</button>
+          <button class="nd-btn-primary" data-nd-dismiss>Confirm</button>
+        </footer>
+      </dialog>
+
+      <!-- Small confirmation modal -->
+      <dialog id="modal-sm" class="nd-modal-sm">
+        <header>
+          <h3>Delete Item?</h3>
+          <button class="nd-modal-close" aria-label="Close">&times;</button>
+        </header>
+        <div class="nd-modal-body">
+          <p>Are you sure you want to delete <strong>project-alpha</strong>? This action cannot be undone.</p>
+        </div>
+        <footer>
+          <button class="nd-btn-ghost" data-nd-dismiss>Cancel</button>
+          <button class="nd-btn-danger" data-nd-dismiss>Delete</button>
+        </footer>
+      </dialog>
+
+      <!-- Large form modal -->
+      <dialog id="modal-lg" class="nd-modal-lg">
+        <header>
+          <h3>Add New User</h3>
+          <button class="nd-modal-close" aria-label="Close">&times;</button>
+        </header>
+        <div class="nd-modal-body">
+          <form>
+            <div class="nd-row">
+              <div class="nd-col-6">
+                <div class="nd-form-group">
+                  <label for="modal-fname">First Name</label>
+                  <input type="text" id="modal-fname" placeholder="Jane">
+                </div>
+              </div>
+              <div class="nd-col-6">
+                <div class="nd-form-group">
+                  <label for="modal-lname">Last Name</label>
+                  <input type="text" id="modal-lname" placeholder="Doe">
+                </div>
+              </div>
+            </div>
+            <div class="nd-form-group">
+              <label for="modal-email">Email</label>
+              <input type="email" id="modal-email" placeholder="jane@example.com">
+            </div>
+            <div class="nd-form-group">
+              <label for="modal-role">Role</label>
+              <select id="modal-role">
+                <option value="">Select a role&hellip;</option>
+                <option value="admin">Administrator</option>
+                <option value="editor">Editor</option>
+                <option value="viewer">Viewer</option>
+              </select>
+            </div>
+            <div class="nd-form-group">
+              <label for="modal-notes">Notes</label>
+              <textarea id="modal-notes" rows="3" placeholder="Optional notes about this user&hellip;"></textarea>
+            </div>
+          </form>
+        </div>
+        <footer>
+          <button class="nd-btn-ghost" data-nd-dismiss>Cancel</button>
+          <button class="nd-btn-primary" data-nd-dismiss>Add User</button>
+        </footer>
+      </dialog>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Toasts                                                             -->
+    <!-- ================================================================== -->
+    <section class="demo-section" id="toasts">
+      <h2>Toasts</h2>
+      <p class="nd-text-secondary nd-mb-lg">Notification popups triggered via JavaScript API.</p>
+
+      <div class="demo-btn-row">
+        <button class="nd-btn-primary" onclick="NDesign.toast('User created successfully', 'success')">Success</button>
+        <button class="nd-btn-danger" onclick="NDesign.toast('Failed to save changes', 'error')">Error</button>
+        <button class="nd-btn-secondary" onclick="NDesign.toast('API rate limit approaching', 'warning')">Warning</button>
+        <button class="nd-btn-secondary" onclick="NDesign.toast('New deployment started', 'info')">Info</button>
+        <button class="nd-btn-ghost" onclick="NDesign.toast('This stays until dismissed', 'info', 0)">Persistent</button>
+      </div>
+
+      <div class="nd-well nd-mt-md">
+        <div class="demo-label">API Usage</div>
+        <code>NDesign.toast(message, type?, duration?)</code>
+        <p class="nd-text-secondary nd-mt-sm">Types: <code>success</code>, <code>error</code>, <code>warning</code>, <code>info</code>. Duration defaults to 5000ms; pass <code>0</code> for persistent.</p>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
     <!-- Stacking                                                           -->
     <!-- ================================================================== -->
     <section class="demo-section" id="stacking">
@@ -478,13 +683,13 @@
       <h2>Asides</h2>
       <p class="nd-text-secondary nd-mb-lg">Edge-pinned callouts that fold onto the page — outer corners straight, inner corners rounded.</p>
 
-      <aside class="nd-aside">
-        <div class="nd-aside-title">Right Aside (Default)</div>
+      <aside class="fold">
+        <div class="fold-title">Right Aside (Default)</div>
         <p>This aside pins to the right edge of the viewport, with its inner corners rounded and outer corners flush against the page edge.</p>
       </aside>
 
-      <aside class="nd-aside nd-aside-left">
-        <div class="nd-aside-title">Left Aside</div>
+      <aside class="fold fold-left">
+        <div class="fold-title">Left Aside</div>
         <p>Same concept mirrored — pins to the left edge. The rounded corners always face inward toward the content.</p>
       </aside>
 
@@ -493,8 +698,8 @@
           <p class="nd-text-secondary">Content flows normally between asides. The fold effect gives them visual weight without disrupting the layout.</p>
         </div>
         <div class="nd-col-6">
-          <aside class="nd-aside">
-            <div class="nd-aside-title">Aside Inside a Column</div>
+          <aside class="fold">
+            <div class="fold-title">Aside Inside a Column</div>
             <p>When used inside a grid column, the aside still bleeds to the right edge.</p>
           </aside>
         </div>
@@ -502,30 +707,30 @@
 
       <h4 class="nd-mt-lg">Semantic Variants</h4>
 
-      <aside class="nd-aside nd-aside-info">
-        <div class="nd-aside-title">Info</div>
+      <aside class="fold fold-info">
+        <div class="fold-title">Info</div>
         <p>Helpful context or additional information the user might want to know.</p>
       </aside>
 
-      <aside class="nd-aside nd-aside-left nd-aside-success">
-        <div class="nd-aside-title">Success</div>
+      <aside class="fold fold-left fold-success">
+        <div class="fold-title">Success</div>
         <p>Confirmation or positive status — deployment complete, tests passing, health check OK.</p>
       </aside>
 
-      <aside class="nd-aside nd-aside-warning">
-        <div class="nd-aside-title">Warning</div>
+      <aside class="fold fold-warning">
+        <div class="fold-title">Warning</div>
         <p>Something needs attention — approaching quota limits, certificate expiring in 14 days.</p>
       </aside>
 
-      <aside class="nd-aside nd-aside-left nd-aside-danger">
-        <div class="nd-aside-title">Danger</div>
+      <aside class="fold fold-left fold-danger">
+        <div class="fold-title">Danger</div>
         <p>Critical issue — service down, auth failures spiking, disk at 95%.</p>
       </aside>
 
       <h4 class="nd-mt-lg">Aside with Table</h4>
 
-      <aside class="nd-aside nd-aside-info">
-        <div class="nd-aside-title">Recent Activity</div>
+      <aside class="fold fold-info">
+        <div class="fold-title">Recent Activity</div>
         <div class="nd-table-responsive">
           <table class="nd-table-striped nd-table-compact">
             <thead>
@@ -565,8 +770,8 @@
           </div>
         </div>
         <div class="nd-col-4">
-          <aside class="nd-aside nd-aside-info">
-            <div class="nd-aside-title">Migration Notes</div>
+          <aside class="fold fold-info">
+            <div class="fold-title">Migration Notes</div>
             <p class="nd-text-small">Review these items before proceeding with each phase.</p>
             <div class="nd-well nd-well-sm">
               <p class="nd-text-small"><strong>Target:</strong> Q2 2026</p>
@@ -574,8 +779,8 @@
               <p class="nd-text-small"><strong>Risk:</strong> <span class="nd-badge nd-badge-warning">Medium</span></p>
             </div>
           </aside>
-          <aside class="nd-aside nd-aside-warning">
-            <div class="nd-aside-title">Open Issues</div>
+          <aside class="fold fold-warning">
+            <div class="fold-title">Open Issues</div>
             <p class="nd-text-small">3 blockers must be resolved before Phase 2 can begin.</p>
             <div class="nd-table-responsive">
               <table class="nd-table-compact">
@@ -594,8 +799,8 @@
 
       <div class="nd-row">
         <div class="nd-col-4">
-          <aside class="nd-aside nd-aside-left nd-aside-success">
-            <div class="nd-aside-title">System Health</div>
+          <aside class="fold fold-left fold-success">
+            <div class="fold-title">System Health</div>
             <p class="nd-text-small nd-text-muted">All services operational as of 14:32 UTC.</p>
             <div class="nd-well nd-well-sm">
               <p class="nd-text-small"><strong>Uptime:</strong> 99.97% (30d)</p>
@@ -603,8 +808,8 @@
               <p class="nd-text-small"><strong>Next window:</strong> Apr 12</p>
             </div>
           </aside>
-          <aside class="nd-aside nd-aside-left">
-            <div class="nd-aside-title">Quick Links</div>
+          <aside class="fold fold-left">
+            <div class="fold-title">Quick Links</div>
             <ul class="nd-text-small" style="padding-left: 1.25rem;">
               <li><a href="#" class="nd-link">Grafana Dashboard</a></li>
               <li><a href="#" class="nd-link">Incident Runbook</a></li>

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ndesign — App Shell</title>
+  <link rel="stylesheet" href="../dist/ndesign.css">
+  <link rel="stylesheet" href="../dist/themes/light.css" id="nd-theme">
+  <style>
+    .app-main {
+      margin-left: 16rem;
+      padding: 1.25rem;
+      min-height: 100vh;
+    }
+    body { padding: 0; min-width: 0; }
+    @media (max-width: 1279px) {
+      .app-main { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ====================================================================== -->
+  <!-- Side Navigation                                                        -->
+  <!-- ====================================================================== -->
+  <nav class="nd-nav-side">
+    <span class="nd-nav-brand">AppName</span>
+
+    <div class="nd-nav-section">Main</div>
+    <ul class="nd-nav-menu">
+      <li><a href="#" class="nd-active">Dashboard</a></li>
+      <li><a href="#">Analytics</a></li>
+      <li><a href="#">Reports</a></li>
+    </ul>
+
+    <div class="nd-nav-section">Management</div>
+    <ul class="nd-nav-menu">
+      <li><a href="#">Users</a></li>
+      <li><a href="#">Teams</a></li>
+      <li><a href="#">Projects</a></li>
+    </ul>
+
+    <div class="nd-nav-section">System</div>
+    <ul class="nd-nav-menu">
+      <li>
+        <div class="nd-dropdown">
+          <button class="nd-btn-ghost">Settings &#9662;</button>
+          <ul class="nd-dropdown-menu" role="menu">
+            <li><a href="#" role="menuitem">General</a></li>
+            <li><a href="#" role="menuitem">Security</a></li>
+            <li><a href="#" role="menuitem">Billing</a></li>
+          </ul>
+        </div>
+      </li>
+      <li><a href="#">Audit Log</a></li>
+    </ul>
+  </nav>
+
+  <!-- Overlay for mobile sidebar -->
+  <div class="nd-nav-overlay" onclick="toggleSidebar()"></div>
+
+  <!-- ====================================================================== -->
+  <!-- Main Content Area                                                      -->
+  <!-- ====================================================================== -->
+  <div class="app-main">
+
+    <!-- Top bar -->
+    <nav style="position: relative; margin-bottom: 1.25rem;">
+      <button class="nd-nav-toggle" aria-label="Toggle sidebar" onclick="toggleSidebar()">&#9776;</button>
+      <span class="nd-nav-brand" style="font-size: 1.125rem;">Dashboard</span>
+
+      <div class="nd-nav-end">
+        <!-- Theme toggle dropdown -->
+        <div class="nd-dropdown nd-dropdown-right">
+          <button class="nd-btn-ghost nd-btn-sm">Theme &#9662;</button>
+          <ul class="nd-dropdown-menu" role="menu">
+            <li><a href="#" role="menuitem" onclick="setTheme('light'); return false;">Light</a></li>
+            <li><a href="#" role="menuitem" onclick="setTheme('dark'); return false;">Dark</a></li>
+          </ul>
+        </div>
+
+        <!-- User dropdown -->
+        <div class="nd-dropdown nd-dropdown-right">
+          <button class="nd-btn-ghost nd-btn-sm">
+            <span style="display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 50%; background: var(--nd-accent); color: var(--nd-accent-text); font-size: 0.75rem; font-weight: 600; margin-right: 0.25rem;">WH</span>
+            Will &#9662;
+          </button>
+          <ul class="nd-dropdown-menu" role="menu">
+            <li><a href="#" role="menuitem">Profile</a></li>
+            <li><a href="#" role="menuitem">Preferences</a></li>
+            <li class="nd-dropdown-divider"></li>
+            <li><a href="#" role="menuitem">Sign out</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ================================================================== -->
+    <!-- Stat Cards                                                         -->
+    <!-- ================================================================== -->
+    <div class="nd-row nd-mb-lg">
+      <div class="nd-col-4">
+        <div class="nd-card">
+          <div class="nd-card-body">
+            <p class="nd-text-secondary" style="margin-bottom: 0.25rem;">Total Users</p>
+            <h2 style="margin: 0;">12,847</h2>
+            <p class="nd-text-small nd-mt-xs"><span class="nd-badge nd-badge-success">+4.3%</span> from last month</p>
+          </div>
+        </div>
+      </div>
+      <div class="nd-col-4">
+        <div class="nd-card">
+          <div class="nd-card-body">
+            <p class="nd-text-secondary" style="margin-bottom: 0.25rem;">Active Projects</p>
+            <h2 style="margin: 0;">342</h2>
+            <p class="nd-text-small nd-mt-xs"><span class="nd-badge nd-badge-warning">-1.2%</span> from last month</p>
+          </div>
+        </div>
+      </div>
+      <div class="nd-col-4">
+        <div class="nd-card">
+          <div class="nd-card-body">
+            <p class="nd-text-secondary" style="margin-bottom: 0.25rem;">API Requests (24h)</p>
+            <h2 style="margin: 0;">1.4M</h2>
+            <p class="nd-text-small nd-mt-xs"><span class="nd-badge nd-badge-success">+12.7%</span> from yesterday</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- Data Table with Action Dropdowns                                   -->
+    <!-- ================================================================== -->
+    <div class="nd-card nd-mb-lg">
+      <div class="nd-card-header">
+        <h3 style="margin: 0;">Recent Projects</h3>
+      </div>
+      <div class="nd-card-body" style="padding: 0;">
+        <div class="nd-table-responsive">
+          <table class="nd-table-striped nd-table-hover">
+            <thead>
+              <tr>
+                <th>Project</th>
+                <th>Owner</th>
+                <th>Status</th>
+                <th>Last Updated</th>
+                <th style="width: 5rem;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>ndesign</strong></td>
+                <td>Will H.</td>
+                <td><span class="nd-badge nd-badge-success">Active</span></td>
+                <td>2 hours ago</td>
+                <td>
+                  <div class="nd-dropdown nd-dropdown-right">
+                    <button class="nd-btn-ghost nd-btn-sm">&#8943;</button>
+                    <ul class="nd-dropdown-menu" role="menu">
+                      <li><a href="#" role="menuitem">Edit</a></li>
+                      <li><a href="#" role="menuitem">Duplicate</a></li>
+                      <li class="nd-dropdown-divider"></li>
+                      <li><a href="#" role="menuitem" style="color: var(--nd-danger)">Delete</a></li>
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>api-gateway</strong></td>
+                <td>Sarah K.</td>
+                <td><span class="nd-badge nd-badge-success">Active</span></td>
+                <td>5 hours ago</td>
+                <td>
+                  <div class="nd-dropdown nd-dropdown-right">
+                    <button class="nd-btn-ghost nd-btn-sm">&#8943;</button>
+                    <ul class="nd-dropdown-menu" role="menu">
+                      <li><a href="#" role="menuitem">Edit</a></li>
+                      <li><a href="#" role="menuitem">Duplicate</a></li>
+                      <li class="nd-dropdown-divider"></li>
+                      <li><a href="#" role="menuitem" style="color: var(--nd-danger)">Delete</a></li>
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>data-pipeline</strong></td>
+                <td>James M.</td>
+                <td><span class="nd-badge nd-badge-warning">Review</span></td>
+                <td>1 day ago</td>
+                <td>
+                  <div class="nd-dropdown nd-dropdown-right">
+                    <button class="nd-btn-ghost nd-btn-sm">&#8943;</button>
+                    <ul class="nd-dropdown-menu" role="menu">
+                      <li><a href="#" role="menuitem">Edit</a></li>
+                      <li><a href="#" role="menuitem">Duplicate</a></li>
+                      <li class="nd-dropdown-divider"></li>
+                      <li><a href="#" role="menuitem" style="color: var(--nd-danger)">Delete</a></li>
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>auth-service</strong></td>
+                <td>Will H.</td>
+                <td><span class="nd-badge nd-badge-success">Active</span></td>
+                <td>2 days ago</td>
+                <td>
+                  <div class="nd-dropdown nd-dropdown-right">
+                    <button class="nd-btn-ghost nd-btn-sm">&#8943;</button>
+                    <ul class="nd-dropdown-menu" role="menu">
+                      <li><a href="#" role="menuitem">Edit</a></li>
+                      <li><a href="#" role="menuitem">Duplicate</a></li>
+                      <li class="nd-dropdown-divider"></li>
+                      <li><a href="#" role="menuitem" style="color: var(--nd-danger)">Delete</a></li>
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>monitoring-v2</strong></td>
+                <td>Sarah K.</td>
+                <td><span class="nd-badge nd-badge-danger">Archived</span></td>
+                <td>1 week ago</td>
+                <td>
+                  <div class="nd-dropdown nd-dropdown-right">
+                    <button class="nd-btn-ghost nd-btn-sm">&#8943;</button>
+                    <ul class="nd-dropdown-menu" role="menu">
+                      <li><a href="#" role="menuitem">Edit</a></li>
+                      <li><a href="#" role="menuitem">Duplicate</a></li>
+                      <li class="nd-dropdown-divider"></li>
+                      <li><a href="#" role="menuitem" style="color: var(--nd-danger)">Delete</a></li>
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- Add Item Form                                                      -->
+    <!-- ================================================================== -->
+    <div class="nd-card nd-mb-lg">
+      <div class="nd-card-header">
+        <h3 style="margin: 0;">Add Project</h3>
+      </div>
+      <div class="nd-card-body">
+        <form>
+          <div class="nd-row">
+            <div class="nd-col-6">
+              <div class="nd-form-group">
+                <label for="proj-name">Project Name</label>
+                <input type="text" id="proj-name" placeholder="my-project">
+              </div>
+            </div>
+            <div class="nd-col-6">
+              <div class="nd-form-group">
+                <label for="proj-owner">Owner</label>
+                <select id="proj-owner">
+                  <option value="">Select owner&hellip;</option>
+                  <option value="will">Will H.</option>
+                  <option value="sarah">Sarah K.</option>
+                  <option value="james">James M.</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="nd-form-group">
+            <label for="proj-desc">Description</label>
+            <textarea id="proj-desc" rows="2" placeholder="Brief project description&hellip;"></textarea>
+          </div>
+          <button type="button" class="nd-btn-primary">Create Project</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- Modal Trigger Buttons                                              -->
+    <!-- ================================================================== -->
+    <div class="nd-row nd-mb-lg">
+      <div class="nd-col-6">
+        <div class="nd-card">
+          <div class="nd-card-header"><h3 style="margin: 0;">Modal Demos</h3></div>
+          <div class="nd-card-body">
+            <p class="nd-text-secondary nd-mb-md">Open native &lt;dialog&gt; modals for common actions.</p>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button class="nd-btn-danger" data-nd-modal="#app-modal-delete">Confirm Delete</button>
+              <button class="nd-btn-primary" data-nd-modal="#app-modal-user">Add New User</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toast Trigger Buttons -->
+      <div class="nd-col-6">
+        <div class="nd-card">
+          <div class="nd-card-header"><h3 style="margin: 0;">Toast Demos</h3></div>
+          <div class="nd-card-body">
+            <p class="nd-text-secondary nd-mb-md">Trigger notification toasts via the JS API.</p>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button class="nd-btn-primary" onclick="NDesign.toast('Project created successfully', 'success')">Success</button>
+              <button class="nd-btn-danger" onclick="NDesign.toast('Failed to delete project', 'error')">Error</button>
+              <button class="nd-btn-secondary" onclick="NDesign.toast('Storage quota at 85%', 'warning')">Warning</button>
+              <button class="nd-btn-secondary" onclick="NDesign.toast('Deployment pipeline started', 'info')">Info</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.app-main -->
+
+  <!-- ====================================================================== -->
+  <!-- Dialog Elements                                                        -->
+  <!-- ====================================================================== -->
+
+  <!-- Confirm delete modal -->
+  <dialog id="app-modal-delete" class="nd-modal-sm">
+    <header>
+      <h3>Delete Project?</h3>
+      <button class="nd-modal-close" aria-label="Close">&times;</button>
+    </header>
+    <div class="nd-modal-body">
+      <p>Are you sure you want to delete <strong>monitoring-v2</strong>? All associated data, deployments, and history will be permanently removed.</p>
+      <div class="nd-alert nd-alert-warning nd-mt-md">This action cannot be undone.</div>
+    </div>
+    <footer>
+      <button class="nd-btn-ghost" data-nd-dismiss>Cancel</button>
+      <button class="nd-btn-danger" data-nd-dismiss>Delete Project</button>
+    </footer>
+  </dialog>
+
+  <!-- Add user modal -->
+  <dialog id="app-modal-user" class="nd-modal-lg">
+    <header>
+      <h3>Add New User</h3>
+      <button class="nd-modal-close" aria-label="Close">&times;</button>
+    </header>
+    <div class="nd-modal-body">
+      <form>
+        <div class="nd-row">
+          <div class="nd-col-6">
+            <div class="nd-form-group">
+              <label for="app-user-fname">First Name</label>
+              <input type="text" id="app-user-fname" placeholder="Jane">
+            </div>
+          </div>
+          <div class="nd-col-6">
+            <div class="nd-form-group">
+              <label for="app-user-lname">Last Name</label>
+              <input type="text" id="app-user-lname" placeholder="Doe">
+            </div>
+          </div>
+        </div>
+        <div class="nd-form-group">
+          <label for="app-user-email">Email Address</label>
+          <input type="email" id="app-user-email" placeholder="jane@example.com">
+        </div>
+        <div class="nd-row">
+          <div class="nd-col-6">
+            <div class="nd-form-group">
+              <label for="app-user-role">Role</label>
+              <select id="app-user-role">
+                <option value="">Select role&hellip;</option>
+                <option value="admin">Administrator</option>
+                <option value="editor">Editor</option>
+                <option value="viewer">Viewer</option>
+              </select>
+            </div>
+          </div>
+          <div class="nd-col-6">
+            <div class="nd-form-group">
+              <label for="app-user-team">Team</label>
+              <select id="app-user-team">
+                <option value="">Select team&hellip;</option>
+                <option value="eng">Engineering</option>
+                <option value="design">Design</option>
+                <option value="product">Product</option>
+                <option value="ops">Operations</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="nd-form-group">
+          <label for="app-user-notes">Notes</label>
+          <textarea id="app-user-notes" rows="2" placeholder="Optional notes&hellip;"></textarea>
+        </div>
+      </form>
+    </div>
+    <footer>
+      <button class="nd-btn-ghost" data-nd-dismiss>Cancel</button>
+      <button class="nd-btn-primary" data-nd-dismiss>Add User</button>
+    </footer>
+  </dialog>
+
+  <!-- ====================================================================== -->
+  <!-- Scripts                                                                -->
+  <!-- ====================================================================== -->
+  <script src="../dist/ndesign.min.js"></script>
+  <script>
+    /**
+     * Theme switcher — sets the theme stylesheet to light or dark.
+     */
+    function toggleSidebar() {
+      document.querySelector('.nd-nav-side').classList.toggle('nd-nav-open');
+      document.querySelector('.nd-nav-overlay').classList.toggle('nd-active');
+    }
+
+    function setTheme(name) {
+      const link = document.getElementById('nd-theme');
+      link.href = '../dist/themes/' + name + '.css';
+    }
+
+    /**
+     * Theme toggle — swaps light / dark.
+     * Falls back to manual href swap if NDesign.toggleTheme is not available.
+     */
+    function toggleTheme() {
+      if (typeof NDesign !== 'undefined' && typeof NDesign.toggleTheme === 'function') {
+        NDesign.toggleTheme();
+        return;
+      }
+      const link = document.getElementById('nd-theme');
+      if (link.href.includes('light')) {
+        link.href = link.href.replace('light', 'dark');
+      } else {
+        link.href = link.href.replace('dark', 'light');
+      }
+    }
+  </script>
+</body>
+</html>

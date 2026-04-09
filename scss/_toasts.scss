@@ -1,0 +1,113 @@
+// ==========================================================================
+// Toasts
+// Notification messages that appear in a fixed overlay container.
+// ==========================================================================
+
+@use 'tokens' as *;
+
+// ---------------------------------------------------------------------------
+// Keyframes
+// ---------------------------------------------------------------------------
+@keyframes nd-slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes nd-fade-out {
+  to {
+    opacity: 0;
+    transform: translateX(50%);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Container — fixed overlay area
+// ---------------------------------------------------------------------------
+.nd-toast-container {
+  position: fixed;
+  top: $nd-space-lg;
+  right: $nd-space-lg;
+  z-index: $nd-z-toast;
+  display: flex;
+  flex-direction: column;
+  gap: $nd-space-sm;
+  pointer-events: none;
+  max-width: 24rem;
+}
+
+// ---------------------------------------------------------------------------
+// Individual toast
+// ---------------------------------------------------------------------------
+.nd-toast {
+  display: flex;
+  align-items: center;
+  gap: $nd-space-sm;
+  padding: $nd-space-md $nd-space-lg;
+  background: var(--nd-bg-surface);
+  border: 1px solid var(--nd-border);
+  border-radius: $nd-radius-md;
+  box-shadow: var(--nd-shadow-md);
+  color: var(--nd-text-primary);
+  pointer-events: auto;
+  animation: nd-slide-in-right 200ms ease-out;
+}
+
+// ---------------------------------------------------------------------------
+// Message text
+// ---------------------------------------------------------------------------
+.nd-toast-message {
+  flex: 1;
+  font-size: $nd-font-sm;
+}
+
+// ---------------------------------------------------------------------------
+// Close button
+// ---------------------------------------------------------------------------
+.nd-toast-close {
+  border: none;
+  background: none;
+  padding: $nd-space-xs;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--nd-text-muted);
+  opacity: 0.6;
+  cursor: pointer;
+  transition: opacity $nd-transition-fast;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Semantic variants — left border accent
+// ---------------------------------------------------------------------------
+.nd-toast-success {
+  border-left: 4px solid var(--nd-success);
+}
+
+.nd-toast-error {
+  border-left: 4px solid var(--nd-danger);
+}
+
+.nd-toast-warning {
+  border-left: 4px solid var(--nd-warning);
+}
+
+.nd-toast-info {
+  border-left: 4px solid var(--nd-info);
+}
+
+// ---------------------------------------------------------------------------
+// Exit animation
+// ---------------------------------------------------------------------------
+.nd-toast-exit {
+  animation: nd-fade-out 200ms ease-in forwards;
+}

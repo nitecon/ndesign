@@ -12,6 +12,10 @@ import { initActions } from './action.js';
 import { initWebSockets, destroyWebSockets } from './ws.js';
 import { initSSE, destroySSE } from './sse.js';
 import { initSelects, destroySelects } from './select.js';
+import { initNav, destroyNav } from './nav.js';
+import { initDropdowns, destroyDropdowns } from './dropdown.js';
+import { initModals, destroyModals, openModal, closeModal } from './modal.js';
+import { initToasts, destroyToasts, toast } from './toast.js';
 import { render, renderOne, interpolate } from './template.js';
 import { escapeHTML, getByPath, setByPath, getCSRFToken } from './utils.js';
 
@@ -67,6 +71,10 @@ export function init() {
     destroyWebSockets();
     destroySSE();
     destroySelects();
+    destroyNav();
+    destroyDropdowns();
+    destroyModals();
+    destroyToasts();
   }
 
   initBindings(config);
@@ -74,6 +82,10 @@ export function init() {
   initWebSockets(config);
   initSSE(config);
   initSelects();
+  initNav();
+  initDropdowns();
+  initModals();
+  initToasts();
 
   initialized = true;
 }
@@ -122,7 +134,7 @@ export function setTheme(name) {
 }
 
 // Re-export utilities for advanced usage
-export { render, renderOne, interpolate, escapeHTML, getByPath, setByPath, getCSRFToken };
+export { render, renderOne, interpolate, escapeHTML, getByPath, setByPath, getCSRFToken, openModal, closeModal, toast };
 
 // Auto-initialize on DOMContentLoaded
 if (typeof document !== 'undefined') {

@@ -223,7 +223,7 @@ ndesign styles native HTML elements directly — no base classes needed for comm
 | Card | `.nd-card` | `.nd-card-header`, `.nd-card-body`, `.nd-card-footer`, `.nd-card-flush` |
 | Panel | `.nd-panel` | `.nd-panel-bordered`, `.nd-panel-compact` |
 | Well | `.nd-well` | `.nd-well-sm`, `.nd-well-lg` |
-| Aside | `<aside class="nd-aside">` | `.nd-aside-left`, `.nd-aside-info`, `.nd-aside-warning`, `.nd-aside-danger`, `.nd-aside-success` |
+| Fold | `<aside class="fold">` | `.fold-left`, `.fold-info`, `.fold-warning`, `.fold-danger`, `.fold-success` |
 | Button | `<button>` (native) | `.nd-btn-primary`, `.nd-btn-secondary`, `.nd-btn-danger`, `.nd-btn-ghost`, `.nd-btn-sm`, `.nd-btn-lg` |
 | Form Group | `.nd-form-group` | `.nd-form-group-attached`, `.nd-form-help`, `.nd-form-error` |
 | Alert | `.nd-alert` | `.nd-alert-success`, `.nd-alert-warning`, `.nd-alert-error`, `.nd-alert-info` |

@@ -1,0 +1,111 @@
+// ==========================================================================
+// Modals
+// Native <dialog> element — styled for ndesign.
+// ==========================================================================
+
+@use 'tokens' as *;
+
+// ---------------------------------------------------------------------------
+// Base dialog
+// ---------------------------------------------------------------------------
+dialog {
+  border: none;
+  border-radius: $nd-radius-lg;
+  background: var(--nd-bg-surface);
+  box-shadow: var(--nd-shadow-lg);
+  color: var(--nd-text-primary);
+  padding: 0;
+  max-width: 36rem;
+  width: calc(100% - 2rem);
+  max-height: calc(100vh - 4rem);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity $nd-transition-fast, transform $nd-transition-fast;
+}
+
+dialog[open] {
+  opacity: 1;
+  transform: scale(1);
+}
+
+// ---------------------------------------------------------------------------
+// Backdrop
+// ---------------------------------------------------------------------------
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+}
+
+// ---------------------------------------------------------------------------
+// Header
+// ---------------------------------------------------------------------------
+dialog > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $nd-space-md $nd-space-lg;
+  border-bottom: 1px solid var(--nd-border);
+
+  h1, h2, h3, h4, h5, h6 {
+    margin: 0;
+    font-size: $nd-font-lg;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Close button
+// ---------------------------------------------------------------------------
+.nd-modal-close {
+  border: none;
+  background: none;
+  padding: $nd-space-xs;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--nd-text-muted);
+  opacity: 0.6;
+  cursor: pointer;
+  transition: opacity $nd-transition-fast;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Body
+// ---------------------------------------------------------------------------
+.nd-modal-body {
+  padding: $nd-space-lg;
+  overflow-y: auto;
+  flex: 1;
+}
+
+// ---------------------------------------------------------------------------
+// Footer
+// ---------------------------------------------------------------------------
+dialog > footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: $nd-space-sm;
+  padding: $nd-space-md $nd-space-lg;
+  border-top: 1px solid var(--nd-border);
+}
+
+// ---------------------------------------------------------------------------
+// Size variants
+// ---------------------------------------------------------------------------
+dialog.nd-modal-sm {
+  max-width: 24rem;
+}
+
+dialog.nd-modal-lg {
+  max-width: 56rem;
+}
+
+dialog.nd-modal-full {
+  max-width: calc(100% - 2rem);
+  max-height: calc(100vh - 2rem);
+}

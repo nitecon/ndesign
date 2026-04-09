@@ -1,0 +1,84 @@
+// ==========================================================================
+// Dropdowns
+// Action menus and contextual option lists.
+// ==========================================================================
+
+@use 'tokens' as *;
+
+// ---------------------------------------------------------------------------
+// Wrapper
+// ---------------------------------------------------------------------------
+.nd-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+// ---------------------------------------------------------------------------
+// Menu panel
+// ---------------------------------------------------------------------------
+.nd-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 12rem;
+  margin-top: 4px;
+  background: var(--nd-bg-surface);
+  border: 1px solid var(--nd-border);
+  border-radius: $nd-radius-md;
+  box-shadow: var(--nd-shadow-md);
+  z-index: $nd-z-dropdown;
+  padding: $nd-space-xs 0;
+  list-style: none;
+
+  li a {
+    display: block;
+    padding: $nd-space-sm $nd-space-md;
+    color: var(--nd-text-primary);
+    text-decoration: none;
+    transition: background $nd-transition-fast;
+
+    &:hover {
+      background: var(--nd-bg-surface-hover);
+    }
+  }
+
+  li.nd-active a {
+    background: var(--nd-accent);
+    color: var(--nd-accent-text);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Open state
+// ---------------------------------------------------------------------------
+.nd-dropdown.nd-open .nd-dropdown-menu {
+  display: block;
+}
+
+// ---------------------------------------------------------------------------
+// Divider
+// ---------------------------------------------------------------------------
+.nd-dropdown-divider {
+  height: 0;
+  border-top: 1px solid var(--nd-border);
+  margin: $nd-space-xs 0;
+}
+
+// ---------------------------------------------------------------------------
+// Alignment variants
+// ---------------------------------------------------------------------------
+.nd-dropdown-right .nd-dropdown-menu {
+  right: 0;
+  left: auto;
+}
+
+// ---------------------------------------------------------------------------
+// Direction variant — opens upward
+// ---------------------------------------------------------------------------
+.nd-dropdown-up .nd-dropdown-menu {
+  bottom: 100%;
+  top: auto;
+  margin-bottom: 4px;
+  margin-top: 0;
+}

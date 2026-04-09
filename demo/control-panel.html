@@ -23,17 +23,23 @@
       overflow: hidden;
     }
 
-    /* Sidebar */
+    /* Sidebar — flush against header and footer, resets native nav top-bar */
     .cp-sidebar {
       width: 240px;
       min-width: 240px;
       background: var(--nd-bg-surface);
       border-right: 1px solid var(--nd-border);
+      border-bottom: none;
       display: flex;
       flex-direction: column;
+      align-items: stretch;
       overflow-y: auto;
       z-index: 1030;
       transition: transform 250ms ease;
+      flex-shrink: 0;
+      position: static;
+      box-shadow: none;
+      padding: 0;
     }
     .cp-sidebar-brand {
       padding: 1.25rem 1rem;
@@ -50,8 +56,8 @@
       margin-top: 0.125rem;
     }
     .cp-sidebar-section {
-      padding: 0.75rem 1rem 0.25rem;
-      font-size: 0.6875rem;
+      padding: 0.75rem 0.75rem 0.25rem;
+      font-size: 0.8125rem;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -60,25 +66,27 @@
     .cp-sidebar-nav {
       list-style: none;
       margin: 0;
-      padding: 0 0.5rem;
+      padding: 0;
     }
     .cp-sidebar-nav li a {
       display: block;
       padding: 0.5rem 0.75rem;
-      border-radius: 6px;
       color: var(--nd-text-secondary);
       text-decoration: none;
       font-size: 0.875rem;
-      transition: background 150ms ease, color 150ms ease;
+      border-left: 3px solid transparent;
+      transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
     }
     .cp-sidebar-nav li a:hover {
-      background: var(--nd-bg-well);
+      background: var(--nd-bg-surface-hover);
       color: var(--nd-text-primary);
       text-decoration: none;
     }
     .cp-sidebar-nav li a.nd-active {
-      background: var(--nd-accent);
-      color: #fff;
+      color: var(--nd-accent);
+      border-left-color: var(--nd-accent);
+      background: var(--nd-bg-surface-hover);
+      font-weight: 500;
     }
 
     /* Main wrapper (header + content) */
@@ -152,7 +160,7 @@
     .cp-content {
       flex: 1;
       overflow-y: auto;
-      padding: 1.5rem;
+      padding: 1.5rem 2rem;
     }
 
     /* Stat cards */
@@ -241,7 +249,7 @@
     <!-- ================================================================ -->
     <!-- Sidebar                                                          -->
     <!-- ================================================================ -->
-    <aside class="cp-sidebar" id="cp-sidebar">
+    <nav class="cp-sidebar" id="cp-sidebar">
       <div class="cp-sidebar-brand">
         ndesign
         <span>Control Panel v0.1.0</span>
@@ -273,7 +281,7 @@
         <li><a href="#">Integrations</a></li>
         <li><a href="#">Audit Log</a></li>
       </ul>
-    </aside>
+    </nav>
 
     <!-- ================================================================ -->
     <!-- Main Area                                                        -->

@@ -1,17 +1,17 @@
 // ==========================================================================
-// Asides — edge-pinned callouts with inner-rounded, outer-straight corners
+// Folds — edge-pinned callouts with inner-rounded, outer-straight corners
 // Creates a "fold on top of the page" effect by bleeding to the viewport edge.
 //
 // Usage:
-//   <aside class="nd-aside">Right-pinned (default)</aside>
-//   <aside class="nd-aside nd-aside-left">Left-pinned</aside>
+//   <aside class="fold">Right-pinned (default)</aside>
+//   <aside class="fold fold-left">Left-pinned</aside>
 // ==========================================================================
 @use 'tokens' as *;
 
 // ---------------------------------------------------------------------------
-// Base Aside — pins to the right edge by default
+// Base Fold — pins to the right edge by default
 // ---------------------------------------------------------------------------
-.nd-aside {
+.fold {
   background: var(--nd-bg-surface);
   border: 1px solid var(--nd-border);
   border-right: none;
@@ -39,9 +39,9 @@
 }
 
 // ---------------------------------------------------------------------------
-// Left Aside — pins to the left edge
+// Left Fold — pins to the left edge
 // ---------------------------------------------------------------------------
-.nd-aside-left {
+.fold-left {
   margin-right: 0;
   margin-left: (-$nd-container-padding);
   border-right: 1px solid var(--nd-border);
@@ -58,9 +58,9 @@
 }
 
 // ---------------------------------------------------------------------------
-// Aside Title
+// Fold Title
 // ---------------------------------------------------------------------------
-.nd-aside-title {
+.fold-title {
   font-size: $nd-font-base;
   font-weight: $nd-font-weight-semibold;
   text-shadow: var(--nd-text-shadow);
@@ -71,37 +71,37 @@
 // ---------------------------------------------------------------------------
 // Semantic Variants — colored left/right accent strip
 // ---------------------------------------------------------------------------
-.nd-aside-info {
+.fold-info {
   border-left: 4px solid var(--nd-info);
 
-  &.nd-aside-left {
+  &.fold-left {
     border-left: none;
     border-right: 4px solid var(--nd-info);
   }
 }
 
-.nd-aside-success {
+.fold-success {
   border-left: 4px solid var(--nd-success);
 
-  &.nd-aside-left {
+  &.fold-left {
     border-left: none;
     border-right: 4px solid var(--nd-success);
   }
 }
 
-.nd-aside-warning {
+.fold-warning {
   border-left: 4px solid var(--nd-warning);
 
-  &.nd-aside-left {
+  &.fold-left {
     border-left: none;
     border-right: 4px solid var(--nd-warning);
   }
 }
 
-.nd-aside-danger {
+.fold-danger {
   border-left: 4px solid var(--nd-danger);
 
-  &.nd-aside-left {
+  &.fold-left {
     border-left: none;
     border-right: 4px solid var(--nd-danger);
   }
