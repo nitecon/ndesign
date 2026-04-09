@@ -1,0 +1,108 @@
+// ==========================================================================
+// Asides — edge-pinned callouts with inner-rounded, outer-straight corners
+// Creates a "fold on top of the page" effect by bleeding to the viewport edge.
+//
+// Usage:
+//   <aside class="nd-aside">Right-pinned (default)</aside>
+//   <aside class="nd-aside nd-aside-left">Left-pinned</aside>
+// ==========================================================================
+@use 'tokens' as *;
+
+// ---------------------------------------------------------------------------
+// Base Aside — pins to the right edge by default
+// ---------------------------------------------------------------------------
+.nd-aside {
+  background: var(--nd-bg-surface);
+  border: 1px solid var(--nd-border);
+  border-right: none;
+  box-shadow: var(--nd-shadow-md), 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: $nd-space-md $nd-space-lg;
+  margin-bottom: $nd-space-md;
+  margin-right: (-$nd-container-padding);
+  color: var(--nd-text-primary);
+
+  // Inner corners rounded, outer corners straight
+  border-radius: $nd-radius-lg 0 0 $nd-radius-lg;
+
+  @include nd-below(lg) {
+    margin-right: (-$nd-space-md);
+  }
+
+  @include nd-below(sm) {
+    margin-right: (-$nd-space-sm);
+    padding: $nd-space-sm $nd-space-md;
+  }
+
+  > *:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Left Aside — pins to the left edge
+// ---------------------------------------------------------------------------
+.nd-aside-left {
+  margin-right: 0;
+  margin-left: (-$nd-container-padding);
+  border-right: 1px solid var(--nd-border);
+  border-left: none;
+  border-radius: 0 $nd-radius-lg $nd-radius-lg 0;
+
+  @include nd-below(lg) {
+    margin-left: (-$nd-space-md);
+  }
+
+  @include nd-below(sm) {
+    margin-left: (-$nd-space-sm);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Aside Title
+// ---------------------------------------------------------------------------
+.nd-aside-title {
+  font-size: $nd-font-base;
+  font-weight: $nd-font-weight-semibold;
+  text-shadow: var(--nd-text-shadow);
+  margin: 0 0 $nd-space-sm;
+  color: var(--nd-text-primary);
+}
+
+// ---------------------------------------------------------------------------
+// Semantic Variants — colored left/right accent strip
+// ---------------------------------------------------------------------------
+.nd-aside-info {
+  border-left: 4px solid var(--nd-info);
+
+  &.nd-aside-left {
+    border-left: none;
+    border-right: 4px solid var(--nd-info);
+  }
+}
+
+.nd-aside-success {
+  border-left: 4px solid var(--nd-success);
+
+  &.nd-aside-left {
+    border-left: none;
+    border-right: 4px solid var(--nd-success);
+  }
+}
+
+.nd-aside-warning {
+  border-left: 4px solid var(--nd-warning);
+
+  &.nd-aside-left {
+    border-left: none;
+    border-right: 4px solid var(--nd-warning);
+  }
+}
+
+.nd-aside-danger {
+  border-left: 4px solid var(--nd-danger);
+
+  &.nd-aside-left {
+    border-left: none;
+    border-right: 4px solid var(--nd-danger);
+  }
+}

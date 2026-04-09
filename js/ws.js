@@ -1,0 +1,192 @@
+/**
+ * ndesign — WebSocket handler.
+ * Manages WebSocket connections for elements with data-nd-ws.
+ * Supports shared connections, auto-reconnect with exponential backoff,
+ * and template-based rendering of incoming messages.
+ * @module ws
+ */
+
+import { getByPath } from './utils.js';
+import { render } from './template.js';
+
+/**
+ * @typedef {Object} WSConnection
+ * @property {WebSocket|null} socket      — the WebSocket instance
+ * @property {Set<HTMLElement>} elements   — elements bound to this connection
+ * @property {number} retryDelay          — current backoff delay in ms
+ * @property {number|null} retryTimer     — pending reconnect timeout ID
+ * @property {boolean} intentionalClose   — whether close was triggered by teardown
+ */
+
+/** @type {Map<string, WSConnection>} shared connections keyed by URL */
+const connections = new Map();
+
+/** Backoff constants */
+const MIN_RETRY_MS = 1000;
+const MAX_RETRY_MS = 30000;
+
+/**
+ * Apply a received WebSocket message to a bound element.
+ * @param {HTMLElement} el    — the bound element
+ * @param {Object} data       — parsed JSON message
+ * @param {Object} config     — NDesign configuration object
+ */
+function applyMessage(el, data, config) {
+  const templateId = el.getAttribute('data-nd-template');
+  const field = el.getAttribute('data-nd-field');
+  const mode = el.getAttribute('data-nd-mode') || 'append';
+
+  if (templateId) {
+    render(el, templateId, data, mode);
+  } else if (field) {
+    const value = getByPath(data, field);
+    el.textContent = value != null ? String(value) : '';
+  } else {
+    el.textContent = typeof data === 'string' ? data : JSON.stringify(data);
+  }
+
+  if (typeof config.onRender === 'function') {
+    config.onRender(el, data);
+  }
+}
+
+/**
+ * Update connection status CSS classes on all elements bound to a URL.
+ * @param {WSConnection} conn   — the connection object
+ * @param {boolean} connected   — whether the socket is open
+ */
+function updateStatus(conn, connected) {
+  for (const el of conn.elements) {
+    el.classList.toggle('nd-ws-connected', connected);
+    el.classList.toggle('nd-ws-disconnected', !connected);
+  }
+}
+
+/**
+ * Open (or reconnect) a WebSocket connection for a given URL.
+ * @param {string} url    — WebSocket URL
+ * @param {Object} config — NDesign configuration object
+ */
+function connect(url, config) {
+  const conn = connections.get(url);
+  if (!conn) return;
+
+  try {
+    const protocols = config.wsProtocols || [];
+    const socket = protocols.length > 0
+      ? new WebSocket(url, protocols)
+      : new WebSocket(url);
+
+    conn.socket = socket;
+
+    socket.addEventListener('open', () => {
+      conn.retryDelay = MIN_RETRY_MS;
+      updateStatus(conn, true);
+    });
+
+    socket.addEventListener('message', (event) => {
+      let data;
+      try {
+        data = JSON.parse(event.data);
+      } catch {
+        // Malformed JSON — degrade gracefully per coding guidelines
+        console.warn('[ndesign] WebSocket received non-JSON message:', event.data);
+        return;
+      }
+
+      for (const el of conn.elements) {
+        applyMessage(el, data, config);
+      }
+    });
+
+    socket.addEventListener('close', () => {
+      updateStatus(conn, false);
+      if (!conn.intentionalClose) {
+        scheduleReconnect(url, config);
+      }
+    });
+
+    socket.addEventListener('error', (err) => {
+      console.error(`[ndesign] WebSocket error for ${url}:`, err);
+      if (typeof config.onError === 'function') {
+        config.onError(url, err);
+      }
+    });
+  } catch (err) {
+    console.error(`[ndesign] Failed to create WebSocket for ${url}:`, err);
+    if (typeof config.onError === 'function') {
+      config.onError(url, err);
+    }
+    scheduleReconnect(url, config);
+  }
+}
+
+/**
+ * Schedule a reconnection attempt with exponential backoff.
+ * @param {string} url    — WebSocket URL
+ * @param {Object} config — NDesign configuration object
+ */
+function scheduleReconnect(url, config) {
+  const conn = connections.get(url);
+  if (!conn || conn.intentionalClose) return;
+
+  if (conn.retryTimer != null) {
+    clearTimeout(conn.retryTimer);
+  }
+
+  conn.retryTimer = setTimeout(() => {
+    conn.retryTimer = null;
+    connect(url, config);
+  }, conn.retryDelay);
+
+  // Exponential backoff: 1s -> 2s -> 4s -> 8s -> ... -> 30s max
+  conn.retryDelay = Math.min(conn.retryDelay * 2, MAX_RETRY_MS);
+}
+
+/**
+ * Initialize all data-nd-ws elements in the document.
+ * Elements sharing the same WebSocket URL share a single connection.
+ * @param {Object} config — NDesign configuration object
+ */
+export function initWebSockets(config) {
+  const elements = document.querySelectorAll('[data-nd-ws]');
+
+  for (const el of elements) {
+    const url = el.getAttribute('data-nd-ws');
+    if (!url) continue;
+
+    if (connections.has(url)) {
+      // Shared connection — just add this element
+      connections.get(url).elements.add(el);
+    } else {
+      // New connection
+      connections.set(url, {
+        socket: null,
+        elements: new Set([el]),
+        retryDelay: MIN_RETRY_MS,
+        retryTimer: null,
+        intentionalClose: false,
+      });
+      connect(url, config);
+    }
+
+    // Set initial disconnected state
+    el.classList.add('nd-ws-disconnected');
+  }
+}
+
+/**
+ * Tear down all WebSocket connections. Called on cleanup.
+ */
+export function destroyWebSockets() {
+  for (const [url, conn] of connections) {
+    conn.intentionalClose = true;
+    if (conn.retryTimer != null) {
+      clearTimeout(conn.retryTimer);
+    }
+    if (conn.socket) {
+      conn.socket.close();
+    }
+  }
+  connections.clear();
+}

@@ -1,0 +1,105 @@
+// ==========================================================================
+// Panels — .nd-panel, bordered and compact variants
+// ==========================================================================
+@use 'tokens' as *;
+
+.nd-panel {
+  padding: $nd-space-lg;
+  background: var(--nd-bg-surface);
+  border-radius: var(--nd-radius-md);
+  box-shadow: var(--nd-shadow-xs);
+  margin-bottom: $nd-space-md;
+
+  @include nd-below(sm) {
+    padding: $nd-space-md;
+  }
+
+  > *:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Panel Title
+// ---------------------------------------------------------------------------
+.nd-panel-title {
+  margin: 0 0 $nd-space-md;
+  font-size: $nd-font-lg;
+  font-weight: $nd-font-weight-semibold;
+  line-height: $nd-line-height-tight;
+  color: var(--nd-text-primary);
+}
+
+// ---------------------------------------------------------------------------
+// Bordered — adds visible border
+// ---------------------------------------------------------------------------
+.nd-panel-bordered {
+  border: 1px solid var(--nd-border);
+  box-shadow: none;
+}
+
+// ---------------------------------------------------------------------------
+// Compact — reduced padding
+// ---------------------------------------------------------------------------
+.nd-panel-compact {
+  padding: $nd-space-md;
+
+  @include nd-below(sm) {
+    padding: $nd-space-sm;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Panel Header / Footer (optional sections within a panel)
+// ---------------------------------------------------------------------------
+.nd-panel-header {
+  margin: (-$nd-space-lg) (-$nd-space-lg) $nd-space-lg;
+  padding: $nd-space-md $nd-space-lg;
+  border-bottom: 1px solid var(--nd-border);
+  background: var(--nd-bg-surface-raised);
+  border-radius: var(--nd-radius-md) var(--nd-radius-md) 0 0;
+
+  @include nd-below(sm) {
+    margin: (-$nd-space-md) (-$nd-space-md) $nd-space-md;
+    padding: $nd-space-sm $nd-space-md;
+  }
+}
+
+.nd-panel-footer {
+  margin: $nd-space-lg (-$nd-space-lg) (-$nd-space-lg);
+  padding: $nd-space-md $nd-space-lg;
+  border-top: 1px solid var(--nd-border);
+  background: var(--nd-bg-surface-raised);
+  border-radius: 0 0 var(--nd-radius-md) var(--nd-radius-md);
+
+  @include nd-below(sm) {
+    margin: $nd-space-md (-$nd-space-md) (-$nd-space-md);
+    padding: $nd-space-sm $nd-space-md;
+  }
+}
+
+// Compact header/footer adjustments
+.nd-panel-compact {
+  .nd-panel-header {
+    margin: (-$nd-space-md) (-$nd-space-md) $nd-space-md;
+    padding: $nd-space-sm $nd-space-md;
+  }
+
+  .nd-panel-footer {
+    margin: $nd-space-md (-$nd-space-md) (-$nd-space-md);
+    padding: $nd-space-sm $nd-space-md;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Panel Group — stacked panels with spacing
+// ---------------------------------------------------------------------------
+.nd-panel-group {
+  display: flex;
+  flex-direction: column;
+  gap: $nd-space-md;
+
+  .nd-panel {
+    margin-bottom: 0;
+  }
+}

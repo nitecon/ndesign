@@ -1,0 +1,740 @@
+// ==========================================================================
+// Forms — inputs, selects, textareas, checkboxes, radios, labels
+// ==========================================================================
+@use 'tokens' as *;
+
+// ---------------------------------------------------------------------------
+// Form Group — wraps label + input + help/error
+// ---------------------------------------------------------------------------
+.nd-form-group {
+  margin-bottom: $nd-space-md;
+  position: relative;
+}
+
+// ---------------------------------------------------------------------------
+// Label — tab style by default (sits on top of input like a folder tab)
+// Applies to <label> inside .nd-form-group, or any .nd-form-label
+// ---------------------------------------------------------------------------
+.nd-form-group > label,
+.nd-form-label {
+  display: inline-block;
+  margin-bottom: 0;
+  padding: $nd-space-xs $nd-space-md;
+  font-size: $nd-font-sm;
+  font-weight: $nd-font-weight-medium;
+  color: var(--nd-text-primary);
+  text-shadow: var(--nd-text-shadow);
+  line-height: $nd-line-height-normal;
+  background-color: var(--nd-label-bg);
+  border: 1px solid var(--nd-input-border);
+  border-bottom: none;
+  border-radius: $nd-radius-md $nd-radius-md 0 0;
+
+  // Required indicator
+  .nd-required {
+    color: var(--nd-danger);
+    margin-left: 2px;
+  }
+}
+
+// Input following a tab label loses its top-left radius to connect seamlessly
+.nd-form-label + .nd-form-input,
+.nd-form-label + input,
+.nd-form-label + textarea,
+.nd-form-label + select,
+.nd-form-group > label + input,
+.nd-form-group > label + textarea,
+.nd-form-group > label + select {
+  border-top-left-radius: 0;
+}
+
+// ---------------------------------------------------------------------------
+// Text Input — native elements styled by default
+// ---------------------------------------------------------------------------
+input[type='text'],
+input[type='email'],
+input[type='password'],
+input[type='number'],
+input[type='search'],
+input[type='url'],
+input[type='tel'],
+input[type='date'],
+input[type='datetime-local'],
+input[type='month'],
+input[type='week'],
+input[type='time'],
+textarea,
+select,
+.nd-form-input {
+  display: block;
+  width: 100%;
+  padding: $nd-space-sm $nd-space-md;
+  font-family: $nd-font-family-sans;
+  font-size: $nd-font-base;
+  font-weight: $nd-font-weight-normal;
+  line-height: $nd-line-height-normal;
+  color: var(--nd-text-primary);
+  background-color: var(--nd-input-bg);
+  border: 1px solid var(--nd-input-border);
+  border-radius: $nd-radius-md;
+  box-shadow: var(--nd-shadow-xs);
+  appearance: none;
+  transition:
+    border-color $nd-transition-fast,
+    box-shadow $nd-transition-fast,
+    background-color $nd-transition-fast;
+
+  &::placeholder {
+    color: var(--nd-text-muted);
+    opacity: 1;
+  }
+
+  &:hover {
+    border-color: var(--nd-input-border-hover);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--nd-accent);
+    box-shadow: 0 0 0 3px var(--nd-focus-ring);
+  }
+
+  &:disabled,
+  &.nd-disabled {
+    background-color: var(--nd-input-bg-disabled);
+    color: var(--nd-text-muted);
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  &[readonly] {
+    background-color: var(--nd-input-bg-disabled);
+    cursor: default;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Inline Attached — label on the left, input on the right, joined as one unit
+// Label: rounded left corners, square right
+// Input: square left corners, rounded right
+// ---------------------------------------------------------------------------
+.nd-form-group-attached {
+  display: flex;
+  align-items: stretch;
+
+  > label,
+  .nd-form-label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0;
+    padding: $nd-space-sm $nd-space-md;
+    border: 1px solid var(--nd-input-border);
+    border-right: none;
+    border-bottom: 1px solid var(--nd-input-border);
+    border-radius: $nd-radius-md 0 0 $nd-radius-md;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .nd-form-input,
+  input,
+  textarea,
+  select {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    flex: 1 1 auto;
+  }
+}
+
+// Error state on input
+.nd-form-group.nd-error .nd-form-input,
+.nd-form-group.nd-error input,
+.nd-form-group.nd-error textarea,
+.nd-form-group.nd-error select,
+.nd-form-input.nd-error {
+  border-color: var(--nd-danger);
+
+  &:focus {
+    box-shadow: 0 0 0 3px var(--nd-danger-ring);
+  }
+}
+
+// Success state on input
+.nd-form-group.nd-success .nd-form-input,
+.nd-form-group.nd-success input,
+.nd-form-group.nd-success textarea,
+.nd-form-group.nd-success select,
+.nd-form-input.nd-success {
+  border-color: var(--nd-success);
+
+  &:focus {
+    box-shadow: 0 0 0 3px var(--nd-success-ring);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Textarea
+// ---------------------------------------------------------------------------
+textarea.nd-form-input {
+  min-height: 6rem;
+  resize: vertical;
+  line-height: $nd-line-height-loose;
+}
+
+// ---------------------------------------------------------------------------
+// Select
+// ---------------------------------------------------------------------------
+select.nd-form-input {
+  padding-right: $nd-space-xl;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236c757d' d='M6 8.825L1.175 4 2.238 2.938 6 6.7l3.763-3.763L10.825 4z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right $nd-space-sm center;
+  background-size: 12px;
+  cursor: pointer;
+
+  &::-ms-expand {
+    display: none;
+  }
+
+  &[multiple] {
+    padding-right: $nd-space-md;
+    background-image: none;
+    height: auto;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Custom Select Dropdown — JS-upgraded <select> replacement
+// ---------------------------------------------------------------------------
+
+// Wrapper
+.nd-select {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+// Trigger — mirrors native input appearance exactly
+.nd-select-trigger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: $nd-space-sm $nd-space-md;
+  font-family: $nd-font-family-sans;
+  font-size: $nd-font-base;
+  font-weight: $nd-font-weight-normal;
+  line-height: $nd-line-height-normal;
+  color: var(--nd-text-primary);
+  text-align: left;
+  background-color: var(--nd-input-bg);
+  border: 1px solid var(--nd-input-border);
+  border-radius: $nd-radius-md;
+  box-shadow: var(--nd-shadow-xs);
+  cursor: pointer;
+  appearance: none;
+  transition:
+    border-color $nd-transition-fast,
+    box-shadow $nd-transition-fast,
+    background-color $nd-transition-fast;
+
+  &:hover {
+    border-color: var(--nd-input-border-hover);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--nd-accent);
+    box-shadow: 0 0 0 3px var(--nd-focus-ring);
+  }
+}
+
+// Show focus ring when dropdown is open
+.nd-select.nd-open .nd-select-trigger {
+  outline: none;
+  border-color: var(--nd-accent);
+  box-shadow: 0 0 0 3px var(--nd-focus-ring);
+}
+
+// Chevron arrow
+.nd-select-arrow {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid var(--nd-text-muted);
+  transition: transform $nd-transition-fast;
+}
+
+.nd-select.nd-open .nd-select-arrow {
+  transform: rotate(180deg);
+}
+
+// Dropdown panel
+.nd-select-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: $nd-z-dropdown;
+  margin: 2px 0 0;
+  background: var(--nd-bg-surface);
+  border: 1px solid var(--nd-input-border);
+  border-radius: $nd-radius-md;
+  box-shadow: var(--nd-shadow-md);
+  max-height: 15rem;
+  overflow-y: auto;
+  list-style: none;
+  padding: $nd-space-xs 0;
+}
+
+.nd-select.nd-open .nd-select-dropdown {
+  display: block;
+}
+
+// Individual option
+.nd-select-option {
+  padding: $nd-space-sm $nd-space-md;
+  cursor: pointer;
+  color: var(--nd-text-primary);
+  transition: background-color $nd-transition-fast;
+
+  &:hover,
+  &.nd-highlighted {
+    background: var(--nd-bg-surface-hover);
+  }
+
+  &.nd-selected {
+    background: var(--nd-accent);
+    color: var(--nd-accent-text);
+    font-weight: $nd-font-weight-medium;
+  }
+
+  &.nd-selected:hover {
+    background: var(--nd-accent-hover);
+  }
+
+  &.nd-disabled {
+    color: var(--nd-text-muted);
+    cursor: not-allowed;
+
+    &:hover {
+      background: transparent;
+    }
+  }
+
+  // Placeholder option (first option with empty value)
+  &[data-placeholder] {
+    color: var(--nd-text-muted);
+  }
+}
+
+// Disabled state
+.nd-select.nd-disabled .nd-select-trigger {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--nd-input-bg-disabled);
+}
+
+// ---------------------------------------------------------------------------
+// Custom Select — Form group integration
+// ---------------------------------------------------------------------------
+
+// Tab mode: label tab on top, trigger loses top-left radius
+.nd-form-label + .nd-select .nd-select-trigger,
+.nd-form-group > label + .nd-select .nd-select-trigger {
+  border-top-left-radius: 0;
+}
+
+// Attached mode: select fills remaining space, trigger loses left radii
+.nd-form-group-attached .nd-select {
+  flex: 1 1 auto;
+}
+
+.nd-form-group-attached .nd-select .nd-select-trigger {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+// ---------------------------------------------------------------------------
+// Help Text
+// ---------------------------------------------------------------------------
+.nd-form-help {
+  display: block;
+  margin-top: $nd-space-xs;
+  font-size: $nd-font-sm;
+  color: var(--nd-text-muted);
+  line-height: $nd-line-height-normal;
+}
+
+// ---------------------------------------------------------------------------
+// Error Text
+// ---------------------------------------------------------------------------
+.nd-form-error {
+  display: block;
+  margin-top: $nd-space-xs;
+  font-size: $nd-font-sm;
+  color: var(--nd-danger);
+  line-height: $nd-line-height-normal;
+  font-weight: $nd-font-weight-medium;
+}
+
+// Hidden by default when empty — shows only when content populated by JS
+.nd-form-error:empty {
+  display: none;
+}
+
+// ---------------------------------------------------------------------------
+// Check Group — bordered box for checkboxes/radios that connects to labels
+// Tab mode: label tab on top, bordered box below with top-left radius removed
+// Attached mode: label on left, bordered box on right
+// ---------------------------------------------------------------------------
+.nd-form-check-group {
+  border: 1px solid var(--nd-input-border);
+  border-radius: $nd-radius-md;
+  padding: $nd-space-sm $nd-space-md;
+  background-color: var(--nd-input-bg);
+  box-shadow: var(--nd-shadow-xs);
+
+  .nd-form-check:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Tab mode: label tab sits on top, box connects underneath
+.nd-form-label + .nd-form-check-group,
+.nd-form-group > label + .nd-form-check-group {
+  border-top-left-radius: 0;
+}
+
+// Attached mode: label is the left cap, check group is the right body
+.nd-form-group-attached {
+  .nd-form-check-group {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    flex: 1 1 auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $nd-space-md;
+
+    .nd-form-check {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Checkbox & Radio
+// ---------------------------------------------------------------------------
+.nd-form-check {
+  display: flex;
+  align-items: center;
+  gap: $nd-space-sm;
+  margin-bottom: $nd-space-sm;
+  cursor: pointer;
+  position: relative;
+}
+
+input[type='checkbox'],
+input[type='radio'],
+.nd-form-check-input {
+  appearance: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  background-color: var(--nd-input-bg);
+  border: 2px solid var(--nd-check-border, var(--nd-input-border));
+  box-shadow: var(--nd-shadow-xs);
+  cursor: pointer;
+  transition:
+    background-color $nd-transition-fast,
+    border-color $nd-transition-fast,
+    box-shadow $nd-transition-fast;
+
+  &:hover {
+    border-color: var(--nd-check-border-hover, var(--nd-accent));
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--nd-focus-ring);
+  }
+
+  &:checked {
+    background-color: var(--nd-accent);
+    border-color: var(--nd-accent);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Checkbox shape
+input[type='checkbox'],
+.nd-form-check-input[type='checkbox'] {
+  border-radius: $nd-radius-sm;
+
+  &:checked {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23fff' d='M10.28 3.28l-5.5 5.5a.75.75 0 01-1.06 0l-2.5-2.5a.75.75 0 011.06-1.06L4.25 7.19l4.97-4.97a.75.75 0 011.06 1.06z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 10px;
+  }
+
+  &:indeterminate {
+    background-color: var(--nd-accent);
+    border-color: var(--nd-accent);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Crect fill='%23fff' x='2' y='5' width='8' height='2' rx='1'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 10px;
+  }
+}
+
+// Radio shape
+input[type='radio'],
+.nd-form-check-input[type='radio'] {
+  border-radius: $nd-radius-circle;
+
+  &:checked {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Ccircle fill='%23fff' cx='6' cy='6' r='2.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 10px;
+  }
+}
+
+.nd-form-check > label,
+.nd-form-check-label {
+  font-size: $nd-font-base;
+  line-height: $nd-line-height-normal;
+  color: var(--nd-text-primary);
+  cursor: pointer;
+  user-select: none;
+  // Reset tab label styles when inside a check
+  display: inline;
+  padding: 0;
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+}
+
+.nd-form-check input:disabled ~ label,
+.nd-form-check-input:disabled ~ .nd-form-check-label {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+// ---------------------------------------------------------------------------
+// Toggle Switch — single <button> element
+// Usage: <button class="nd-switch" aria-pressed="false">Label</button>
+// ---------------------------------------------------------------------------
+.nd-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: $nd-space-sm;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: $nd-font-family-sans;
+  font-size: $nd-font-base;
+  color: var(--nd-text-primary);
+  user-select: none;
+  line-height: $nd-line-height-normal;
+
+  // Track (rendered via ::before)
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 2.75rem;
+    height: 1.5rem;
+    border-radius: $nd-radius-pill;
+    background-color: var(--nd-switch-bg-off, var(--nd-input-border));
+    position: relative;
+    flex-shrink: 0;
+    transition:
+      background-color $nd-transition-fast,
+      box-shadow $nd-transition-fast;
+  }
+
+  // Knob (rendered via ::after)
+  &::after {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 50%;
+    margin-top: -0.5625rem;
+    width: 1.125rem;
+    height: 1.125rem;
+    border-radius: $nd-radius-circle;
+    background: var(--nd-switch-knob, #ffffff);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: transform $nd-transition-fast;
+  }
+
+  // Need relative positioning for absolute knob
+  position: relative;
+
+  // --- States ---
+
+  &:hover::before {
+    background-color: var(--nd-switch-bg-off-hover, var(--nd-input-border-hover));
+  }
+
+  &:focus-visible::before {
+    box-shadow: 0 0 0 3px var(--nd-focus-ring);
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+
+  // Active / pressed state
+  &[aria-pressed='true'] {
+    &::before {
+      background-color: var(--nd-switch-bg-on, var(--nd-accent));
+    }
+
+    &::after {
+      transform: translateX(1.25rem);
+    }
+
+    &:hover::before {
+      background-color: var(--nd-switch-bg-on, var(--nd-accent));
+    }
+  }
+
+  // Disabled
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Small variant
+.nd-switch-sm {
+  font-size: $nd-font-sm;
+
+  &::before {
+    width: 2rem;
+    height: 1.125rem;
+  }
+
+  &::after {
+    width: 0.75rem;
+    height: 0.75rem;
+    left: 0.1875rem;
+    top: 50%;
+    margin-top: -0.375rem;
+  }
+
+  &[aria-pressed='true']::after {
+    transform: translateX(0.875rem);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Input Sizes
+// ---------------------------------------------------------------------------
+.nd-form-input-sm {
+  padding: $nd-space-xs $nd-space-sm;
+  font-size: $nd-font-sm;
+  border-radius: $nd-radius-sm;
+}
+
+.nd-form-input-lg {
+  padding: $nd-space-md $nd-space-lg;
+  font-size: $nd-font-lg;
+  border-radius: $nd-radius-md;
+}
+
+// ---------------------------------------------------------------------------
+// Input Group — prepend/append addons
+// ---------------------------------------------------------------------------
+.nd-input-group {
+  display: flex;
+  align-items: stretch;
+
+  .nd-form-input {
+    flex: 1 1 auto;
+    border-radius: 0;
+
+    &:first-child {
+      border-radius: $nd-radius-md 0 0 $nd-radius-md;
+    }
+
+    &:last-child {
+      border-radius: 0 $nd-radius-md $nd-radius-md 0;
+    }
+  }
+}
+
+.nd-input-group-text {
+  display: flex;
+  align-items: center;
+  padding: $nd-space-sm $nd-space-md;
+  font-size: $nd-font-base;
+  font-weight: $nd-font-weight-normal;
+  color: var(--nd-text-secondary);
+  background-color: var(--nd-bg-well);
+  border: 1px solid var(--nd-input-border);
+  white-space: nowrap;
+
+  &:first-child {
+    border-radius: $nd-radius-md 0 0 $nd-radius-md;
+    border-right: 0;
+  }
+
+  &:last-child {
+    border-radius: 0 $nd-radius-md $nd-radius-md 0;
+    border-left: 0;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Form Layout — inline
+// ---------------------------------------------------------------------------
+.nd-form-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: $nd-space-md;
+
+  .nd-form-group {
+    margin-bottom: 0;
+    flex: 1 1 auto;
+  }
+
+  @include nd-below(sm) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Form Fieldset
+// ---------------------------------------------------------------------------
+.nd-fieldset {
+  border: 1px solid var(--nd-border);
+  border-radius: $nd-radius-md;
+  padding: $nd-space-lg;
+  margin-bottom: $nd-space-lg;
+
+  @include nd-below(sm) {
+    padding: $nd-space-md;
+  }
+}
+
+.nd-fieldset-legend {
+  font-size: $nd-font-sm;
+  font-weight: $nd-font-weight-semibold;
+  color: var(--nd-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0 $nd-space-xs;
+}

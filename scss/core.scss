@@ -1,0 +1,49 @@
+// ==========================================================================
+// ndesign — Core Stylesheet
+// Compiles to ndesign.css / ndesign.min.css
+//
+// Import order matters:
+//   1. Tokens (variables, mixins, maps — no output)
+//   2. Reset (normalize, box-sizing — foundational)
+//   3. Typography (headings, body text, prose)
+//   4. Layout (grid, containers, flex helpers)
+//   5. Components (cards, panels, wells, buttons, forms, tables, alerts)
+//   6. Utilities (spacing, display, text helpers)
+//   7. Responsive (breakpoint overrides, hide/show)
+//   8. Transitions (keyframes, animation utilities)
+//
+// Theme files (themes/light.scss, themes/dark.scss) are compiled separately
+// and loaded via <link> tag swap — never imported here.
+// ==========================================================================
+
+// 1. Design Tokens (no CSS output — variables, maps, mixins only)
+// Loaded by each partial via @use 'tokens' as *
+
+// 2. Reset & Normalize
+@use 'reset';
+
+// 3. Typography
+@use 'typography';
+
+// 4. Layout
+@use 'layout';
+
+// 5. Components
+@use 'cards';
+@use 'panels';
+@use 'wells';
+@use 'buttons';
+@use 'forms';
+@use 'tables';
+@use 'alerts';
+@use 'badges';
+@use 'asides';
+
+// 6. Utilities
+@use 'utilities';
+
+// 7. Responsive Overrides
+@use 'responsive';
+
+// 8. Transitions & Animations
+@use 'transitions';

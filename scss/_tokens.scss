@@ -1,0 +1,123 @@
+// ==========================================================================
+// Tokens — Structural design tokens (SCSS variables only, no colors)
+// ==========================================================================
+@use 'sass:map';
+@use 'sass:math';
+
+// ---------------------------------------------------------------------------
+// Spacing Scale (4px base unit)
+// ---------------------------------------------------------------------------
+$nd-space-unit: 0.25rem !default; // 4px
+
+$nd-space-xs:  $nd-space-unit * 1  !default; //  4px
+$nd-space-sm:  $nd-space-unit * 2  !default; //  8px
+$nd-space-md:  $nd-space-unit * 4  !default; // 16px
+$nd-space-lg:  $nd-space-unit * 6  !default; // 24px
+$nd-space-xl:  $nd-space-unit * 8  !default; // 32px
+$nd-space-2xl: $nd-space-unit * 12 !default; // 48px
+$nd-space-3xl: $nd-space-unit * 16 !default; // 64px
+
+// Map for programmatic access (utilities, loops)
+$nd-spacers: (
+  0:   0,
+  xs:  $nd-space-xs,
+  sm:  $nd-space-sm,
+  md:  $nd-space-md,
+  lg:  $nd-space-lg,
+  xl:  $nd-space-xl,
+  2xl: $nd-space-2xl,
+  3xl: $nd-space-3xl,
+) !default;
+
+// ---------------------------------------------------------------------------
+// Typography Scale
+// ---------------------------------------------------------------------------
+$nd-font-xs:   0.75rem   !default; // 12px
+$nd-font-sm:   0.875rem  !default; // 14px
+$nd-font-base: 1rem      !default; // 16px
+$nd-font-lg:   1.125rem  !default; // 18px
+$nd-font-xl:   1.25rem   !default; // 20px
+$nd-font-2xl:  1.5rem    !default; // 24px
+$nd-font-3xl:  1.875rem  !default; // 30px
+$nd-font-4xl:  2.25rem   !default; // 36px
+$nd-font-5xl:  3rem      !default; // 48px
+
+$nd-line-height-tight:  1.25 !default;
+$nd-line-height-normal: 1.5  !default;
+$nd-line-height-loose:  1.75 !default;
+
+$nd-font-weight-normal:   400 !default;
+$nd-font-weight-medium:   500 !default;
+$nd-font-weight-semibold: 600 !default;
+$nd-font-weight-bold:     700 !default;
+
+$nd-font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !default;
+$nd-font-family-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace !default;
+
+// ---------------------------------------------------------------------------
+// Border Radii
+// ---------------------------------------------------------------------------
+$nd-radius-sm:     0.25rem !default; // 4px
+$nd-radius-md:     0.5rem  !default; // 8px
+$nd-radius-lg:     0.75rem !default; // 12px
+$nd-radius-xl:     1rem    !default; // 16px
+$nd-radius-pill:   9999px  !default;
+$nd-radius-circle: 50%     !default;
+
+// ---------------------------------------------------------------------------
+// Breakpoints (Desktop-First — max-width)
+// ---------------------------------------------------------------------------
+$nd-bp-xl: 1600px !default;   // ultrawide / 4K
+$nd-bp-lg: 1280px !default;   // standard desktop — mobile transition point
+$nd-bp-md:  992px !default;   // small desktop / landscape tablet
+$nd-bp-sm:  768px !default;   // tablet portrait
+$nd-bp-xs:  480px !default;   // phone
+
+$nd-breakpoints: (
+  xl: $nd-bp-xl,
+  lg: $nd-bp-lg,
+  md: $nd-bp-md,
+  sm: $nd-bp-sm,
+  xs: $nd-bp-xs,
+) !default;
+
+/// Desktop-first breakpoint mixin.
+/// Usage: @include nd-below(md) { ... }
+@mixin nd-below($bp) {
+  $value: map.get($nd-breakpoints, $bp);
+  @media (max-width: ($value - 1px)) {
+    @content;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Z-Index Scale
+// ---------------------------------------------------------------------------
+$nd-z-dropdown:  1000 !default;
+$nd-z-sticky:    1020 !default;
+$nd-z-fixed:     1030 !default;
+$nd-z-overlay:   1040 !default;
+$nd-z-modal:     1050 !default;
+$nd-z-popover:   1060 !default;
+$nd-z-tooltip:   1070 !default;
+$nd-z-toast:     1080 !default;
+
+// ---------------------------------------------------------------------------
+// Container Widths
+// ---------------------------------------------------------------------------
+$nd-container-min: 1280px !default;   // content won't shrink below this
+$nd-container-padding: 1.25rem !default; // 20px
+$nd-container-narrow-max: 900px !default; // opt-in for prose content
+
+// ---------------------------------------------------------------------------
+// Grid
+// ---------------------------------------------------------------------------
+$nd-grid-columns: 12 !default;
+$nd-grid-gutter:  $nd-space-md !default;
+
+// ---------------------------------------------------------------------------
+// Transition Tokens
+// ---------------------------------------------------------------------------
+$nd-transition-fast:   150ms ease !default;
+$nd-transition-normal: 250ms ease !default;
+$nd-transition-slow:   400ms ease !default;

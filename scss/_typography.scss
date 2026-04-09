@@ -1,0 +1,275 @@
+// ==========================================================================
+// Typography — Headings, body text, monospace, links, prose
+// ==========================================================================
+@use 'tokens' as *;
+
+// ---------------------------------------------------------------------------
+// Font Imports (Google Fonts — Inter + JetBrains Mono)
+// ---------------------------------------------------------------------------
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+// ---------------------------------------------------------------------------
+// Headings
+// ---------------------------------------------------------------------------
+h1, .nd-h1 {
+  font-size: $nd-font-4xl;
+  font-weight: $nd-font-weight-bold;
+  line-height: $nd-line-height-tight;
+  letter-spacing: -0.025em;
+  text-shadow: var(--nd-text-shadow-heading);
+  margin-bottom: $nd-space-md;
+
+  @include nd-below(md) {
+    font-size: $nd-font-3xl;
+  }
+}
+
+h2, .nd-h2 {
+  font-size: $nd-font-3xl;
+  font-weight: $nd-font-weight-bold;
+  line-height: $nd-line-height-tight;
+  letter-spacing: -0.02em;
+  text-shadow: var(--nd-text-shadow-heading);
+  margin-bottom: $nd-space-md;
+
+  @include nd-below(md) {
+    font-size: $nd-font-2xl;
+  }
+}
+
+h3, .nd-h3 {
+  font-size: $nd-font-2xl;
+  font-weight: $nd-font-weight-semibold;
+  line-height: $nd-line-height-tight;
+  letter-spacing: -0.015em;
+  text-shadow: var(--nd-text-shadow-heading);
+  margin-bottom: $nd-space-sm;
+
+  @include nd-below(md) {
+    font-size: $nd-font-xl;
+  }
+}
+
+h4, .nd-h4 {
+  font-size: $nd-font-xl;
+  font-weight: $nd-font-weight-semibold;
+  line-height: $nd-line-height-tight;
+  text-shadow: var(--nd-text-shadow);
+  margin-bottom: $nd-space-sm;
+
+  @include nd-below(md) {
+    font-size: $nd-font-lg;
+  }
+}
+
+h5, .nd-h5 {
+  font-size: $nd-font-lg;
+  font-weight: $nd-font-weight-medium;
+  line-height: $nd-line-height-normal;
+  text-shadow: var(--nd-text-shadow);
+  margin-bottom: $nd-space-sm;
+
+  @include nd-below(md) {
+    font-size: $nd-font-base;
+  }
+}
+
+h6, .nd-h6 {
+  font-size: $nd-font-base;
+  font-weight: $nd-font-weight-medium;
+  line-height: $nd-line-height-normal;
+  text-shadow: var(--nd-text-shadow);
+  margin-bottom: $nd-space-sm;
+  color: var(--nd-text-secondary);
+}
+
+// ---------------------------------------------------------------------------
+// Body Text
+// ---------------------------------------------------------------------------
+.nd-text-lead {
+  font-size: $nd-font-lg;
+  font-weight: $nd-font-weight-normal;
+  line-height: $nd-line-height-loose;
+  color: var(--nd-text-secondary);
+}
+
+.nd-text-small {
+  font-size: $nd-font-sm;
+  line-height: $nd-line-height-normal;
+}
+
+.nd-text-xs {
+  font-size: $nd-font-xs;
+  line-height: $nd-line-height-normal;
+}
+
+.nd-text-muted {
+  color: var(--nd-text-muted);
+}
+
+.nd-text-secondary {
+  color: var(--nd-text-secondary);
+}
+
+// ---------------------------------------------------------------------------
+// Monospace / Code
+// ---------------------------------------------------------------------------
+code {
+  font-family: $nd-font-family-mono;
+  font-size: 0.875em; // relative to parent
+  padding: 0.125em 0.375em;
+  background-color: var(--nd-bg-code);
+  color: var(--nd-text-code);
+  border-radius: $nd-radius-sm;
+}
+
+pre {
+  font-family: $nd-font-family-mono;
+  font-size: $nd-font-sm;
+  line-height: $nd-line-height-loose;
+  padding: $nd-space-md;
+  background-color: var(--nd-bg-code);
+  color: var(--nd-text-code);
+  border-radius: $nd-radius-md;
+  overflow-x: auto;
+
+  code {
+    padding: 0;
+    background: none;
+    border-radius: 0;
+    font-size: inherit;
+  }
+}
+
+kbd {
+  font-family: $nd-font-family-mono;
+  font-size: 0.875em;
+  padding: 0.125em 0.5em;
+  background-color: var(--nd-bg-kbd);
+  color: var(--nd-text-primary);
+  border: 1px solid var(--nd-border);
+  border-radius: $nd-radius-sm;
+  box-shadow: inset 0 -1px 0 var(--nd-border);
+}
+
+// ---------------------------------------------------------------------------
+// Links (enhanced)
+// ---------------------------------------------------------------------------
+.nd-link {
+  color: var(--nd-accent);
+  text-decoration: none;
+  transition: color $nd-transition-fast;
+
+  &:hover {
+    color: var(--nd-accent-hover);
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--nd-focus-ring);
+    outline-offset: 2px;
+    border-radius: $nd-radius-sm;
+  }
+
+  &:active {
+    color: var(--nd-accent-active);
+  }
+}
+
+.nd-link-muted {
+  color: var(--nd-text-muted);
+  text-decoration: none;
+  transition: color $nd-transition-fast;
+
+  &:hover {
+    color: var(--nd-text-primary);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Prose — Long-form content container
+// ---------------------------------------------------------------------------
+.nd-prose {
+  font-size: $nd-font-base;
+  line-height: $nd-line-height-loose;
+  color: var(--nd-text-primary);
+  max-width: 65ch;
+
+  p {
+    margin-bottom: $nd-space-md;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    margin-top: $nd-space-xl;
+  }
+
+  h1 { margin-bottom: $nd-space-md; }
+  h2 { margin-bottom: $nd-space-md; }
+  h3 { margin-bottom: $nd-space-sm; }
+
+  a {
+    color: var(--nd-accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+
+    &:hover {
+      color: var(--nd-accent-hover);
+    }
+  }
+
+  ul, ol {
+    margin-bottom: $nd-space-md;
+    padding-left: $nd-space-lg;
+
+    li {
+      margin-bottom: $nd-space-xs;
+    }
+  }
+
+  blockquote {
+    margin: $nd-space-lg 0;
+    padding: $nd-space-sm $nd-space-lg;
+    border-left: 4px solid var(--nd-accent);
+    color: var(--nd-text-secondary);
+    font-style: italic;
+  }
+
+  img {
+    margin: $nd-space-lg 0;
+    border-radius: $nd-radius-md;
+  }
+
+  hr {
+    margin: $nd-space-xl 0;
+    border-color: var(--nd-border);
+  }
+
+  pre {
+    margin: $nd-space-lg 0;
+  }
+
+  table {
+    width: 100%;
+    margin: $nd-space-lg 0;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mark / Highlight
+// ---------------------------------------------------------------------------
+mark,
+.nd-mark {
+  background-color: var(--nd-bg-mark);
+  color: var(--nd-text-primary);
+  padding: 0.125em 0.25em;
+  border-radius: $nd-radius-sm;
+}
+
+// ---------------------------------------------------------------------------
+// Abbreviation
+// ---------------------------------------------------------------------------
+abbr[title] {
+  text-decoration: underline dotted;
+  cursor: help;
+  text-decoration-thickness: 1px;
+}

@@ -1,0 +1,197 @@
+// ==========================================================================
+// Buttons — native <button> styled by default, modifiers via classes
+// ==========================================================================
+@use 'tokens' as *;
+
+// ---------------------------------------------------------------------------
+// Base Button — applied to all <button> elements and .nd-btn
+// ---------------------------------------------------------------------------
+button,
+.nd-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $nd-space-xs;
+  padding: $nd-space-sm $nd-space-md;
+  font-family: $nd-font-family-sans;
+  font-size: $nd-font-base;
+  font-weight: $nd-font-weight-medium;
+  line-height: $nd-line-height-tight;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid var(--nd-btn-border, transparent);
+  border-radius: $nd-radius-md;
+  background-color: var(--nd-btn-bg);
+  color: var(--nd-btn-text);
+  box-shadow: var(--nd-shadow-xs);
+  text-shadow: var(--nd-text-shadow);
+  transition:
+    background-color $nd-transition-fast,
+    border-color $nd-transition-fast,
+    color $nd-transition-fast,
+    box-shadow $nd-transition-fast,
+    transform $nd-transition-fast;
+
+  &:hover {
+    background-color: var(--nd-btn-bg-hover);
+    border-color: var(--nd-btn-border-hover, transparent);
+    color: var(--nd-btn-text-hover, var(--nd-btn-text));
+    text-decoration: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--nd-focus-ring);
+    outline-offset: 2px;
+  }
+
+  &:active {
+    background-color: var(--nd-btn-bg-active, var(--nd-btn-bg-hover));
+    transform: translateY(1px);
+  }
+
+  &:disabled,
+  &.nd-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Primary
+// ---------------------------------------------------------------------------
+.nd-btn-primary {
+  --nd-btn-bg: var(--nd-accent);
+  --nd-btn-bg-hover: var(--nd-accent-hover);
+  --nd-btn-bg-active: var(--nd-accent-active);
+  --nd-btn-text: var(--nd-accent-text);
+  --nd-btn-text-hover: var(--nd-accent-text);
+  --nd-btn-border: var(--nd-accent);
+  --nd-btn-border-hover: var(--nd-accent-hover);
+}
+
+// ---------------------------------------------------------------------------
+// Secondary
+// ---------------------------------------------------------------------------
+.nd-btn-secondary {
+  --nd-btn-bg: var(--nd-bg-surface);
+  --nd-btn-bg-hover: var(--nd-bg-surface-hover);
+  --nd-btn-bg-active: var(--nd-bg-surface-active);
+  --nd-btn-text: var(--nd-text-primary);
+  --nd-btn-border: var(--nd-border);
+  --nd-btn-border-hover: var(--nd-border-hover);
+}
+
+// ---------------------------------------------------------------------------
+// Danger
+// ---------------------------------------------------------------------------
+.nd-btn-danger {
+  --nd-btn-bg: var(--nd-danger);
+  --nd-btn-bg-hover: var(--nd-danger-hover);
+  --nd-btn-bg-active: var(--nd-danger-active);
+  --nd-btn-text: var(--nd-danger-text);
+  --nd-btn-text-hover: var(--nd-danger-text);
+  --nd-btn-border: var(--nd-danger);
+  --nd-btn-border-hover: var(--nd-danger-hover);
+}
+
+// ---------------------------------------------------------------------------
+// Ghost — transparent background, text only
+// ---------------------------------------------------------------------------
+.nd-btn-ghost {
+  --nd-btn-bg: transparent;
+  --nd-btn-bg-hover: var(--nd-bg-surface-hover);
+  --nd-btn-bg-active: var(--nd-bg-surface-active);
+  --nd-btn-text: var(--nd-text-primary);
+  --nd-btn-border: transparent;
+  --nd-btn-border-hover: transparent;
+}
+
+// ---------------------------------------------------------------------------
+// Size Variants
+// ---------------------------------------------------------------------------
+.nd-btn-sm {
+  padding: $nd-space-xs $nd-space-sm;
+  font-size: $nd-font-sm;
+  border-radius: $nd-radius-sm;
+}
+
+.nd-btn-lg {
+  padding: $nd-space-md $nd-space-xl;
+  font-size: $nd-font-lg;
+  border-radius: $nd-radius-md;
+}
+
+// ---------------------------------------------------------------------------
+// Block Button — full width
+// ---------------------------------------------------------------------------
+.nd-btn-block {
+  display: flex;
+  width: 100%;
+}
+
+// ---------------------------------------------------------------------------
+// Icon Button — square, centered icon
+// ---------------------------------------------------------------------------
+.nd-btn-icon {
+  padding: $nd-space-sm;
+  line-height: 1;
+
+  &.nd-btn-sm {
+    padding: $nd-space-xs;
+  }
+
+  &.nd-btn-lg {
+    padding: $nd-space-md;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Button Group
+// ---------------------------------------------------------------------------
+.nd-btn-group {
+  display: inline-flex;
+
+  .nd-btn {
+    border-radius: 0;
+
+    &:first-child {
+      border-radius: $nd-radius-md 0 0 $nd-radius-md;
+    }
+
+    &:last-child {
+      border-radius: 0 $nd-radius-md $nd-radius-md 0;
+    }
+
+    + .nd-btn {
+      margin-left: -1px;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Loading State
+// ---------------------------------------------------------------------------
+.nd-btn.nd-loading {
+  position: relative;
+  color: transparent;
+  pointer-events: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1em;
+    height: 1em;
+    margin: -0.5em 0 0 -0.5em;
+    border: 2px solid var(--nd-btn-text);
+    border-right-color: transparent;
+    border-radius: $nd-radius-circle;
+    animation: nd-spin 600ms linear infinite;
+  }
+}

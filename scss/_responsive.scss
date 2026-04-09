@@ -1,0 +1,165 @@
+// ==========================================================================
+// Responsive — breakpoint-specific overrides, hide/show utilities
+// ==========================================================================
+@use 'tokens' as *;
+
+// ---------------------------------------------------------------------------
+// Hide at Breakpoint (desktop-first: hidden BELOW the breakpoint)
+// .nd-hide-below-md  → hidden below 768px
+// .nd-hide-below-sm  → hidden below 576px
+// .nd-hide-below-lg  → hidden below 992px
+// ---------------------------------------------------------------------------
+@each $bp-name, $bp-value in $nd-breakpoints {
+  @include nd-below($bp-name) {
+    .nd-hide-below-#{$bp-name} {
+      display: none;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Show at Breakpoint (desktop-first: visible ONLY below the breakpoint)
+// .nd-show-below-md  → hidden by default, visible below 768px
+// ---------------------------------------------------------------------------
+@each $bp-name, $bp-value in $nd-breakpoints {
+  .nd-show-below-#{$bp-name} {
+    display: none;
+  }
+
+  @include nd-below($bp-name) {
+    .nd-show-below-#{$bp-name} {
+      display: block;
+    }
+
+    .nd-show-below-#{$bp-name}-flex {
+      display: flex;
+    }
+
+    .nd-show-below-#{$bp-name}-inline {
+      display: inline;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Responsive Text Alignment
+// ---------------------------------------------------------------------------
+@each $bp-name, $bp-value in $nd-breakpoints {
+  @include nd-below($bp-name) {
+    .nd-text-#{$bp-name}-left   { text-align: left; }
+    .nd-text-#{$bp-name}-center { text-align: center; }
+    .nd-text-#{$bp-name}-right  { text-align: right; }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Responsive Flex Direction
+// ---------------------------------------------------------------------------
+@each $bp-name, $bp-value in $nd-breakpoints {
+  @include nd-below($bp-name) {
+    .nd-flex-#{$bp-name}-col {
+      flex-direction: column;
+    }
+
+    .nd-flex-#{$bp-name}-row {
+      flex-direction: row;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Responsive Spacing Overrides
+// Common pattern: stack elements vertically on mobile with adjusted spacing
+// ---------------------------------------------------------------------------
+@include nd-below(md) {
+  .nd-stack-md {
+    flex-direction: column;
+
+    > * + * {
+      margin-top: $nd-space-md;
+    }
+  }
+}
+
+@include nd-below(sm) {
+  .nd-stack-sm {
+    flex-direction: column;
+
+    > * + * {
+      margin-top: $nd-space-md;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Responsive Width Overrides
+// ---------------------------------------------------------------------------
+@each $bp-name, $bp-value in $nd-breakpoints {
+  @include nd-below($bp-name) {
+    .nd-w-#{$bp-name}-full {
+      width: 100%;
+    }
+
+    .nd-w-#{$bp-name}-auto {
+      width: auto;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Responsive Container Adjustments
+// ---------------------------------------------------------------------------
+@include nd-below(sm) {
+  // Tighter padding on small screens for all containers
+  .nd-container,
+  .nd-container-fluid {
+    padding-left: $nd-space-sm;
+    padding-right: $nd-space-sm;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Responsive Grid — full-width stack on mobile by default
+// ---------------------------------------------------------------------------
+@include nd-below(sm) {
+  .nd-row-stack-sm > [class*='nd-col'] {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+@include nd-below(md) {
+  .nd-row-stack-md > [class*='nd-col'] {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Print
+// ---------------------------------------------------------------------------
+@media print {
+  .nd-hide-print {
+    display: none;
+  }
+
+  .nd-show-print {
+    display: block;
+  }
+
+  body {
+    color: #000;
+    background: #fff;
+  }
+
+  .nd-card,
+  .nd-panel,
+  .nd-well {
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+}

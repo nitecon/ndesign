@@ -1,0 +1,58 @@
+// ==========================================================================
+// Wells — .nd-well, sm/lg size variants
+// ==========================================================================
+@use 'tokens' as *;
+
+.nd-well {
+  padding: $nd-space-lg;
+  background: var(--nd-bg-well);
+  border: 1px solid var(--nd-border-well);
+  border-radius: var(--nd-radius-md);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
+  color: var(--nd-text-primary);
+  margin-bottom: $nd-space-md;
+
+  @include nd-below(sm) {
+    padding: $nd-space-md;
+  }
+
+  > *:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Size Variants
+// ---------------------------------------------------------------------------
+.nd-well-sm {
+  padding: $nd-space-md;
+
+  @include nd-below(sm) {
+    padding: $nd-space-sm;
+  }
+}
+
+.nd-well-lg {
+  padding: $nd-space-xl;
+
+  @include nd-below(sm) {
+    padding: $nd-space-lg;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Well Title
+// ---------------------------------------------------------------------------
+.nd-well-title {
+  margin: 0 0 $nd-space-sm;
+  font-size: $nd-font-base;
+  font-weight: $nd-font-weight-semibold;
+  color: var(--nd-text-primary);
+}
+
+// ---------------------------------------------------------------------------
+// Inline Well — used inside other containers (no margin)
+// ---------------------------------------------------------------------------
+.nd-well-inline {
+  margin-bottom: 0;
+}

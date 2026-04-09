@@ -1,0 +1,82 @@
+// ==========================================================================
+// Badges
+// Inline labels for status, counts, and metadata.
+// ==========================================================================
+
+@use 'tokens' as *;
+
+// ---------------------------------------------------------------------------
+// Base badge
+// ---------------------------------------------------------------------------
+.nd-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $nd-space-xs $nd-space-sm;
+  font-size: $nd-font-xs;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  border-radius: $nd-radius-pill;
+  background: var(--nd-bg-badge, var(--nd-bg-well));
+  color: var(--nd-text-badge, var(--nd-text-primary));
+  box-shadow: var(--nd-shadow-xs);
+  text-shadow: var(--nd-text-shadow);
+  vertical-align: middle;
+}
+
+// ---------------------------------------------------------------------------
+// Semantic variants
+// ---------------------------------------------------------------------------
+.nd-badge-primary {
+  background: var(--nd-accent);
+  color: var(--nd-text-on-accent, #fff);
+}
+
+.nd-badge-secondary {
+  background: var(--nd-bg-well);
+  color: var(--nd-text-secondary);
+}
+
+.nd-badge-success {
+  background: var(--nd-success);
+  color: #fff;
+}
+
+.nd-badge-warning {
+  background: var(--nd-warning);
+  color: #212529;
+}
+
+.nd-badge-danger {
+  background: var(--nd-danger);
+  color: #fff;
+}
+
+.nd-badge-info {
+  background: var(--nd-info);
+  color: #212529;
+}
+
+// ---------------------------------------------------------------------------
+// Size variants
+// ---------------------------------------------------------------------------
+.nd-badge-sm {
+  padding: 0.125rem $nd-space-xs;
+  font-size: 0.625rem;
+}
+
+.nd-badge-lg {
+  padding: $nd-space-xs $nd-space-md;
+  font-size: $nd-font-sm;
+}
+
+// ---------------------------------------------------------------------------
+// Dot badge (notification indicator, no text)
+// ---------------------------------------------------------------------------
+.nd-badge-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  padding: 0;
+  border-radius: $nd-radius-pill;
+}

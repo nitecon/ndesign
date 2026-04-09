@@ -1,0 +1,176 @@
+// ==========================================================================
+// Tables — .nd-table, striped, hover, responsive wrapper
+// ==========================================================================
+@use 'tokens' as *;
+
+// ---------------------------------------------------------------------------
+// Base Table — native <table> styled by default
+// ---------------------------------------------------------------------------
+table,
+.nd-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  font-size: $nd-font-base;
+  color: var(--nd-text-primary);
+  background-color: var(--nd-bg-surface);
+
+  th,
+  td {
+    padding: $nd-space-sm $nd-space-md;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--nd-border);
+  }
+
+  th {
+    font-weight: $nd-font-weight-semibold;
+    font-size: $nd-font-sm;
+    color: var(--nd-text-secondary);
+    text-shadow: var(--nd-text-shadow);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    vertical-align: bottom;
+    border-bottom-width: 2px;
+  }
+
+  tbody tr:last-child {
+    td {
+      border-bottom: 0;
+    }
+  }
+
+  // Align caption
+  caption {
+    padding: $nd-space-sm $nd-space-md;
+    font-size: $nd-font-sm;
+    color: var(--nd-text-muted);
+    text-align: left;
+    caption-side: bottom;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Striped Rows
+// ---------------------------------------------------------------------------
+.nd-table-striped {
+  tbody tr:nth-child(even) {
+    background-color: var(--nd-bg-table-stripe);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Hover Rows
+// ---------------------------------------------------------------------------
+.nd-table-hover {
+  tbody tr {
+    transition: background-color $nd-transition-fast;
+
+    &:hover {
+      background-color: var(--nd-bg-table-hover);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Bordered
+// ---------------------------------------------------------------------------
+.nd-table-bordered {
+  border: 1px solid var(--nd-border);
+  border-radius: var(--nd-radius-md);
+  overflow: hidden;
+
+  th,
+  td {
+    border: 1px solid var(--nd-border);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Compact
+// ---------------------------------------------------------------------------
+.nd-table-compact {
+  th,
+  td {
+    padding: $nd-space-xs $nd-space-sm;
+    font-size: $nd-font-sm;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Responsive Wrapper
+// ---------------------------------------------------------------------------
+.nd-table-responsive {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--nd-border);
+  border-radius: var(--nd-radius-md);
+  box-shadow: var(--nd-shadow-xs);
+
+  .nd-table {
+    margin-bottom: 0;
+
+    // Prevent double border with wrapper
+    th:first-child,
+    td:first-child {
+      border-left: 0;
+    }
+
+    th:last-child,
+    td:last-child {
+      border-right: 0;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Sortable Column Header (visual only — JS handles logic)
+// ---------------------------------------------------------------------------
+.nd-table-sortable {
+  th[data-nd-sort] {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    padding-right: $nd-space-lg;
+    transition: color $nd-transition-fast;
+
+    &:hover {
+      color: var(--nd-accent);
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      right: $nd-space-sm;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 4px solid var(--nd-text-muted);
+    }
+  }
+
+  th.nd-sort-asc::after {
+    border-top: 0;
+    border-bottom: 4px solid var(--nd-accent);
+  }
+
+  th.nd-sort-desc::after {
+    border-top: 4px solid var(--nd-accent);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Empty State
+// ---------------------------------------------------------------------------
+.nd-table-empty {
+  text-align: center;
+  padding: $nd-space-2xl $nd-space-md;
+  color: var(--nd-text-muted);
+  font-style: italic;
+}

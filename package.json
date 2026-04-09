@@ -1,0 +1,22 @@
+{
+  "name": "ndesign",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Lightweight, framework-free frontend design system and binding runtime",
+  "scripts": {
+    "build:js": "esbuild js/ndesign.js --bundle --minify --outfile=dist/ndesign.min.js --format=iife --global-name=NDesign",
+    "build:js:dev": "esbuild js/ndesign.js --bundle --outfile=dist/ndesign.js --format=iife --global-name=NDesign --sourcemap",
+    "build:css": "sass scss/core.scss dist/ndesign.min.css --style=compressed --no-source-map",
+    "build:css:dev": "sass scss/core.scss dist/ndesign.css --source-map",
+    "build:themes": "sass scss/themes/light.scss dist/themes/light.min.css --style=compressed --no-source-map && sass scss/themes/dark.scss dist/themes/dark.min.css --style=compressed --no-source-map",
+    "build:themes:dev": "sass scss/themes/light.scss dist/themes/light.css --source-map && sass scss/themes/dark.scss dist/themes/dark.css --source-map",
+    "build": "npm run build:js && npm run build:css && npm run build:themes",
+    "build:dev": "npm run build:js:dev && npm run build:css:dev && npm run build:themes:dev",
+    "watch:css": "sass --watch scss:dist",
+    "watch:js": "esbuild js/ndesign.js --bundle --outfile=dist/ndesign.js --format=iife --global-name=NDesign --sourcemap --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "sass": "^1.80.0"
+  }
+}

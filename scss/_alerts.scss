@@ -1,0 +1,156 @@
+// ==========================================================================
+// Alerts — .nd-alert with success/warning/error/info, dismissible
+// ==========================================================================
+@use 'tokens' as *;
+
+// ---------------------------------------------------------------------------
+// Base Alert
+// ---------------------------------------------------------------------------
+.nd-alert {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: $nd-space-sm;
+  padding: $nd-space-md $nd-space-lg;
+  font-size: $nd-font-base;
+  line-height: $nd-line-height-normal;
+  border: 1px solid var(--nd-alert-border);
+  border-radius: $nd-radius-md;
+  box-shadow: var(--nd-shadow-xs);
+  background-color: var(--nd-alert-bg);
+  color: var(--nd-alert-text);
+  margin-bottom: $nd-space-md;
+
+  @include nd-below(sm) {
+    padding: $nd-space-sm $nd-space-md;
+    font-size: $nd-font-sm;
+  }
+
+  > *:last-child {
+    margin-bottom: 0;
+  }
+
+  // Alert title (optional)
+  strong {
+    font-weight: $nd-font-weight-semibold;
+  }
+
+  // Links inside alerts inherit alert color but underline
+  a {
+    color: inherit;
+    font-weight: $nd-font-weight-semibold;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Alert Content — text block
+// ---------------------------------------------------------------------------
+.nd-alert-content {
+  flex: 1 1 auto;
+}
+
+.nd-alert-title {
+  font-weight: $nd-font-weight-semibold;
+  margin-bottom: $nd-space-xs;
+}
+
+// ---------------------------------------------------------------------------
+// Success
+// ---------------------------------------------------------------------------
+.nd-alert-success {
+  --nd-alert-bg: var(--nd-success-bg);
+  --nd-alert-border: var(--nd-success-border);
+  --nd-alert-text: var(--nd-success-text);
+}
+
+// ---------------------------------------------------------------------------
+// Warning
+// ---------------------------------------------------------------------------
+.nd-alert-warning {
+  --nd-alert-bg: var(--nd-warning-bg);
+  --nd-alert-border: var(--nd-warning-border);
+  --nd-alert-text: var(--nd-warning-text);
+}
+
+// ---------------------------------------------------------------------------
+// Error
+// ---------------------------------------------------------------------------
+.nd-alert-error {
+  --nd-alert-bg: var(--nd-error-bg);
+  --nd-alert-border: var(--nd-error-border);
+  --nd-alert-text: var(--nd-error-text);
+}
+
+// ---------------------------------------------------------------------------
+// Info
+// ---------------------------------------------------------------------------
+.nd-alert-info {
+  --nd-alert-bg: var(--nd-info-bg);
+  --nd-alert-border: var(--nd-info-border);
+  --nd-alert-text: var(--nd-info-text);
+}
+
+// ---------------------------------------------------------------------------
+// Dismissible
+// ---------------------------------------------------------------------------
+.nd-alert-dismissible {
+  padding-right: $nd-space-2xl;
+}
+
+.nd-alert-close {
+  position: absolute;
+  top: $nd-space-md;
+  right: $nd-space-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: $nd-radius-sm;
+  color: var(--nd-alert-text);
+  opacity: 0.6;
+  cursor: pointer;
+  font-size: $nd-font-lg;
+  line-height: 1;
+  transition: opacity $nd-transition-fast;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--nd-focus-ring);
+    outline-offset: 2px;
+  }
+
+  // Default close icon using CSS
+  &::before {
+    content: '\00D7'; // multiplication sign (x)
+    font-size: 1.25rem;
+    font-weight: $nd-font-weight-bold;
+  }
+
+  @include nd-below(sm) {
+    top: $nd-space-sm;
+    right: $nd-space-sm;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Alert with Icon (optional icon slot)
+// ---------------------------------------------------------------------------
+.nd-alert-icon {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.125rem; // align with first line of text
+}

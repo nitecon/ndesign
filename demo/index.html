@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ndesign Component Showcase</title>
+  <link rel="stylesheet" href="../dist/ndesign.css">
+  <link rel="stylesheet" href="../dist/themes/light.css" id="nd-theme">
+  <style>
+    /* Demo-only styles -- not part of ndesign */
+    .demo-section {
+      margin-bottom: 3rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--nd-border);
+    }
+    .demo-section:last-child {
+      border-bottom: none;
+    }
+    .demo-label {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+      color: var(--nd-text-muted);
+      margin-bottom: 0.5rem;
+    }
+    .demo-grid-cell {
+      background: var(--nd-bg-well);
+      border: 1px solid var(--nd-border);
+      padding: 0.75rem;
+      text-align: center;
+      font-size: 0.875rem;
+      border-radius: 4px;
+    }
+    .demo-swatch {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-right: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .demo-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 0;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid var(--nd-border);
+    }
+    .demo-header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+    .demo-header h1 span {
+      font-weight: 400;
+      color: var(--nd-text-secondary);
+    }
+    .demo-btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+    <!-- ================================================================== -->
+    <!-- Header                                                             -->
+    <!-- ================================================================== -->
+    <header class="demo-header">
+      <h1>ndesign <span>Component Showcase</span></h1>
+      <button class="nd-btn-secondary" onclick="toggleTheme()" aria-label="Toggle theme">
+        Toggle Theme
+      </button>
+    </header>
+
+    <!-- ================================================================== -->
+    <!-- Typography                                                         -->
+    <!-- ================================================================== -->
+    <section class="demo-section" id="typography">
+      <h2>Typography</h2>
+
+      <div class="demo-label">.h1 &ndash; .h6</div>
+      <h1>Heading 1 &mdash; The quick brown fox</h1>
+      <h2>Heading 2 &mdash; The quick brown fox</h2>
+      <h3>Heading 3 &mdash; The quick brown fox</h3>
+      <h4>Heading 4 &mdash; The quick brown fox</h4>
+      <h5>Heading 5 &mdash; The quick brown fox</h5>
+      <h6>Heading 6 &mdash; The quick brown fox</h6>
+
+      <hr>
+
+      <div class="demo-label">Body text</div>
+      <p>
+        This is a standard paragraph of body text. ndesign uses <strong>Inter</strong> as its
+        primary sans-serif typeface and <strong>JetBrains Mono</strong> for monospace contexts.
+        The base font size is <code>1rem</code> (16px) with a line-height of 1.5.
+      </p>
+
+      <div class="demo-label">Monospace / code</div>
+      <pre><code>const NDesign = {
+  version: '0.1.0',
+  init() {
+    console.log('ndesign initialized');
+  }
+};</code></pre>
+
+      <div class="demo-label">Inline code</div>
+      <p>
+        Use <code>data-nd-bind="/api/users"</code> to bind an element to a REST endpoint.
+      </p>
+
+      <div class="demo-label">Links</div>
+      <p>
+        Visit the <a href="#typography">Typography section</a> or check the
+        <a href="#buttons">Buttons section</a> below. Links use
+        <code>var(--nd-accent)</code> and darken on hover.
+      </p>
+
+      <div class="demo-label">Prose block / blockquote</div>
+      <blockquote>
+        "The backend is always authoritative. The frontend is a thin presentation and binding
+        layer delivered via CDN." &mdash; ndesign Architecture Spec
+      </blockquote>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Buttons                                                            -->
+    <!-- ================================================================== -->
+    <section class="demo-section" id="buttons">
+      <h2>Buttons</h2>
+
+      <div class="demo-label">Primary</div>
+      <div class="demo-btn-row">
+        <button class="nd-btn-primary nd-btn-sm">Small</button>
+        <button class="nd-btn-primary">Default</button>
+        <button class="nd-btn-primary nd-btn-lg">Large</button>
+        <button class="nd-btn-primary" disabled>Disabled</button>
+      </div>
+
+      <div class="demo-label">Secondary</div>
+      <div class="demo-btn-row">
+        <button class="nd-btn-secondary nd-btn-sm">Small</button>
+        <button class="nd-btn-secondary">Default</button>
+        <button class="nd-btn-secondary nd-btn-lg">Large</button>
+        <button class="nd-btn-secondary" disabled>Disabled</button>
+      </div>
+
+      <div class="demo-label">Danger</div>
+      <div class="demo-btn-row">
+        <button class="nd-btn-danger nd-btn-sm">Small</button>
+        <button class="nd-btn-danger">Default</button>
+        <button class="nd-btn-danger nd-btn-lg">Large</button>
+        <button class="nd-btn-danger" disabled>Disabled</button>
+      </div>
+
+      <div class="demo-label">Ghost</div>
+      <div class="demo-btn-row">
+        <button class="nd-btn-ghost nd-btn-sm">Small</button>
+        <button class="nd-btn-ghost">Default</button>
+        <button class="nd-btn-ghost nd-btn-lg">Large</button>
+        <button class="nd-btn-ghost" disabled>Disabled</button>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Cards                                                              -->
+    <!-- ================================================================== -->
+    <section class="demo-section" id="cards">
+      <h2>Cards</h2>
+
+      <div class="nd-row">
+        <div class="nd-col-4">
+          <div class="nd-card">
+            <div class="nd-card-header">
+              <h3>Standard Card</h3>
+            </div>
+            <div class="nd-card-body">
+              <p>This card has a header, body, and footer. It uses the default card styling with <code>var(--nd-bg-surface)</code> background.</p>
+            </div>
+            <div class="nd-card-footer">
+              <button class="nd-btn-primary nd-btn-sm">Action</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="nd-col-4">
+          <div class="nd-card">
+            <div class="nd-card-body">
+              <h3>Body-Only Card</h3>
+              <p>A minimal card with just a body section. Great for simple content blocks or callouts.</p>
+              <a href="#cards">Learn more</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="nd-col-4">
+          <div class="nd-card nd-card-flush">
+            <div class="nd-card-header">
+              <h3>Flush Card</h3>
+            </div>
+            <div class="nd-card-body">
+              <p>The <code>.nd-card-flush</code> modifier removes internal padding for edge-to-edge content like images or tables.</p>
+            </div>
+            <div class="nd-card-footer">
+              <button class="nd-btn-secondary nd-btn-sm">Details</button>
+              <button class="nd-btn-ghost nd-btn-sm">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Panels                                                             -->
+    <!-- ================================================================== -->
+    <section class="demo-section" id="panels">
+      <h2>Panels</h2>
+
+      <div class="nd-row">
+        <div class="nd-col-6">
+          <div class="nd-panel">
+            <h3>Default Panel</h3>
+            <p>A panel is a simple content container. It provides minimal visual structure for grouping related content without the full card treatment.</p>
+          </div>
+        </div>
+
+        <div class="nd-col-6">
+          <div class="nd-panel nd-panel-bordered">
+            <h3>Bordered Panel</h3>
+            <p>The <code>.nd-panel-bordered</code> modifier adds a visible border for stronger visual separation.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="nd-row">
+        <div class="nd-col-12">
+          <div class="nd-panel nd-panel-compact">
+            <h3>Compact Panel</h3>
+            <p>The <code>.nd-panel-compact</code> modifier reduces padding for tighter layouts.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Wells                                                              -->
+    <!-- ================================================================== -->
+    <section class="demo-section" id="wells">
+      <h2>Wells</h2>
+
+      <div class="nd-well nd-well-sm">
+        <strong>Small Well</strong> &mdash; Compact inset area using <code>.nd-well-sm</code>. Useful for inline callouts or status messages.
+      </div>
+
+      <div class="nd-well">
+        <strong>Default Well</strong> &mdash; Standard inset area with <code>var(--nd-bg-well)</code> background. Wells provide a recessed visual treatment to distinguish secondary content from the main surface.
+      </div>
+
+      <div class="nd-well nd-well-lg">
+        <strong>Large Well</strong> &mdash; Generous padding via <code>.nd-well-lg</code>. Suitable for hero-style callouts or prominent informational blocks.
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Stacking                                                           -->
+    <!-- ================================================================== -->
+    <section class="demo-section" id="stacking">
+      <h2>Stacking</h2>
+      <p class="nd-text-secondary nd-mb-lg">Components nested inside each other — testing depth, spacing, and shadow layering.</p>
+
+      <div class="nd-row">
+        <!-- Panel containing a Card with Table -->
+        <div class="nd-col-6">
+          <h4>Panel &rarr; Card &rarr; Table</h4>
+          <div class="nd-panel nd-panel-bordered">
+            <div class="nd-panel-title">User Overview</div>
+            <p class="nd-text-secondary nd-mb-md">A card with a data table nested inside a panel.</p>
+            <div class="nd-card">
+              <div class="nd-card-header">Account Details</div>
+              <div class="nd-card-body">
+                <p><strong>Name:</strong> Will Hattingh</p>
+                <p><strong>Email:</strong> will@example.com</p>
+                <p class="nd-mb-md"><strong>Role:</strong> <span class="nd-badge nd-badge-primary">Admin</span></p>
+                <div class="nd-table-responsive">
+                  <table class="nd-table-striped nd-table-hover">
+                    <thead>
+                      <tr><th>Permission</th><th>Access</th><th>Granted</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td>Users</td><td><span class="nd-badge nd-badge-success">Full</span></td><td>2025-01-15</td></tr>
+                      <tr><td>Billing</td><td><span class="nd-badge nd-badge-warning">Read</span></td><td>2025-03-02</td></tr>
+                      <tr><td>Settings</td><td><span class="nd-badge nd-badge-success">Full</span></td><td>2025-01-15</td></tr>
+                      <tr><td>Audit Log</td><td><span class="nd-badge nd-badge-danger">Denied</span></td><td>&mdash;</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="nd-card-footer">
+                <button class="nd-btn-secondary nd-btn-sm">Edit Permissions</button>
+                <button class="nd-btn-ghost nd-btn-sm">View History</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card containing a Well with Table -->
+        <div class="nd-col-6">
+          <h4>Card &rarr; Well &rarr; Table</h4>
+          <div class="nd-card">
+            <div class="nd-card-header">System Status</div>
+            <div class="nd-card-body">
+              <p class="nd-mb-md">Current infrastructure health across all regions.</p>
+              <div class="nd-well nd-well-sm">
+                <p class="nd-text-small nd-text-muted nd-mb-sm">Last checked: 2 minutes ago</p>
+                <p><strong>CPU:</strong> 42% &nbsp;&bull;&nbsp; <strong>Memory:</strong> 6.2 / 16 GB &nbsp;&bull;&nbsp; <strong>Disk:</strong> 127 / 500 GB</p>
+                <p class="nd-mb-md"><strong>Status:</strong> <span class="nd-badge nd-badge-success">Healthy</span></p>
+                <div class="nd-table-responsive">
+                  <table class="nd-table-striped nd-table-hover nd-table-compact">
+                    <thead>
+                      <tr><th>Service</th><th>Region</th><th>Latency</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td>API Gateway</td><td>us-east-1</td><td>12ms</td><td><span class="nd-badge nd-badge-success">Up</span></td></tr>
+                      <tr><td>API Gateway</td><td>eu-west-1</td><td>28ms</td><td><span class="nd-badge nd-badge-success">Up</span></td></tr>
+                      <tr><td>Worker Pool</td><td>us-east-1</td><td>145ms</td><td><span class="nd-badge nd-badge-warning">Slow</span></td></tr>
+                      <tr><td>Database</td><td>us-east-1</td><td>3ms</td><td><span class="nd-badge nd-badge-success">Up</span></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel containing a Well containing Cards -->
+      <h4 class="nd-mt-lg">Panel &rarr; Well &rarr; Card</h4>
+      <div class="nd-panel nd-panel-bordered">
+        <div class="nd-panel-title">Deployment Pipeline</div>
+        <p class="nd-text-secondary nd-mb-md">Active deployment stages and their current state.</p>
+        <div class="nd-well">
+          <div class="nd-row">
+            <div class="nd-col-4">
+              <div class="nd-card">
+                <div class="nd-card-header">Build</div>
+                <div class="nd-card-body">
+                  <p class="nd-text-small nd-text-muted">Stage 1 of 3</p>
+                  <p><span class="nd-badge nd-badge-success">Passed</span></p>
+                  <p class="nd-text-small">Duration: 2m 14s</p>
+                </div>
+              </div>
+            </div>
+            <div class="nd-col-4">
+              <div class="nd-card">
+                <div class="nd-card-header">Test</div>
+                <div class="nd-card-body">
+                  <p class="nd-text-small nd-text-muted">Stage 2 of 3</p>
+                  <p><span class="nd-badge nd-badge-warning">Running</span></p>
+                  <p class="nd-text-small">Elapsed: 1m 47s</p>
+                </div>
+              </div>
+            </div>
+            <div class="nd-col-4">
+              <div class="nd-card">
+                <div class="nd-card-header">Deploy</div>
+                <div class="nd-card-body">
+                  <p class="nd-text-small nd-text-muted">Stage 3 of 3</p>
+                  <p><span class="nd-badge">Pending</span></p>
+                  <p class="nd-text-small">Waiting...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel with a Table directly -->
+      <div class="nd-row nd-mt-lg">
+        <div class="nd-col-6">
+          <h4>Panel &rarr; Table</h4>
+          <div class="nd-panel nd-panel-bordered">
+            <div class="nd-panel-title">Recent Deployments</div>
+            <div class="nd-table-responsive">
+              <table class="nd-table-striped nd-table-hover">
+                <thead>
+                  <tr><th>Version</th><th>Environment</th><th>Deployed By</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>v2.4.1</td><td>Production</td><td>will</td><td><span class="nd-badge nd-badge-success">Live</span></td></tr>
+                  <tr><td>v2.4.0</td><td>Staging</td><td>ci-bot</td><td><span class="nd-badge nd-badge-success">Live</span></td></tr>
+                  <tr><td>v2.3.9</td><td>Production</td><td>will</td><td><span class="nd-badge">Rolled back</span></td></tr>
+                  <tr><td>v2.3.8</td><td>Dev</td><td>sarah</td><td><span class="nd-badge nd-badge-danger">Failed</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Well with a Table directly -->
+        <div class="nd-col-6">
+          <h4>Well &rarr; Table</h4>
+          <div class="nd-well">
+            <p class="nd-text-small nd-text-muted nd-mb-sm">Scheduled maintenance windows</p>
+            <div class="nd-table-responsive">
+              <table class="nd-table-striped nd-table-hover nd-table-compact">
+                <thead>
+                  <tr><th>Date</th><th>Window</th><th>Service</th><th>Impact</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Apr 12</td><td>02:00 - 04:00 UTC</td><td>Database</td><td><span class="nd-badge nd-badge-danger">Downtime</span></td></tr>
+                  <tr><td>Apr 15</td><td>06:00 - 06:30 UTC</td><td>CDN</td><td><span class="nd-badge nd-badge-warning">Degraded</span></td></tr>
+                  <tr><td>Apr 20</td><td>01:00 - 03:00 UTC</td><td>API Gateway</td><td><span class="nd-badge nd-badge-warning">Degraded</span></td></tr>
+                  <tr><td>Apr 28</td><td>04:00 - 05:00 UTC</td><td>Auth</td><td><span class="nd-badge nd-badge-info">Failover</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel → Well → Card → Table (full depth) -->
+      <h4 class="nd-mt-lg">Panel &rarr; Well &rarr; Card &rarr; Table</h4>
+      <div class="nd-panel nd-panel-bordered">
+        <div class="nd-panel-title">Incident Report</div>
+        <p class="nd-text-secondary nd-mb-md">Full incident timeline with affected services.</p>
+        <div class="nd-well">
+          <div class="nd-row">
+            <div class="nd-col-6">
+              <div class="nd-card">
+                <div class="nd-card-header">Affected Services</div>
+                <div class="nd-card-body">
+                  <div class="nd-table-responsive">
+                    <table class="nd-table-striped nd-table-compact">
+                      <thead>
+                        <tr><th>Service</th><th>Severity</th><th>Duration</th></tr>
+                      </thead>
+                      <tbody>
+                        <tr><td>API Gateway</td><td><span class="nd-badge nd-badge-danger">Critical</span></td><td>47m</td></tr>
+                        <tr><td>Worker Pool</td><td><span class="nd-badge nd-badge-warning">Major</span></td><td>32m</td></tr>
+                        <tr><td>CDN</td><td><span class="nd-badge nd-badge-info">Minor</span></td><td>12m</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="nd-col-6">
+              <div class="nd-card">
+                <div class="nd-card-header">Timeline</div>
+                <div class="nd-card-body">
+                  <div class="nd-table-responsive">
+                    <table class="nd-table-compact">
+                      <thead>
+                        <tr><th>Time (UTC)</th><th>Event</th></tr>
+                      </thead>
+                      <tbody>
+                        <tr><td>14:23</td><td>Alert triggered — API 5xx rate &gt; 5%</td></tr>
+                        <tr><td>14:25</td><td>Incident declared — SEV-1</td></tr>
+                        <tr><td>14:31</td><td>Root cause identified — bad deploy v2.3.8</td></tr>
+                        <tr><td>14:38</td><td>Rollback initiated to v2.3.7</td></tr>
+                        <tr><td>15:10</td><td>All services recovered</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Asides                                                             -->
+    <!-- ================================================================== -->
+    <section class="demo-section" id="asides">
+      <h2>Asides</h2>
+      <p class="nd-text-secondary nd-mb-lg">Edge-pinned callouts that fold onto the page — outer corners straight, inner corners rounded.</p>
+
+      <aside class="nd-aside">
+        <div class="nd-aside-title">Right Aside (Default)</div>
+        <p>This aside pins to the right edge of the viewport, with its inner corners rounded and outer corners flush against the page edge.</p>
+      </aside>
+
+      <aside class="nd-aside nd-aside-left">
+        <div class="nd-aside-title">Left Aside</div>
+        <p>Same concept mirrored — pins to the left edge. The rounded corners always face inward toward the content.</p>
+      </aside>
+
+      <div class="nd-row">
+        <div class="nd-col-6">
+          <p class="nd-text-secondary">Content flows normally between asides. The fold effect gives them visual weight without disrupting the layout.</p>
+        </div>
+        <div class="nd-col-6">
+          <aside class="nd-aside">
+            <div class="nd-aside-title">Aside Inside a Column</div>
+            <p>When used inside a grid column, the aside still bleeds to the right edge.</p>
+          </aside>
+        </div>
+      </div>
+
+      <h4 class="nd-mt-lg">Semantic Variants</h4>
+
+      <aside class="nd-aside nd-aside-info">
+        <div class="nd-aside-title">Info</div>
+        <p>Helpful context or additional information the user might want to know.</p>
+      </aside>
+
+      <aside class="nd-aside nd-aside-left nd-aside-success">
+        <div class="nd-aside-title">Success</div>
+        <p>Confirmation or positive status — deployment complete, tests passing, health check OK.</p>
+      </aside>
+
+      <aside class="nd-aside nd-aside-warning">
+        <div class="nd-aside-title">Warning</div>
+        <p>Something needs attention — approaching quota limits, certificate expiring in 14 days.</p>
+      </aside>
+
+      <aside class="nd-aside nd-aside-left nd-aside-danger">
+        <div class="nd-aside-title">Danger</div>
+        <p>Critical issue — service down, auth failures spiking, disk at 95%.</p>
+      </aside>
+
+      <h4 class="nd-mt-lg">Aside with Table</h4>
+
+      <aside class="nd-aside nd-aside-info">
+        <div class="nd-aside-title">Recent Activity</div>
+        <div class="nd-table-responsive">
+          <table class="nd-table-striped nd-table-compact">
+            <thead>
+              <tr><th>User</th><th>Action</th><th>Time</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>will</td><td>Deployed v2.4.1 to production</td><td>3m ago</td></tr>
+              <tr><td>sarah</td><td>Merged PR #847</td><td>12m ago</td></tr>
+              <tr><td>ci-bot</td><td>Tests passed on <code>main</code></td><td>15m ago</td></tr>
+              <tr><td>will</td><td>Updated DNS records</td><td>1h ago</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </aside>
+
+      <h4 class="nd-mt-lg">Content with Right Aside</h4>
+
+      <div class="nd-row">
+        <div class="nd-col-8">
+          <div class="nd-card">
+            <div class="nd-card-header">Infrastructure Migration Plan</div>
+            <div class="nd-card-body nd-prose">
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+              <p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris.</p>
+              <h4>Phase 1: Assessment</h4>
+              <p>Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate vehicula. Donec lobortis risus a elit. Etiam tempor. Ut ullamcorper, ligula ut dictum pharetra, nisi nunc fringilla magna, in commodo elit erat nec turpis. Ut pharetra augue nec augue.</p>
+              <ul>
+                <li>Audit existing database schemas and migration scripts</li>
+                <li>Map service dependencies and communication patterns</li>
+                <li>Identify stateful services requiring special handling</li>
+                <li>Benchmark current performance baselines</li>
+              </ul>
+              <h4>Phase 2: Parallel Run</h4>
+              <p>Nam dui ligula, fringilla a, euismod sodales, sollicitudin vel, wisi. Morbi auctor lorem non justo. Nam lacus libero, pretium at, lobortis vitae, ultricies et, tellus. Donec aliquet, tortor sed accumsan bibendum, erat ligula aliquet magna, vitae ornare odio metus a mi.</p>
+              <p>Morbi ac orci et nisl hendrerit mollis. Suspendisse ut massa. Cras nec ante. Pellentesque a nulla. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aliquam tincidunt urna.</p>
+            </div>
+          </div>
+        </div>
+        <div class="nd-col-4">
+          <aside class="nd-aside nd-aside-info">
+            <div class="nd-aside-title">Migration Notes</div>
+            <p class="nd-text-small">Review these items before proceeding with each phase.</p>
+            <div class="nd-well nd-well-sm">
+              <p class="nd-text-small"><strong>Target:</strong> Q2 2026</p>
+              <p class="nd-text-small"><strong>Lead:</strong> Will H.</p>
+              <p class="nd-text-small"><strong>Risk:</strong> <span class="nd-badge nd-badge-warning">Medium</span></p>
+            </div>
+          </aside>
+          <aside class="nd-aside nd-aside-warning">
+            <div class="nd-aside-title">Open Issues</div>
+            <p class="nd-text-small">3 blockers must be resolved before Phase 2 can begin.</p>
+            <div class="nd-table-responsive">
+              <table class="nd-table-compact">
+                <tbody>
+                  <tr><td><span class="nd-badge nd-badge-danger">P0</span></td><td class="nd-text-small">Auth service token migration</td></tr>
+                  <tr><td><span class="nd-badge nd-badge-danger">P0</span></td><td class="nd-text-small">Data encryption key rotation</td></tr>
+                  <tr><td><span class="nd-badge nd-badge-warning">P1</span></td><td class="nd-text-small">CDN cache invalidation strategy</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <h4 class="nd-mt-lg">Content with Left Aside</h4>
+
+      <div class="nd-row">
+        <div class="nd-col-4">
+          <aside class="nd-aside nd-aside-left nd-aside-success">
+            <div class="nd-aside-title">System Health</div>
+            <p class="nd-text-small nd-text-muted">All services operational as of 14:32 UTC.</p>
+            <div class="nd-well nd-well-sm">
+              <p class="nd-text-small"><strong>Uptime:</strong> 99.97% (30d)</p>
+              <p class="nd-text-small"><strong>Incidents:</strong> 1 minor</p>
+              <p class="nd-text-small"><strong>Next window:</strong> Apr 12</p>
+            </div>
+          </aside>
+          <aside class="nd-aside nd-aside-left">
+            <div class="nd-aside-title">Quick Links</div>
+            <ul class="nd-text-small" style="padding-left: 1.25rem;">
+              <li><a href="#" class="nd-link">Grafana Dashboard</a></li>
+              <li><a href="#" class="nd-link">Incident Runbook</a></li>
+              <li><a href="#" class="nd-link">On-call Schedule</a></li>
+              <li><a href="#" class="nd-link">Architecture Docs</a></li>
+            </ul>
+          </aside>
+        </div>
+        <div class="nd-col-8">
+          <div class="nd-card">
+            <div class="nd-card-header">Post-Incident Review: API Gateway Outage</div>
+            <div class="nd-card-body nd-prose">
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper.</p>
+              <h4>Root Cause</h4>
+              <p>Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. A misconfigured rate limiter in the API gateway caused cascading failures when traffic exceeded 12,000 requests per second during the European morning peak.</p>
+              <h4>Timeline</h4>
+              <p>Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi. Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non fermentum diam nisl sit amet erat.</p>
+              <h4>Remediation</h4>
+              <p>Duis semper. Duis arcu massa, scelerisque vitae, consequat in, pretium a, enim. Pellentesque congue. Ut in risus volutpat libero pharetra tempor. Cras vestibulum bibendum augue. Praesent egestas leo in pede.</p>
+              <ul>
+                <li>Rate limiter configuration moved to version control</li>
+                <li>Added circuit breaker with 5-second trip threshold</li>
+                <li>Deployed canary monitoring for gateway config changes</li>
+                <li>Updated runbook with rate limiter troubleshooting steps</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Forms                                                              -->
+    <!-- ================================================================== -->
+    <section class="demo-section" id="forms">
+      <h2>Forms</h2>
+
+      <div class="nd-row">
+        <!-- Tab Style (default) -->
+        <div class="nd-col-6">
+          <div class="nd-card">
+            <div class="nd-card-header">
+              <h3>Tab Labels (Default)</h3>
+            </div>
+            <div class="nd-card-body">
+              <form>
+                <div class="nd-row">
+                  <div class="nd-col-6">
+                    <div class="nd-form-group">
+                      <label for="tab-fname">First Name</label>
+                      <input type="text" id="tab-fname" name="first_name" placeholder="Jane">
+                      <span class="nd-form-help">Your legal first name.</span>
+                    </div>
+                  </div>
+                  <div class="nd-col-6">
+                    <div class="nd-form-group">
+                      <label for="tab-lname">Last Name</label>
+                      <input type="text" id="tab-lname" name="last_name" placeholder="Doe">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="nd-form-group">
+                  <label for="tab-email">Email Address</label>
+                  <input type="email" id="tab-email" name="email" placeholder="jane@example.com">
+                  <span class="nd-form-help">We will never share your email with anyone.</span>
+                </div>
+
+                <div class="nd-form-group">
+                  <label for="tab-password">Password</label>
+                  <input type="password" id="tab-password" name="password" placeholder="Minimum 8 characters">
+                </div>
+
+                <div class="nd-form-group nd-error">
+                  <label for="tab-username">Username (error state)</label>
+                  <input type="text" id="tab-username" name="username" value="jd">
+                  <span class="nd-form-error">Username must be at least 3 characters.</span>
+                </div>
+
+                <div class="nd-form-group">
+                  <label for="tab-bio">Bio</label>
+                  <textarea id="tab-bio" name="bio" rows="3" placeholder="Tell us about yourself..."></textarea>
+                </div>
+
+                <div class="nd-form-group">
+                  <label for="tab-role">Role</label>
+                  <select id="tab-role" name="role">
+                    <option value="">Select a role...</option>
+                    <option value="admin">Administrator</option>
+                    <option value="editor">Editor</option>
+                    <option value="viewer">Viewer</option>
+                  </select>
+                </div>
+
+                <div class="nd-form-group">
+                  <span class="nd-form-label">Notifications</span>
+                  <div class="nd-form-check-group">
+                    <div class="nd-form-check">
+                      <input type="checkbox" name="notify_email" id="notify_email" checked>
+                      <label for="notify_email">Email notifications</label>
+                    </div>
+                    <div class="nd-form-check">
+                      <input type="checkbox" name="notify_sms" id="notify_sms">
+                      <label for="notify_sms">SMS notifications</label>
+                    </div>
+                    <div class="nd-form-check">
+                      <input type="checkbox" name="notify_push" id="notify_push">
+                      <label for="notify_push">Push notifications</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="nd-form-group">
+                  <span class="nd-form-label">Contact Preference</span>
+                  <div class="nd-form-check-group">
+                    <div class="nd-form-check">
+                      <input type="radio" name="contact_pref" value="email" id="contact_email" checked>
+                      <label for="contact_email">Email</label>
+                    </div>
+                    <div class="nd-form-check">
+                      <input type="radio" name="contact_pref" value="phone" id="contact_phone">
+                      <label for="contact_phone">Phone</label>
+                    </div>
+                    <div class="nd-form-check">
+                      <input type="radio" name="contact_pref" value="none" id="contact_none">
+                      <label for="contact_none">Do not contact</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="demo-btn-row">
+                  <button class="nd-btn-primary" type="submit">Register</button>
+                  <button class="nd-btn-secondary" type="reset">Reset</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Attached Inline Style -->
+        <div class="nd-col-6">
+          <div class="nd-card">
+            <div class="nd-card-header">
+              <h3>Attached Labels (Inline)</h3>
+            </div>
+            <div class="nd-card-body">
+              <form>
+                <div class="nd-row">
+                  <div class="nd-col-6">
+                    <div class="nd-form-group nd-form-group-attached">
+                      <label for="att-fname">First Name</label>
+                      <input type="text" id="att-fname" name="first_name" placeholder="Jane">
+                    </div>
+                  </div>
+                  <div class="nd-col-6">
+                    <div class="nd-form-group nd-form-group-attached">
+                      <label for="att-lname">Last Name</label>
+                      <input type="text" id="att-lname" name="last_name" placeholder="Doe">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="nd-form-group nd-form-group-attached">
+                  <label for="att-email">Email</label>
+                  <input type="email" id="att-email" name="email" placeholder="jane@example.com">
+                </div>
+
+                <div class="nd-form-group nd-form-group-attached">
+                  <label for="att-password">Password</label>
+                  <input type="password" id="att-password" name="password" placeholder="Minimum 8 characters">
+                </div>
+
+                <div class="nd-form-group nd-form-group-attached nd-error">
+                  <label for="att-username">Username</label>
+                  <input type="text" id="att-username" name="username" value="jd">
+                </div>
+                <span class="nd-form-error" style="margin-top: -0.75rem; display: block; margin-bottom: 1rem;">Username must be at least 3 characters.</span>
+
+                <div class="nd-form-group nd-form-group-attached">
+                  <label for="att-role">Role</label>
+                  <select id="att-role" name="role">
+                    <option value="">Select a role...</option>
+                    <option value="admin">Administrator</option>
+                    <option value="editor">Editor</option>
+                    <option value="viewer">Viewer</option>
+                  </select>
+                </div>
+
+                <div class="nd-form-group nd-form-group-attached">
+                  <label>Notifications</label>
+                  <div class="nd-form-check-group">
+                    <div class="nd-form-check">
+                      <input type="checkbox" name="att_notify_email" id="att_notify_email" checked>
+                      <label for="att_notify_email">Email</label>
+                    </div>
+                    <div class="nd-form-check">
+                      <input type="checkbox" name="att_notify_sms" id="att_notify_sms">
+                      <label for="att_notify_sms">SMS</label>
+                    </div>
+                    <div class="nd-form-check">
+                      <input type="checkbox" name="att_notify_push" id="att_notify_push">
+                      <label for="att_notify_push">Push</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="nd-form-group nd-form-group-attached">
+                  <label>Priority</label>
+                  <div class="nd-form-check-group">
+                    <div class="nd-form-check">
+                      <input type="radio" name="att_priority" value="low" id="att_pri_low">
+                      <label for="att_pri_low">Low</label>
+                    </div>
+                    <div class="nd-form-check">
+                      <input type="radio" name="att_priority" value="med" id="att_pri_med" checked>
+                      <label for="att_pri_med">Medium</label>
+                    </div>
+                    <div class="nd-form-check">
+                      <input type="radio" name="att_priority" value="high" id="att_pri_high">
+                      <label for="att_pri_high">High</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="demo-btn-row">
+                  <button class="nd-btn-primary" type="submit">Save Profile</button>
+                  <button class="nd-btn-secondary" type="reset">Reset</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Switches                                                           -->
+    <!-- ================================================================== -->
+    <section class="demo-section" id="switches">
+      <h2>Switches</h2>
+      <p class="nd-text-secondary nd-mb-lg">Toggle switches for boolean values — ideal for settings and preferences.</p>
+
+      <div class="nd-row">
+        <div class="nd-col-6">
+          <div class="nd-card">
+            <div class="nd-card-header">Toggle Switches</div>
+            <div class="nd-card-body">
+              <div class="nd-form-group">
+                <button class="nd-switch" aria-pressed="true">Enable notifications</button>
+              </div>
+              <div class="nd-form-group">
+                <button class="nd-switch" aria-pressed="false">Dark mode</button>
+              </div>
+              <div class="nd-form-group">
+                <button class="nd-switch" aria-pressed="true">Auto-save drafts</button>
+              </div>
+              <div class="nd-form-group">
+                <button class="nd-switch" aria-pressed="false" disabled>Premium feature (disabled)</button>
+              </div>
+              <div class="nd-form-group">
+                <button class="nd-switch" aria-pressed="true" disabled>Always enabled (disabled)</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="nd-col-6">
+          <div class="nd-card">
+            <div class="nd-card-header">Small Switches</div>
+            <div class="nd-card-body">
+              <div class="nd-form-group">
+                <button class="nd-switch nd-switch-sm" aria-pressed="true">Compact switch on</button>
+              </div>
+              <div class="nd-form-group">
+                <button class="nd-switch nd-switch-sm" aria-pressed="false">Compact switch off</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Tables                                                             -->
+    <!-- ================================================================== -->
+    <section class="demo-section" id="tables">
+      <h2>Tables</h2>
+
+      <div class="demo-label">.nd-table .nd-table-striped .nd-table-hover</div>
+      <div class="nd-table-responsive">
+        <table class="nd-table-striped nd-table-hover">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>Alice Johnson</td>
+              <td>alice@example.com</td>
+              <td>Admin</td>
+              <td><span class="nd-badge nd-badge-success">Active</span></td>
+              <td>2026-01-15</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>Bob Smith</td>
+              <td>bob@example.com</td>
+              <td>Editor</td>
+              <td><span class="nd-badge nd-badge-success">Active</span></td>
+              <td>2026-02-03</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>Carlos Rivera</td>
+              <td>carlos@example.com</td>
+              <td>Viewer</td>
+              <td><span class="nd-badge nd-badge-danger">Suspended</span></td>
+              <td>2026-02-20</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>Diana Chen</td>
+              <td>diana@example.com</td>
+              <td>Editor</td>
+              <td><span class="nd-badge nd-badge-success">Active</span></td>
+              <td>2026-03-01</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td>Erik Johansson</td>
+              <td>erik@example.com</td>
+              <td>Viewer</td>
+              <td><span class="nd-badge nd-badge-primary">Pending</span></td>
+              <td>2026-03-28</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Alerts                                                             -->
+    <!-- ================================================================== -->
+    <section class="demo-section" id="alerts">
+      <h2>Alerts</h2>
+
+      <div class="nd-alert nd-alert-success">
+        <strong>Success:</strong> Your changes have been saved successfully.
+      </div>
+
+      <div class="nd-alert nd-alert-warning">
+        <strong>Warning:</strong> Your session will expire in 5 minutes. Please save your work.
+      </div>
+
+      <div class="nd-alert nd-alert-error">
+        <strong>Error:</strong> Unable to connect to the server. Check your network connection and try again.
+      </div>
+
+      <div class="nd-alert nd-alert-info">
+        <strong>Info:</strong> A new version of ndesign is available. Visit the documentation for upgrade instructions.
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Badges                                                             -->
+    <!-- ================================================================== -->
+    <section class="demo-section" id="badges">
+      <h2>Badges</h2>
+
+      <div class="demo-btn-row">
+        <span class="nd-badge nd-badge-primary">Primary</span>
+        <span class="nd-badge nd-badge-danger">Danger</span>
+        <span class="nd-badge nd-badge-success">Success</span>
+      </div>
+
+      <p>
+        Badges inline with text: Server status
+        <span class="nd-badge nd-badge-success">Online</span>
+        &mdash; Errors today
+        <span class="nd-badge nd-badge-danger">7</span>
+        &mdash; Pending reviews
+        <span class="nd-badge nd-badge-primary">12</span>
+      </p>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Grid                                                               -->
+    <!-- ================================================================== -->
+    <section class="demo-section" id="grid">
+      <h2>Grid System</h2>
+
+      <div class="demo-label">.nd-row &gt; .nd-col-{n} (12 columns)</div>
+
+      <div class="nd-row" style="margin-bottom: 0.5rem;">
+        <div class="nd-col-12"><div class="demo-grid-cell">col-12</div></div>
+      </div>
+      <div class="nd-row" style="margin-bottom: 0.5rem;">
+        <div class="nd-col-6"><div class="demo-grid-cell">col-6</div></div>
+        <div class="nd-col-6"><div class="demo-grid-cell">col-6</div></div>
+      </div>
+      <div class="nd-row" style="margin-bottom: 0.5rem;">
+        <div class="nd-col-4"><div class="demo-grid-cell">col-4</div></div>
+        <div class="nd-col-4"><div class="demo-grid-cell">col-4</div></div>
+        <div class="nd-col-4"><div class="demo-grid-cell">col-4</div></div>
+      </div>
+      <div class="nd-row" style="margin-bottom: 0.5rem;">
+        <div class="nd-col-3"><div class="demo-grid-cell">col-3</div></div>
+        <div class="nd-col-3"><div class="demo-grid-cell">col-3</div></div>
+        <div class="nd-col-3"><div class="demo-grid-cell">col-3</div></div>
+        <div class="nd-col-3"><div class="demo-grid-cell">col-3</div></div>
+      </div>
+      <div class="nd-row" style="margin-bottom: 0.5rem;">
+        <div class="nd-col-2"><div class="demo-grid-cell">col-2</div></div>
+        <div class="nd-col-2"><div class="demo-grid-cell">col-2</div></div>
+        <div class="nd-col-2"><div class="demo-grid-cell">col-2</div></div>
+        <div class="nd-col-2"><div class="demo-grid-cell">col-2</div></div>
+        <div class="nd-col-2"><div class="demo-grid-cell">col-2</div></div>
+        <div class="nd-col-2"><div class="demo-grid-cell">col-2</div></div>
+      </div>
+      <div class="nd-row" style="margin-bottom: 0.5rem;">
+        <div class="nd-col-1"><div class="demo-grid-cell">1</div></div>
+        <div class="nd-col-1"><div class="demo-grid-cell">1</div></div>
+        <div class="nd-col-1"><div class="demo-grid-cell">1</div></div>
+        <div class="nd-col-1"><div class="demo-grid-cell">1</div></div>
+        <div class="nd-col-1"><div class="demo-grid-cell">1</div></div>
+        <div class="nd-col-1"><div class="demo-grid-cell">1</div></div>
+        <div class="nd-col-1"><div class="demo-grid-cell">1</div></div>
+        <div class="nd-col-1"><div class="demo-grid-cell">1</div></div>
+        <div class="nd-col-1"><div class="demo-grid-cell">1</div></div>
+        <div class="nd-col-1"><div class="demo-grid-cell">1</div></div>
+        <div class="nd-col-1"><div class="demo-grid-cell">1</div></div>
+        <div class="nd-col-1"><div class="demo-grid-cell">1</div></div>
+      </div>
+
+      <div class="demo-label">Mixed widths</div>
+      <div class="nd-row" style="margin-bottom: 0.5rem;">
+        <div class="nd-col-8"><div class="demo-grid-cell">col-8</div></div>
+        <div class="nd-col-4"><div class="demo-grid-cell">col-4</div></div>
+      </div>
+      <div class="nd-row" style="margin-bottom: 0.5rem;">
+        <div class="nd-col-3"><div class="demo-grid-cell">col-3</div></div>
+        <div class="nd-col-6"><div class="demo-grid-cell">col-6</div></div>
+        <div class="nd-col-3"><div class="demo-grid-cell">col-3</div></div>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Utilities                                                          -->
+    <!-- ================================================================== -->
+    <section class="demo-section" id="utilities">
+      <h2>Utilities</h2>
+
+      <h3>Spacing</h3>
+      <div class="demo-label">Margin &amp; padding helpers: .nd-m-{size}, .nd-p-{size}, .nd-mt-{size}, etc.</div>
+      <div class="nd-well nd-well-sm">
+        <div style="background: var(--nd-accent); color: #fff; padding: 0.5rem; border-radius: 4px;" class="nd-mb-sm">
+          .nd-mb-sm (margin-bottom: 8px)
+        </div>
+        <div style="background: var(--nd-accent); color: #fff; padding: 0.5rem; border-radius: 4px;" class="nd-mb-md">
+          .nd-mb-md (margin-bottom: 16px)
+        </div>
+        <div style="background: var(--nd-accent); color: #fff; padding: 0.5rem; border-radius: 4px;" class="nd-mb-lg">
+          .nd-mb-lg (margin-bottom: 24px)
+        </div>
+        <div style="background: var(--nd-accent); color: #fff; padding: 0.5rem; border-radius: 4px;">
+          Last item (no margin)
+        </div>
+      </div>
+
+      <h3>Text Alignment</h3>
+      <div class="demo-label">.nd-text-left, .nd-text-center, .nd-text-right</div>
+      <div class="nd-row">
+        <div class="nd-col-4">
+          <div class="nd-well nd-well-sm nd-text-left">Left aligned</div>
+        </div>
+        <div class="nd-col-4">
+          <div class="nd-well nd-well-sm nd-text-center">Center aligned</div>
+        </div>
+        <div class="nd-col-4">
+          <div class="nd-well nd-well-sm nd-text-right">Right aligned</div>
+        </div>
+      </div>
+    </section>
+
+  <script src="../dist/ndesign.min.js"></script>
+  <script>
+    /**
+     * Theme toggle — swaps the theme stylesheet between light and dark.
+     * Falls back to manual href swap if NDesign.toggleTheme is not available.
+     */
+    function toggleTheme() {
+      if (typeof NDesign !== 'undefined' && typeof NDesign.toggleTheme === 'function') {
+        NDesign.toggleTheme();
+        return;
+      }
+      const link = document.getElementById('nd-theme');
+      if (link.href.includes('light')) {
+        link.href = link.href.replace('light', 'dark');
+      } else {
+        link.href = link.href.replace('dark', 'light');
+      }
+    }
+
+    // Toggle switch click handler — flips aria-pressed
+    document.addEventListener('click', function(e) {
+      const sw = e.target.closest('.nd-switch');
+      if (sw && !sw.disabled) {
+        const pressed = sw.getAttribute('aria-pressed') === 'true';
+        sw.setAttribute('aria-pressed', String(!pressed));
+      }
+    });
+  </script>
+</body>
+</html>

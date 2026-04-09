@@ -1,0 +1,294 @@
+// ==========================================================================
+// Layout — Grid system, containers, flex helpers, sections
+// ==========================================================================
+@use 'sass:math';
+@use 'tokens' as *;
+
+// ---------------------------------------------------------------------------
+// Container — opt-in constrained width for prose, blog posts, centered forms.
+// NOT needed for application layouts — the body is full-width by default.
+// ---------------------------------------------------------------------------
+.nd-container {
+  width: 100%;
+  max-width: $nd-container-narrow-max;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: $nd-container-padding;
+  padding-right: $nd-container-padding;
+
+  @include nd-below(sm) {
+    padding-left: $nd-space-sm;
+    padding-right: $nd-space-sm;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Grid — 12-column system
+// ---------------------------------------------------------------------------
+.nd-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: ($nd-grid-gutter * -0.5);
+  margin-right: ($nd-grid-gutter * -0.5);
+}
+
+// Column base
+[class*='nd-col'] {
+  position: relative;
+  width: 100%;
+  padding-left: ($nd-grid-gutter * 0.5);
+  padding-right: ($nd-grid-gutter * 0.5);
+  min-height: 1px;
+}
+
+// Generate default columns (desktop — no breakpoint suffix)
+@for $i from 1 through $nd-grid-columns {
+  .nd-col-#{$i} {
+    flex: 0 0 math.percentage(math.div($i, $nd-grid-columns));
+    max-width: math.percentage(math.div($i, $nd-grid-columns));
+  }
+}
+
+// Auto-width column
+.nd-col-auto {
+  flex: 0 0 auto;
+  width: auto;
+  max-width: 100%;
+}
+
+// Equal-width column
+.nd-col {
+  flex-basis: 0;
+  flex-grow: 1;
+  max-width: 100%;
+}
+
+// Generate responsive columns for each breakpoint
+@each $bp-name, $bp-value in $nd-breakpoints {
+  @include nd-below($bp-name) {
+    @for $i from 1 through $nd-grid-columns {
+      .nd-col-#{$bp-name}-#{$i} {
+        flex: 0 0 math.percentage(math.div($i, $nd-grid-columns));
+        max-width: math.percentage(math.div($i, $nd-grid-columns));
+      }
+    }
+
+    .nd-col-#{$bp-name}-auto {
+      flex: 0 0 auto;
+      width: auto;
+      max-width: 100%;
+    }
+
+    // Full-width stack at breakpoint
+    .nd-col-#{$bp-name}-full {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Column Offsets
+// ---------------------------------------------------------------------------
+@for $i from 1 through ($nd-grid-columns - 1) {
+  .nd-offset-#{$i} {
+    margin-left: math.percentage(math.div($i, $nd-grid-columns));
+  }
+}
+
+@each $bp-name, $bp-value in $nd-breakpoints {
+  @include nd-below($bp-name) {
+    @for $i from 0 through ($nd-grid-columns - 1) {
+      .nd-offset-#{$bp-name}-#{$i} {
+        margin-left: math.percentage(math.div($i, $nd-grid-columns));
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Row Modifiers
+// ---------------------------------------------------------------------------
+.nd-row-no-gutters {
+  margin-left: 0;
+  margin-right: 0;
+
+  > [class*='nd-col'] {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+.nd-row-dense {
+  margin-left: ($nd-space-sm * -0.5);
+  margin-right: ($nd-space-sm * -0.5);
+
+  > [class*='nd-col'] {
+    padding-left: ($nd-space-sm * 0.5);
+    padding-right: ($nd-space-sm * 0.5);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Flex Helpers
+// ---------------------------------------------------------------------------
+.nd-flex {
+  display: flex;
+}
+
+.nd-flex-inline {
+  display: inline-flex;
+}
+
+.nd-flex-row {
+  flex-direction: row;
+}
+
+.nd-flex-col {
+  flex-direction: column;
+}
+
+.nd-flex-wrap {
+  flex-wrap: wrap;
+}
+
+.nd-flex-nowrap {
+  flex-wrap: nowrap;
+}
+
+// Justify Content
+.nd-justify-start {
+  justify-content: flex-start;
+}
+
+.nd-justify-end {
+  justify-content: flex-end;
+}
+
+.nd-justify-center {
+  justify-content: center;
+}
+
+.nd-justify-between {
+  justify-content: space-between;
+}
+
+.nd-justify-around {
+  justify-content: space-around;
+}
+
+.nd-justify-evenly {
+  justify-content: space-evenly;
+}
+
+// Align Items
+.nd-align-start {
+  align-items: flex-start;
+}
+
+.nd-align-end {
+  align-items: flex-end;
+}
+
+.nd-align-center {
+  align-items: center;
+}
+
+.nd-align-baseline {
+  align-items: baseline;
+}
+
+.nd-align-stretch {
+  align-items: stretch;
+}
+
+// Align Self
+.nd-self-start {
+  align-self: flex-start;
+}
+
+.nd-self-end {
+  align-self: flex-end;
+}
+
+.nd-self-center {
+  align-self: center;
+}
+
+.nd-self-stretch {
+  align-self: stretch;
+}
+
+// Flex Grow / Shrink
+.nd-flex-grow {
+  flex-grow: 1;
+}
+
+.nd-flex-grow-0 {
+  flex-grow: 0;
+}
+
+.nd-flex-shrink {
+  flex-shrink: 1;
+}
+
+.nd-flex-shrink-0 {
+  flex-shrink: 0;
+}
+
+// Gap helpers
+.nd-gap-xs  { gap: $nd-space-xs; }
+.nd-gap-sm  { gap: $nd-space-sm; }
+.nd-gap-md  { gap: $nd-space-md; }
+.nd-gap-lg  { gap: $nd-space-lg; }
+.nd-gap-xl  { gap: $nd-space-xl; }
+
+// ---------------------------------------------------------------------------
+// Section
+// ---------------------------------------------------------------------------
+.nd-section {
+  padding-top: $nd-space-2xl;
+  padding-bottom: $nd-space-2xl;
+
+  @include nd-below(md) {
+    padding-top: $nd-space-xl;
+    padding-bottom: $nd-space-xl;
+  }
+}
+
+.nd-section-sm {
+  padding-top: $nd-space-xl;
+  padding-bottom: $nd-space-xl;
+
+  @include nd-below(md) {
+    padding-top: $nd-space-lg;
+    padding-bottom: $nd-space-lg;
+  }
+}
+
+.nd-section-lg {
+  padding-top: $nd-space-3xl;
+  padding-bottom: $nd-space-3xl;
+
+  @include nd-below(md) {
+    padding-top: $nd-space-2xl;
+    padding-bottom: $nd-space-2xl;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Divider
+// ---------------------------------------------------------------------------
+.nd-divider {
+  border: 0;
+  border-top: 1px solid var(--nd-border);
+  margin: $nd-space-lg 0;
+}
+
+.nd-divider-sm {
+  margin: $nd-space-sm 0;
+}
+
+.nd-divider-lg {
+  margin: $nd-space-xl 0;
+}

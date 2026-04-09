@@ -1,0 +1,237 @@
+// ==========================================================================
+// Utilities — spacing, text alignment, visibility, display
+// ==========================================================================
+@use 'tokens' as *;
+
+// ---------------------------------------------------------------------------
+// Spacing Helpers — nd-m-*, nd-p-*
+// Generates: nd-m-0, nd-m-xs, nd-m-sm, nd-m-md, nd-m-lg, nd-m-xl, nd-m-2xl, nd-m-3xl
+// Same for: mt, mr, mb, ml, mx, my, p, pt, pr, pb, pl, px, py
+// ---------------------------------------------------------------------------
+
+// Margin directions map
+$nd-margin-dirs: (
+  'm':  'margin',
+  'mt': 'margin-top',
+  'mr': 'margin-right',
+  'mb': 'margin-bottom',
+  'ml': 'margin-left',
+);
+
+// Padding directions map
+$nd-padding-dirs: (
+  'p':  'padding',
+  'pt': 'padding-top',
+  'pr': 'padding-right',
+  'pb': 'padding-bottom',
+  'pl': 'padding-left',
+);
+
+// Single-direction margin utilities
+@each $abbrev, $prop in $nd-margin-dirs {
+  @each $size, $value in $nd-spacers {
+    .nd-#{$abbrev}-#{$size} {
+      #{$prop}: $value;
+    }
+  }
+}
+
+// Horizontal margin (mx)
+@each $size, $value in $nd-spacers {
+  .nd-mx-#{$size} {
+    margin-left: $value;
+    margin-right: $value;
+  }
+}
+
+// Vertical margin (my)
+@each $size, $value in $nd-spacers {
+  .nd-my-#{$size} {
+    margin-top: $value;
+    margin-bottom: $value;
+  }
+}
+
+// Auto margins
+.nd-mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.nd-ml-auto {
+  margin-left: auto;
+}
+
+.nd-mr-auto {
+  margin-right: auto;
+}
+
+// Single-direction padding utilities
+@each $abbrev, $prop in $nd-padding-dirs {
+  @each $size, $value in $nd-spacers {
+    .nd-#{$abbrev}-#{$size} {
+      #{$prop}: $value;
+    }
+  }
+}
+
+// Horizontal padding (px)
+@each $size, $value in $nd-spacers {
+  .nd-px-#{$size} {
+    padding-left: $value;
+    padding-right: $value;
+  }
+}
+
+// Vertical padding (py)
+@each $size, $value in $nd-spacers {
+  .nd-py-#{$size} {
+    padding-top: $value;
+    padding-bottom: $value;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Text Alignment
+// ---------------------------------------------------------------------------
+.nd-text-left   { text-align: left; }
+.nd-text-center { text-align: center; }
+.nd-text-right  { text-align: right; }
+.nd-text-justify { text-align: justify; }
+
+// ---------------------------------------------------------------------------
+// Text Wrapping
+// ---------------------------------------------------------------------------
+.nd-text-nowrap   { white-space: nowrap; }
+.nd-text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nd-text-break {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+// ---------------------------------------------------------------------------
+// Text Transform
+// ---------------------------------------------------------------------------
+.nd-text-uppercase  { text-transform: uppercase; }
+.nd-text-lowercase  { text-transform: lowercase; }
+.nd-text-capitalize { text-transform: capitalize; }
+.nd-text-normal     { text-transform: none; }
+
+// ---------------------------------------------------------------------------
+// Font Weight
+// ---------------------------------------------------------------------------
+.nd-font-normal   { font-weight: $nd-font-weight-normal; }
+.nd-font-medium   { font-weight: $nd-font-weight-medium; }
+.nd-font-semibold { font-weight: $nd-font-weight-semibold; }
+.nd-font-bold     { font-weight: $nd-font-weight-bold; }
+
+// ---------------------------------------------------------------------------
+// Display
+// ---------------------------------------------------------------------------
+.nd-block        { display: block; }
+.nd-inline       { display: inline; }
+.nd-inline-block { display: inline-block; }
+.nd-hidden       { display: none; }
+.nd-flex         { display: flex; }
+.nd-inline-flex  { display: inline-flex; }
+.nd-grid         { display: grid; }
+
+// ---------------------------------------------------------------------------
+// Visibility
+// ---------------------------------------------------------------------------
+.nd-visible   { visibility: visible; }
+.nd-invisible { visibility: hidden; }
+
+// Screen reader only — visible to assistive technology, hidden visually
+.nd-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+// ---------------------------------------------------------------------------
+// Overflow
+// ---------------------------------------------------------------------------
+.nd-overflow-auto    { overflow: auto; }
+.nd-overflow-hidden  { overflow: hidden; }
+.nd-overflow-visible { overflow: visible; }
+.nd-overflow-scroll  { overflow: scroll; }
+.nd-overflow-x-auto  { overflow-x: auto; }
+.nd-overflow-y-auto  { overflow-y: auto; }
+
+// ---------------------------------------------------------------------------
+// Width & Height
+// ---------------------------------------------------------------------------
+.nd-w-full  { width: 100%; }
+.nd-w-auto  { width: auto; }
+.nd-h-full  { height: 100%; }
+.nd-h-auto  { height: auto; }
+.nd-h-screen { height: 100vh; }
+.nd-min-h-screen { min-height: 100vh; }
+
+// ---------------------------------------------------------------------------
+// Position
+// ---------------------------------------------------------------------------
+.nd-relative { position: relative; }
+.nd-absolute { position: absolute; }
+.nd-fixed    { position: fixed; }
+.nd-sticky   { position: sticky; top: 0; }
+
+// ---------------------------------------------------------------------------
+// Borders
+// ---------------------------------------------------------------------------
+.nd-border     { border: 1px solid var(--nd-border); }
+.nd-border-t   { border-top: 1px solid var(--nd-border); }
+.nd-border-r   { border-right: 1px solid var(--nd-border); }
+.nd-border-b   { border-bottom: 1px solid var(--nd-border); }
+.nd-border-l   { border-left: 1px solid var(--nd-border); }
+.nd-border-0   { border: 0; }
+
+// Border radius
+.nd-rounded-sm { border-radius: $nd-radius-sm; }
+.nd-rounded    { border-radius: $nd-radius-md; }
+.nd-rounded-lg { border-radius: $nd-radius-lg; }
+.nd-rounded-xl { border-radius: $nd-radius-xl; }
+.nd-rounded-full { border-radius: $nd-radius-pill; }
+.nd-rounded-0   { border-radius: 0; }
+
+// ---------------------------------------------------------------------------
+// Shadows
+// ---------------------------------------------------------------------------
+.nd-shadow-none { box-shadow: none; }
+.nd-shadow-sm   { box-shadow: var(--nd-shadow-sm); }
+.nd-shadow      { box-shadow: var(--nd-shadow-md); }
+.nd-shadow-lg   { box-shadow: var(--nd-shadow-lg); }
+
+// ---------------------------------------------------------------------------
+// Cursor
+// ---------------------------------------------------------------------------
+.nd-cursor-pointer  { cursor: pointer; }
+.nd-cursor-default  { cursor: default; }
+.nd-cursor-not-allowed { cursor: not-allowed; }
+
+// ---------------------------------------------------------------------------
+// User Select
+// ---------------------------------------------------------------------------
+.nd-select-none { user-select: none; }
+.nd-select-all  { user-select: all; }
+.nd-select-text { user-select: text; }
+
+// ---------------------------------------------------------------------------
+// Opacity
+// ---------------------------------------------------------------------------
+.nd-opacity-0   { opacity: 0; }
+.nd-opacity-25  { opacity: 0.25; }
+.nd-opacity-50  { opacity: 0.5; }
+.nd-opacity-75  { opacity: 0.75; }
+.nd-opacity-100 { opacity: 1; }

@@ -1,0 +1,130 @@
+// ==========================================================================
+// Cards — .nd-card with header, body, footer, flush variant
+// ==========================================================================
+@use 'tokens' as *;
+
+.nd-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--nd-bg-surface);
+  border: 1px solid var(--nd-border);
+  border-radius: var(--nd-radius-md);
+  box-shadow: var(--nd-shadow-sm);
+  overflow: hidden;
+  transition: box-shadow $nd-transition-normal, border-color $nd-transition-normal;
+
+  &:hover {
+    box-shadow: var(--nd-shadow-md);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Card Sections
+// ---------------------------------------------------------------------------
+.nd-card-header {
+  padding: $nd-space-md $nd-space-lg;
+  border-bottom: 1px solid var(--nd-border);
+  background: var(--nd-bg-surface-raised);
+  font-weight: $nd-font-weight-semibold;
+  font-size: $nd-font-base;
+
+  @include nd-below(sm) {
+    padding: $nd-space-sm $nd-space-md;
+  }
+}
+
+.nd-card-body {
+  padding: $nd-space-lg;
+  flex: 1 1 auto;
+
+  @include nd-below(sm) {
+    padding: $nd-space-md;
+  }
+
+  // Remove bottom margin from last child for clean spacing
+  > *:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.nd-card-footer {
+  padding: $nd-space-md $nd-space-lg;
+  border-top: 1px solid var(--nd-border);
+  background: var(--nd-bg-surface-raised);
+
+  @include nd-below(sm) {
+    padding: $nd-space-sm $nd-space-md;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Card Title (inside header or body)
+// ---------------------------------------------------------------------------
+.nd-card-title {
+  margin: 0;
+  font-size: $nd-font-lg;
+  font-weight: $nd-font-weight-semibold;
+  line-height: $nd-line-height-tight;
+  color: var(--nd-text-primary);
+}
+
+.nd-card-subtitle {
+  margin: $nd-space-xs 0 0;
+  font-size: $nd-font-sm;
+  font-weight: $nd-font-weight-normal;
+  color: var(--nd-text-secondary);
+}
+
+// ---------------------------------------------------------------------------
+// Flush Variant — No internal padding (useful for tables, images)
+// ---------------------------------------------------------------------------
+.nd-card-flush {
+  .nd-card-body {
+    padding: 0;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Card with image
+// ---------------------------------------------------------------------------
+.nd-card-img {
+  width: 100%;
+  display: block;
+  border-radius: 0;
+
+  &:first-child {
+    border-top-left-radius: calc(var(--nd-radius-md) - 1px);
+    border-top-right-radius: calc(var(--nd-radius-md) - 1px);
+  }
+
+  &:last-child {
+    border-bottom-left-radius: calc(var(--nd-radius-md) - 1px);
+    border-bottom-right-radius: calc(var(--nd-radius-md) - 1px);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Card group — horizontal card layout
+// ---------------------------------------------------------------------------
+.nd-card-group {
+  display: flex;
+  gap: $nd-space-md;
+
+  @include nd-below(md) {
+    flex-direction: column;
+  }
+
+  .nd-card {
+    flex: 1 1 0;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Stacked cards — vertical with spacing
+// ---------------------------------------------------------------------------
+.nd-card-stack {
+  display: flex;
+  flex-direction: column;
+  gap: $nd-space-md;
+}
