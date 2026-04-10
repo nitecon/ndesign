@@ -9,6 +9,7 @@
 
 import { initBindings, destroyBindings } from './bind.js';
 import { initActions } from './action.js';
+import { initUploads, destroyUploads } from './upload.js';
 import { initWebSockets, destroyWebSockets } from './ws.js';
 import { initSSE, destroySSE } from './sse.js';
 import { initSelects, destroySelects } from './select.js';
@@ -16,6 +17,9 @@ import { initNav, destroyNav } from './nav.js';
 import { initDropdowns, destroyDropdowns } from './dropdown.js';
 import { initModals, destroyModals, openModal, closeModal } from './modal.js';
 import { initToasts, destroyToasts, toast } from './toast.js';
+import { initTabs, destroyTabs } from './tabs.js';
+import { initTooltips, destroyTooltips } from './tooltip.js';
+import { initSortable, destroySortable } from './sortable.js';
 import { render, renderOne, interpolate } from './template.js';
 import { escapeHTML, getByPath, setByPath, getCSRFToken } from './utils.js';
 
@@ -31,6 +35,7 @@ const config = {
   onError: null,
   onRender: null,
   wsProtocols: [],
+  wsTokenProvider: null,
 };
 
 /** Whether the runtime has been initialized */
@@ -49,6 +54,12 @@ let initialized = false;
  * @param {Function} [userConfig.onError]          — callback on fetch/ws/sse errors
  * @param {Function} [userConfig.onRender]         — callback after template render
  * @param {Array<string>} [userConfig.wsProtocols] — WebSocket sub-protocols
+ *        (e.g. `['ndesign.v1', 'jwt.eyJhbGci...']` to carry auth via the
+ *        Sec-WebSocket-Protocol header)
+ * @param {Function} [userConfig.wsTokenProvider] — function returning a
+ *        token string; if set, ws.js appends `?token=<value>` to every
+ *        WebSocket URL before connecting. Useful for backends behind
+ *        load balancers that cannot inspect sub-protocols.
  */
 export function configure(userConfig) {
   if (userConfig.headers) {
@@ -75,6 +86,10 @@ export function init() {
     destroyDropdowns();
     destroyModals();
     destroyToasts();
+    destroyTabs();
+    destroyTooltips();
+    destroyUploads();
+    destroySortable();
   }
 
   initBindings(config);
@@ -86,6 +101,10 @@ export function init() {
   initDropdowns();
   initModals();
   initToasts();
+  initTabs();
+  initTooltips();
+  initUploads();
+  initSortable();
 
   // ── Auto-wiring: single delegated click handler ──────────────────────
   document.addEventListener('click', (e) => {
@@ -166,6 +185,56 @@ export function init() {
           overlay.classList.remove('nd-active');
         }
       }
+      return;
+    }
+
+    // Bind trigger — data-nd-bind-trigger="#selector"
+    // Refetches a bound element, optionally updating its params first.
+    // Supports two sources for params:
+    //   1. The trigger's own data-nd-params attribute (e.g. a Load More button)
+    //   2. The query string of the trigger's href (e.g. a pagination link)
+    // When sourced from href, also maintains aria-current="page" state
+    // across sibling links for pagination active-state styling.
+    const bindTrigger = e.target.closest('[data-nd-bind-trigger]');
+    if (bindTrigger) {
+      e.preventDefault();
+      const selector = bindTrigger.getAttribute('data-nd-bind-trigger');
+      const target = document.querySelector(selector);
+      if (!target) return;
+
+      // Prefer explicit data-nd-params on the trigger (load-more pattern);
+      // otherwise fall back to extracting from the anchor's href (pagination).
+      const ownParams = bindTrigger.getAttribute('data-nd-params');
+      if (ownParams != null) {
+        target.setAttribute('data-nd-params', ownParams);
+      } else if (bindTrigger.tagName === 'A' && bindTrigger.href) {
+        try {
+          const url = new URL(bindTrigger.href, window.location.origin);
+          if (url.search) {
+            target.setAttribute('data-nd-params', url.search.substring(1));
+          }
+        } catch (_) { /* invalid URL — ignore */ }
+
+        // Update aria-current on sibling pagination links.
+        // Walk up until we find a container that holds multiple bind triggers
+        // (the actual pagination list), rather than assuming <ul><li><a>.
+        let scope = bindTrigger.parentElement;
+        while (scope && scope.querySelectorAll('[data-nd-bind-trigger]').length < 2) {
+          scope = scope.parentElement;
+        }
+        if (scope) {
+          scope.querySelectorAll('[aria-current="page"]').forEach(el => el.removeAttribute('aria-current'));
+          bindTrigger.setAttribute('aria-current', 'page');
+        }
+      }
+
+      // Optional mode override (e.g. "append" for load-more)
+      const mode = bindTrigger.getAttribute('data-nd-bind-mode');
+      if (mode) {
+        target.setAttribute('data-nd-mode', mode);
+      }
+
+      target.dispatchEvent(new CustomEvent('nd:refresh'));
       return;
     }
   });

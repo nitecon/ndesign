@@ -83,7 +83,7 @@ function serializeForm(form) {
  * within a form.
  * @param {HTMLFormElement} form — the form element
  */
-function clearFormErrors(form) {
+export function clearFormErrors(form) {
   const errorEls = form.querySelectorAll('.nd-form-error');
   for (const el of errorEls) {
     el.textContent = '';
@@ -104,7 +104,7 @@ function clearFormErrors(form) {
  * @param {Object} errors          — { fieldName: "error message", ... }
  * @param {string|null} feedbackId — ID of the global feedback element
  */
-function displayErrors(form, errors, feedbackId) {
+export function displayErrors(form, errors, feedbackId) {
   for (const [field, message] of Object.entries(errors)) {
     if (field === '_form') {
       // Global form error goes to the feedback element
@@ -145,7 +145,7 @@ function displayErrors(form, errors, feedbackId) {
  * @param {HTMLFormElement|HTMLElement} el — the element with data-nd-success
  * @param {Object} responseData           — parsed JSON response from server
  */
-function handleSuccess(el, responseData) {
+export function handleSuccess(el, responseData) {
   const successAttr = el.getAttribute('data-nd-success');
   if (!successAttr) return;
 

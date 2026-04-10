@@ -1,0 +1,100 @@
+// ==========================================================================
+// Progress — native <progress> element styling
+// Styles both the determinate (value) and indeterminate states across
+// WebKit/Blink (::-webkit-progress-bar / ::-webkit-progress-value) and
+// Firefox (::-moz-progress-bar). Native-first: no wrapper class required.
+// ==========================================================================
+@use 'tokens' as *;
+
+progress {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  width: 100%;
+  height: 0.5rem;
+  border: none;
+  border-radius: $nd-radius-pill;
+  background: var(--nd-progress-bg, var(--nd-bg-well));
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+// WebKit/Blink — styles the unfilled track
+progress::-webkit-progress-bar {
+  background: var(--nd-progress-bg, var(--nd-bg-well));
+  border-radius: $nd-radius-pill;
+}
+
+// WebKit/Blink — styles the filled portion
+progress::-webkit-progress-value {
+  background: linear-gradient(180deg, var(--nd-accent-hover, var(--nd-accent)) 0%, var(--nd-accent) 100%);
+  border-radius: $nd-radius-pill;
+  transition: width $nd-transition-normal ease-out;
+}
+
+// Firefox — styles the filled portion
+progress::-moz-progress-bar {
+  background: linear-gradient(180deg, var(--nd-accent-hover, var(--nd-accent)) 0%, var(--nd-accent) 100%);
+  border-radius: $nd-radius-pill;
+}
+
+// Indeterminate state (no value attribute) — animated stripe
+progress:indeterminate {
+  background:
+    linear-gradient(90deg,
+      var(--nd-progress-bg, var(--nd-bg-well)) 0%,
+      var(--nd-accent) 20%,
+      var(--nd-accent-hover, var(--nd-accent)) 50%,
+      var(--nd-accent) 80%,
+      var(--nd-progress-bg, var(--nd-bg-well)) 100%
+    );
+  background-size: 200% 100%;
+  animation: nd-progress-indeterminate 1.5s linear infinite;
+}
+
+@keyframes nd-progress-indeterminate {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+// ---------------------------------------------------------------------------
+// Size variants
+// ---------------------------------------------------------------------------
+.nd-progress-sm {
+  height: 0.25rem;
+}
+
+.nd-progress-lg {
+  height: 0.75rem;
+}
+
+.nd-progress-xl {
+  height: 1.25rem;
+}
+
+// ---------------------------------------------------------------------------
+// Semantic color variants via modifier classes
+// ---------------------------------------------------------------------------
+.nd-progress-success::-webkit-progress-value {
+  background: linear-gradient(180deg, var(--nd-success) 0%, var(--nd-success) 100%);
+}
+
+.nd-progress-success::-moz-progress-bar {
+  background: linear-gradient(180deg, var(--nd-success) 0%, var(--nd-success) 100%);
+}
+
+.nd-progress-warning::-webkit-progress-value {
+  background: linear-gradient(180deg, var(--nd-warning) 0%, var(--nd-warning) 100%);
+}
+
+.nd-progress-warning::-moz-progress-bar {
+  background: linear-gradient(180deg, var(--nd-warning) 0%, var(--nd-warning) 100%);
+}
+
+.nd-progress-danger::-webkit-progress-value {
+  background: linear-gradient(180deg, var(--nd-danger) 0%, var(--nd-danger) 100%);
+}
+
+.nd-progress-danger::-moz-progress-bar {
+  background: linear-gradient(180deg, var(--nd-danger) 0%, var(--nd-danger) 100%);
+}

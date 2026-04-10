@@ -12,6 +12,7 @@ import { render } from './template.js';
  * @typedef {Object} SSEConnection
  * @property {EventSource} source     — the shared EventSource instance
  * @property {Set<HTMLElement>} elements — elements bound to this URL
+ * @property {string|null} lastEventId — the most recently observed SSE event id
  */
 
 /** @type {Map<string, SSEConnection>} shared connections keyed by full URL */
@@ -65,6 +66,17 @@ function parseEventData(event) {
  * @param {Object} config        — NDesign configuration object
  */
 function dispatchToElements(conn, eventType, event, config) {
+  // Track the last event id per connection so application code can
+  // read it (e.g., for manual resume scenarios). Native EventSource
+  // handles Last-Event-ID reconnect automatically — this is purely
+  // for visibility.
+  if (event && event.lastEventId) {
+    conn.lastEventId = event.lastEventId;
+    for (const el of conn.elements) {
+      el.dataset.ndSseLastId = event.lastEventId;
+    }
+  }
+
   const data = parseEventData(event);
   if (!data) return;
 
@@ -74,6 +86,17 @@ function dispatchToElements(conn, eventType, event, config) {
     if (!elFilter && eventType !== 'message') continue;
     applyEvent(el, data, config);
   }
+}
+
+/**
+ * Get the last observed SSE event id for a given URL.
+ * Useful for debugging or manual resume scenarios.
+ * @param {string} url — the full SSE URL (including baseURL if applicable)
+ * @returns {string|null} the last event id, or null if not tracked
+ */
+export function getLastEventId(url) {
+  const conn = connections.get(url);
+  return conn ? (conn.lastEventId || null) : null;
 }
 
 /**
@@ -112,7 +135,7 @@ export function initSSE(config) {
     }
 
     const source = new EventSource(fullURL);
-    const conn = { source, elements: elSet };
+    const conn = { source, elements: elSet, lastEventId: null };
 
     // Collect all distinct event types needed by bound elements
     const namedEvents = new Set();

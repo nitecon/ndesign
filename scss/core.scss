@@ -44,6 +44,14 @@
 @use 'toasts';
 @use 'app-layout';
 @use 'avatars';
+@use 'tabs';
+@use 'tooltips';
+@use 'progress';
+@use 'skeletons';
+@use 'breadcrumbs';
+@use 'pagination';
+@use 'uploads';
+@use 'sortable';
 
 // 6. Utilities
 @use 'utilities';

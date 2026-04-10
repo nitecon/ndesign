@@ -1,0 +1,44 @@
+// ==========================================================================
+// Sortable — drag-and-drop reorderable lists
+// Paired with js/sortable.js which auto-wires [data-nd-sortable]
+// containers. Children become draggable and can be reordered with the
+// mouse. On drop the nd:sortable:reorder custom event fires and,
+// optionally, a POST is sent to the backend.
+// ==========================================================================
+@use 'tokens' as *;
+
+.nd-sortable {
+  // Draggable children present a grab cursor and suppress text
+  // selection while the user manipulates them.
+  > [draggable="true"] {
+    cursor: grab;
+    user-select: none;
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  // Ghost state for the item currently being dragged.
+  > .nd-dragging {
+    opacity: 0.5;
+    background: var(--nd-bg-surface-hover);
+  }
+}
+
+// When a reorder POST fails, the container briefly shakes and
+// highlights with the danger border colour.
+.nd-sortable.nd-sortable-error {
+  animation: nd-shake 500ms ease-in-out;
+  outline: 1px solid var(--nd-danger);
+  outline-offset: 2px;
+}
+
+// Convenience list-reset for ul/ol sortables so consumers do not need
+// inline styles on the demo HTML.
+ul.nd-sortable,
+ol.nd-sortable {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}

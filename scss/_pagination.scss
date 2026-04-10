@@ -1,0 +1,121 @@
+// ==========================================================================
+// Pagination — native <nav> + <ul> with ARIA semantics
+// ==========================================================================
+@use 'tokens' as *;
+
+.nd-pagination {
+  // Reset native <nav> top-bar styles for this context
+  display: block;
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  position: static;
+
+  ul {
+    display: inline-flex;
+    align-items: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    gap: 2px;
+  }
+
+  li {
+    display: block;
+  }
+
+  li a,
+  li span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    padding: 0 $nd-space-sm;
+    font-size: $nd-font-sm;
+    font-weight: $nd-font-weight-medium;
+    color: var(--nd-text-secondary);
+    text-decoration: none;
+    background: var(--nd-bg-surface);
+    border: 1px solid var(--nd-border);
+    border-radius: $nd-radius-md;
+    transition:
+      background $nd-transition-fast,
+      color $nd-transition-fast,
+      border-color $nd-transition-fast;
+  }
+
+  li a:hover {
+    background: var(--nd-bg-surface-hover);
+    color: var(--nd-text-primary);
+    border-color: var(--nd-border-hover);
+    text-decoration: none;
+  }
+
+  li a:focus-visible {
+    outline: 2px solid var(--nd-focus-ring);
+    outline-offset: 2px;
+    z-index: 1;
+  }
+
+  // Current page
+  li a[aria-current="page"],
+  li [aria-current="page"] {
+    background: var(--nd-accent);
+    color: var(--nd-accent-text);
+    border-color: var(--nd-accent);
+    cursor: default;
+    pointer-events: none;
+  }
+
+  // Ellipsis
+  li span[aria-hidden="true"] {
+    border: none;
+    background: none;
+    color: var(--nd-text-muted);
+    pointer-events: none;
+  }
+
+  // Disabled state (e.g., on Prev/Next when at boundary)
+  li a[aria-disabled="true"],
+  li .nd-disabled {
+    opacity: 0.4;
+    pointer-events: none;
+    cursor: not-allowed;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Size Variants
+// ---------------------------------------------------------------------------
+.nd-pagination-sm {
+  ul li a,
+  ul li span {
+    min-width: 1.75rem;
+    height: 1.75rem;
+    font-size: $nd-font-xs;
+    padding: 0 $nd-space-xs;
+  }
+}
+
+.nd-pagination-lg {
+  ul li a,
+  ul li span {
+    min-width: 2.75rem;
+    height: 2.75rem;
+    font-size: $nd-font-base;
+    padding: 0 $nd-space-md;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Alignment Helpers
+// ---------------------------------------------------------------------------
+.nd-pagination-center {
+  text-align: center;
+}
+
+.nd-pagination-right {
+  text-align: right;
+}

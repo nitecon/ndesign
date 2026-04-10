@@ -417,6 +417,241 @@
     </section>
 
     <!-- ================================================================== -->
+    <!-- Tabs                                                               -->
+    <!-- ================================================================== -->
+    <section class="nd-mb-2xl nd-pb-lg nd-border-b" id="tabs">
+      <h2>Tabs</h2>
+      <p class="nd-text-secondary nd-mb-lg">Native ARIA-based tabs with keyboard navigation (arrow keys, Home, End).</p>
+
+      <div class="nd-row">
+        <div class="nd-col-6">
+          <h4>Horizontal (default)</h4>
+          <div class="nd-tabs nd-mb-md">
+            <nav role="tablist" aria-label="Profile sections">
+              <button role="tab" aria-selected="true" aria-controls="tab-profile" id="tab-t1">Profile</button>
+              <button role="tab" aria-controls="tab-security" id="tab-t2">Security</button>
+              <button role="tab" aria-controls="tab-notifications" id="tab-t3">Notifications</button>
+              <button role="tab" aria-controls="tab-billing" id="tab-t4" disabled>Billing</button>
+            </nav>
+            <div role="tabpanel" id="tab-profile" aria-labelledby="tab-t1">
+              <p>Profile content: update your name, email, avatar, and bio.</p>
+            </div>
+            <div role="tabpanel" id="tab-security" aria-labelledby="tab-t2" hidden>
+              <p>Security content: change password, enable 2FA, manage sessions.</p>
+            </div>
+            <div role="tabpanel" id="tab-notifications" aria-labelledby="tab-t3" hidden>
+              <p>Notifications content: email, SMS, push preferences.</p>
+            </div>
+            <div role="tabpanel" id="tab-billing" aria-labelledby="tab-t4" hidden>
+              <p>Billing content (disabled demo).</p>
+            </div>
+          </div>
+        </div>
+        <div class="nd-col-6">
+          <h4>Vertical</h4>
+          <div class="nd-tabs nd-tabs-vertical">
+            <nav role="tablist" aria-orientation="vertical" aria-label="Settings">
+              <button role="tab" aria-selected="true" aria-controls="vtab-1" id="vtab-t1">General</button>
+              <button role="tab" aria-controls="vtab-2" id="vtab-t2">Appearance</button>
+              <button role="tab" aria-controls="vtab-3" id="vtab-t3">Advanced</button>
+            </nav>
+            <div role="tabpanel" id="vtab-1" aria-labelledby="vtab-t1">
+              <p>General settings.</p>
+            </div>
+            <div role="tabpanel" id="vtab-2" aria-labelledby="vtab-t2" hidden>
+              <p>Appearance settings.</p>
+            </div>
+            <div role="tabpanel" id="vtab-3" aria-labelledby="vtab-t3" hidden>
+              <p>Advanced settings.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Tooltips                                                           -->
+    <!-- ================================================================== -->
+    <section class="nd-mb-2xl nd-pb-lg nd-border-b" id="tooltips">
+      <h2>Tooltips</h2>
+      <p class="nd-text-secondary nd-mb-lg">Declarative via <code>data-nd-tooltip</code>. Hover or focus to reveal.</p>
+
+      <div class="nd-flex nd-flex-wrap nd-gap-md nd-align-center">
+        <button class="nd-btn-primary" data-nd-tooltip="Save the current form">Save</button>
+        <button class="nd-btn-secondary" data-nd-tooltip="Discard any unsaved changes" data-nd-tooltip-placement="bottom">Cancel</button>
+        <button class="nd-btn-danger" data-nd-tooltip="Permanently delete this record. Cannot be undone." data-nd-tooltip-placement="right">Delete</button>
+        <button class="nd-btn-ghost" data-nd-tooltip="Tooltip on the left" data-nd-tooltip-placement="left">Hover me</button>
+        <span data-nd-tooltip="Tooltips work on any element, not just buttons" class="nd-badge nd-badge-primary">Hover</span>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Progress Bars                                                      -->
+    <!-- ================================================================== -->
+    <section class="nd-mb-2xl nd-pb-lg nd-border-b" id="progress">
+      <h2>Progress Bars</h2>
+      <p class="nd-text-secondary nd-mb-lg">Native <code>&lt;progress&gt;</code> element, styled. Determinate and indeterminate states.</p>
+
+      <div class="nd-row">
+        <div class="nd-col-6">
+          <h4>Determinate</h4>
+          <p class="nd-text-small nd-mb-xs">Upload: 25%</p>
+          <progress value="25" max="100" class="nd-mb-md">25%</progress>
+          <p class="nd-text-small nd-mb-xs">Upload: 60%</p>
+          <progress value="60" max="100" class="nd-mb-md">60%</progress>
+          <p class="nd-text-small nd-mb-xs">Upload: 100%</p>
+          <progress value="100" max="100" class="nd-mb-md">100%</progress>
+
+          <h4 class="nd-mt-lg">Indeterminate</h4>
+          <p class="nd-text-small nd-mb-xs">Loading...</p>
+          <progress max="100" class="nd-mb-md"></progress>
+        </div>
+        <div class="nd-col-6">
+          <h4>Size variants</h4>
+          <p class="nd-text-small nd-mb-xs">Small</p>
+          <progress class="nd-progress-sm nd-mb-md" value="40" max="100"></progress>
+          <p class="nd-text-small nd-mb-xs">Default</p>
+          <progress class="nd-mb-md" value="50" max="100"></progress>
+          <p class="nd-text-small nd-mb-xs">Large</p>
+          <progress class="nd-progress-lg nd-mb-md" value="60" max="100"></progress>
+          <p class="nd-text-small nd-mb-xs">Extra Large</p>
+          <progress class="nd-progress-xl nd-mb-md" value="70" max="100"></progress>
+
+          <h4 class="nd-mt-lg">Semantic variants</h4>
+          <p class="nd-text-small nd-mb-xs">Success</p>
+          <progress class="nd-progress-success nd-mb-sm" value="100" max="100"></progress>
+          <p class="nd-text-small nd-mb-xs">Warning</p>
+          <progress class="nd-progress-warning nd-mb-sm" value="75" max="100"></progress>
+          <p class="nd-text-small nd-mb-xs">Danger</p>
+          <progress class="nd-progress-danger nd-mb-sm" value="90" max="100"></progress>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Skeleton Loaders                                                   -->
+    <!-- ================================================================== -->
+    <section class="nd-mb-2xl nd-pb-lg nd-border-b" id="skeletons">
+      <h2>Skeleton Loaders</h2>
+      <p class="nd-text-secondary nd-mb-lg">Shimmering placeholders for loading states. Pure CSS with reduced-motion support.</p>
+
+      <div class="nd-row">
+        <div class="nd-col-6">
+          <div class="nd-card">
+            <div class="nd-card-header">Text Skeleton</div>
+            <div class="nd-card-body">
+              <div class="nd-skeleton-group">
+                <div class="nd-skeleton nd-skeleton-title"></div>
+                <div class="nd-skeleton nd-skeleton-text"></div>
+                <div class="nd-skeleton nd-skeleton-text"></div>
+                <div class="nd-skeleton nd-skeleton-text"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="nd-col-6">
+          <div class="nd-card">
+            <div class="nd-card-header">Avatar + Text</div>
+            <div class="nd-card-body">
+              <div class="nd-flex nd-gap-md nd-align-center nd-mb-md">
+                <div class="nd-skeleton nd-skeleton-avatar-lg"></div>
+                <div class="nd-skeleton-group" style="flex: 1">
+                  <div class="nd-skeleton nd-skeleton-title"></div>
+                  <div class="nd-skeleton nd-skeleton-text"></div>
+                </div>
+              </div>
+              <div class="nd-flex nd-gap-sm">
+                <div class="nd-skeleton nd-skeleton-button"></div>
+                <div class="nd-skeleton nd-skeleton-button"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Breadcrumbs                                                        -->
+    <!-- ================================================================== -->
+    <section class="nd-mb-2xl nd-pb-lg nd-border-b" id="breadcrumbs">
+      <h2>Breadcrumbs</h2>
+      <p class="nd-text-secondary nd-mb-lg">Native <code>&lt;nav&gt; &gt; &lt;ol&gt;</code> with ARIA. Chevron, slash, or arrow separators.</p>
+
+      <h4>Chevron (default)</h4>
+      <nav class="nd-breadcrumb nd-mb-md" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="#">Home</a></li>
+          <li><a href="#">Settings</a></li>
+          <li><a href="#">Account</a></li>
+          <li aria-current="page">Profile</li>
+        </ol>
+      </nav>
+
+      <h4>Slash</h4>
+      <nav class="nd-breadcrumb nd-breadcrumb-slash nd-mb-md" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="#">Projects</a></li>
+          <li><a href="#">ndesign</a></li>
+          <li><a href="#">docs</a></li>
+          <li aria-current="page">bindings.md</li>
+        </ol>
+      </nav>
+
+      <h4>Arrow</h4>
+      <nav class="nd-breadcrumb nd-breadcrumb-arrow" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="#">Dashboard</a></li>
+          <li><a href="#">Users</a></li>
+          <li aria-current="page">Will Hattingh</li>
+        </ol>
+      </nav>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Pagination                                                         -->
+    <!-- ================================================================== -->
+    <section class="nd-mb-2xl nd-pb-lg nd-border-b" id="pagination">
+      <h2>Pagination</h2>
+      <p class="nd-text-secondary nd-mb-lg">Native <code>&lt;nav&gt; &gt; &lt;ul&gt;</code> with ARIA. Links are fully keyboard navigable.</p>
+
+      <h4>Default</h4>
+      <nav class="nd-pagination nd-mb-md" aria-label="Pagination">
+        <ul>
+          <li><a href="#" aria-label="Previous page">&larr; Prev</a></li>
+          <li><a href="#">1</a></li>
+          <li><a href="#" aria-current="page">2</a></li>
+          <li><a href="#">3</a></li>
+          <li><a href="#">4</a></li>
+          <li><span aria-hidden="true">&hellip;</span></li>
+          <li><a href="#">10</a></li>
+          <li><a href="#" aria-label="Next page">Next &rarr;</a></li>
+        </ul>
+      </nav>
+
+      <h4>Small</h4>
+      <nav class="nd-pagination nd-pagination-sm nd-mb-md" aria-label="Pagination">
+        <ul>
+          <li><a href="#">1</a></li>
+          <li><a href="#" aria-current="page">2</a></li>
+          <li><a href="#">3</a></li>
+          <li><a href="#">4</a></li>
+          <li><a href="#">5</a></li>
+        </ul>
+      </nav>
+
+      <h4>Large</h4>
+      <nav class="nd-pagination nd-pagination-lg" aria-label="Pagination">
+        <ul>
+          <li><a href="#" aria-disabled="true">&larr;</a></li>
+          <li><a href="#" aria-current="page">1</a></li>
+          <li><a href="#">2</a></li>
+          <li><a href="#">3</a></li>
+          <li><a href="#">&rarr;</a></li>
+        </ul>
+      </nav>
+    </section>
+
+    <!-- ================================================================== -->
     <!-- Stacking                                                           -->
     <!-- ================================================================== -->
     <section class="nd-mb-2xl nd-pb-lg nd-border-b" id="stacking">

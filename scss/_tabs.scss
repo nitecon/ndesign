@@ -1,0 +1,141 @@
+// ==========================================================================
+// Tabs
+// Native-first tabs using ARIA roles (tablist, tab, tabpanel).
+// Supports horizontal (default) and vertical (.nd-tabs-vertical) layouts.
+// ==========================================================================
+
+@use 'tokens' as *;
+
+// ---------------------------------------------------------------------------
+// Container
+// ---------------------------------------------------------------------------
+.nd-tabs {
+  display: block;
+  width: 100%;
+}
+
+// ---------------------------------------------------------------------------
+// Tablist — horizontal row, bottom border separator
+// ---------------------------------------------------------------------------
+.nd-tabs [role="tablist"] {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: $nd-space-xs;
+  border-bottom: 1px solid var(--nd-border);
+  padding: 0;
+  margin: 0;
+}
+
+// ---------------------------------------------------------------------------
+// Tab button — reset native button, underline indicator on selection
+// ---------------------------------------------------------------------------
+.nd-tabs [role="tab"] {
+  display: inline-flex;
+  align-items: center;
+  gap: $nd-space-xs;
+  padding: $nd-space-sm $nd-space-md;
+  margin-bottom: -1px; // overlap tablist bottom border
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  border-radius: $nd-radius-sm $nd-radius-sm 0 0;
+  color: var(--nd-text-secondary);
+  font-family: inherit;
+  font-size: $nd-font-sm;
+  font-weight: $nd-font-weight-medium;
+  line-height: $nd-line-height-normal;
+  cursor: pointer;
+  transition:
+    background $nd-transition-fast,
+    color $nd-transition-fast,
+    border-color $nd-transition-fast,
+    box-shadow $nd-transition-fast;
+}
+
+.nd-tabs [role="tab"]:hover:not([disabled]):not([aria-selected="true"]) {
+  background: var(--nd-bg-surface-hover);
+  color: var(--nd-text-primary);
+  box-shadow: var(--nd-glass-highlight), var(--nd-glass-edge);
+}
+
+.nd-tabs [role="tab"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--nd-focus-ring);
+}
+
+.nd-tabs [role="tab"][aria-selected="true"] {
+  color: var(--nd-text-primary);
+  border-bottom-color: var(--nd-accent);
+  font-weight: $nd-font-weight-semibold;
+}
+
+.nd-tabs [role="tab"][disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+// ---------------------------------------------------------------------------
+// Tabpanel — fade-in on reveal
+// ---------------------------------------------------------------------------
+.nd-tabs [role="tabpanel"] {
+  padding-top: $nd-space-md;
+  animation: nd-tab-fade-in $nd-transition-normal;
+}
+
+.nd-tabs [role="tabpanel"][hidden] {
+  display: none;
+}
+
+@keyframes nd-tab-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Vertical variant — tablist on the left, panels on the right
+// ---------------------------------------------------------------------------
+.nd-tabs-vertical {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: $nd-space-lg;
+}
+
+.nd-tabs-vertical [role="tablist"] {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  border-bottom: none;
+  border-right: 1px solid var(--nd-border);
+  flex-shrink: 0;
+  min-width: 12rem;
+}
+
+.nd-tabs-vertical [role="tab"] {
+  justify-content: flex-start;
+  text-align: left;
+  margin-bottom: 0;
+  margin-right: -1px; // overlap tablist right border
+  border-bottom: none;
+  border-right: 3px solid transparent;
+  border-radius: $nd-radius-sm 0 0 $nd-radius-sm;
+}
+
+.nd-tabs-vertical [role="tab"][aria-selected="true"] {
+  border-right-color: var(--nd-accent);
+  border-bottom-color: transparent;
+}
+
+.nd-tabs-vertical [role="tabpanel"] {
+  flex: 1 1 auto;
+  padding-top: 0;
+  padding-left: $nd-space-md;
+}

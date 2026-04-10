@@ -10,7 +10,18 @@ test('action.js exports initActions', () => {
   assert.equal(typeof action.initActions, 'function');
 });
 
-test('action.js: initActions is the only public export', () => {
+test('action.js: exports expected public surface', () => {
   const keys = Object.keys(action).sort();
-  assert.deepEqual(keys, ['initActions']);
+  assert.deepEqual(keys, [
+    'clearFormErrors',
+    'displayErrors',
+    'handleSuccess',
+    'initActions',
+  ]);
+});
+
+test('action.js: handleSuccess/clearFormErrors/displayErrors are functions', () => {
+  assert.equal(typeof action.handleSuccess, 'function');
+  assert.equal(typeof action.clearFormErrors, 'function');
+  assert.equal(typeof action.displayErrors, 'function');
 });

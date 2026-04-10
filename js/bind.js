@@ -18,6 +18,21 @@ const pollingIntervals = new Map();
 let pollingObserver = null;
 
 /**
+ * Build the fetch URL for a bound element, appending any
+ * query parameters declared via data-nd-params.
+ * @param {HTMLElement} el — element with data-nd-bind attribute
+ * @returns {string} URL with query string appended, or the raw
+ *                   data-nd-bind value if no params are present
+ */
+function buildFetchURL(el) {
+  const url = el.getAttribute('data-nd-bind') || '';
+  const params = el.getAttribute('data-nd-params');
+  if (!params) return url;
+  const sep = url.includes('?') ? '&' : '?';
+  return url + sep + params;
+}
+
+/**
  * Fetch JSON from a URL with request deduplication.
  * Multiple elements bound to the same URL within the same tick share
  * a single fetch request.
@@ -66,8 +81,9 @@ async function fetchJSON(url, config) {
  * @param {Object} config    — NDesign configuration object
  */
 async function processBind(el, config) {
-  const url = el.getAttribute('data-nd-bind');
-  if (!url) return;
+  const rawURL = el.getAttribute('data-nd-bind');
+  if (!rawURL) return;
+  const url = buildFetchURL(el);
 
   // Show loading placeholder if a loading template exists
   const loadingTpl = el.querySelector('template[data-nd-loading]');
@@ -95,18 +111,35 @@ async function processBind(el, config) {
     const field = el.getAttribute('data-nd-field');
     const mode = el.getAttribute('data-nd-mode') || 'replace';
 
+    // Optional sub-field extraction: when the backend returns an envelope
+    // like {data: [...], meta: {...}}, data-nd-select="data" picks out the
+    // array before rendering. Supports dot-notation paths.
+    const selectPath = el.getAttribute('data-nd-select');
+    const renderData = selectPath ? getByPath(data, selectPath) : data;
+
     if (templateId) {
-      render(el, templateId, data, mode);
+      render(el, templateId, renderData, mode);
     } else if (field) {
       const value = getByPath(data, field);
-      el.textContent = value != null ? String(value) : '';
+      const attr = el.getAttribute('data-nd-attr');
+      if (attr) {
+        if (value != null) {
+          el.setAttribute(attr, String(value));
+        } else {
+          el.removeAttribute(attr);
+        }
+      } else {
+        el.textContent = value != null ? String(value) : '';
+      }
     } else {
       // No template, no field — treat data as plain text
       el.textContent = typeof data === 'string' ? data : JSON.stringify(data);
     }
 
-    // Handle empty state — show empty template if data is an empty array
-    if (Array.isArray(data) && data.length === 0) {
+    // Handle empty state — show empty template if the rendered data is an
+    // empty array (honours data-nd-select so envelope-wrapped responses
+    // trigger the empty state correctly).
+    if (Array.isArray(renderData) && renderData.length === 0) {
       const emptyTpl = el.querySelector('template[data-nd-empty]');
       if (emptyTpl) {
         const fragment = emptyTpl.content.cloneNode(true);

@@ -191,4 +191,10 @@
   --nd-info-bg:     linear-gradient(180deg, #0c4a6e 0%, #082f49 100%);
   --nd-info-border: #0284c7;
   --nd-info-text:   #7dd3fc;
+
+  // -----------------------------------------------------------------------
+  // Tooltip — inverted (light tooltip on dark theme) for high contrast
+  // -----------------------------------------------------------------------
+  --nd-tooltip-bg:   rgba(230, 234, 242, 0.95);
+  --nd-tooltip-text: #0f141d;
 }

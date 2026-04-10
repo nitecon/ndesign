@@ -1,0 +1,101 @@
+// ==========================================================================
+// Skeletons — animated placeholder loaders for data-fetching states
+// ==========================================================================
+@use 'tokens' as *;
+
+// ---------------------------------------------------------------------------
+// Base skeleton — animated shimmer placeholder
+// ---------------------------------------------------------------------------
+.nd-skeleton {
+  display: block;
+  background: linear-gradient(
+    90deg,
+    var(--nd-bg-skeleton) 0%,
+    var(--nd-bg-skeleton-shimmer) 50%,
+    var(--nd-bg-skeleton) 100%
+  );
+  background-size: 200% 100%;
+  animation: nd-skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: $nd-radius-sm;
+  color: transparent;  // hide any text content
+  user-select: none;
+  pointer-events: none;
+}
+
+@keyframes nd-skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+// ---------------------------------------------------------------------------
+// Shape variants
+// ---------------------------------------------------------------------------
+.nd-skeleton-text {
+  height: 0.875rem;
+  margin: $nd-space-xs 0;
+  border-radius: $nd-radius-sm;
+
+  // Last line is shorter (looks more natural)
+  &:last-child {
+    width: 80%;
+  }
+}
+
+.nd-skeleton-title {
+  height: 1.5rem;
+  width: 60%;
+  margin: $nd-space-sm 0;
+  border-radius: $nd-radius-sm;
+}
+
+.nd-skeleton-circle {
+  border-radius: $nd-radius-circle;
+}
+
+.nd-skeleton-avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: $nd-radius-circle;
+}
+
+.nd-skeleton-avatar-lg {
+  width: 4rem;
+  height: 4rem;
+  border-radius: $nd-radius-circle;
+}
+
+.nd-skeleton-button {
+  height: 2.25rem;
+  width: 6rem;
+  border-radius: $nd-radius-md;
+}
+
+.nd-skeleton-image {
+  width: 100%;
+  padding-bottom: 56.25%;  // 16:9 aspect ratio
+  border-radius: $nd-radius-md;
+}
+
+.nd-skeleton-card {
+  height: 8rem;
+  border-radius: $nd-radius-md;
+}
+
+// ---------------------------------------------------------------------------
+// Skeleton group — for pre-arranged layouts
+// ---------------------------------------------------------------------------
+.nd-skeleton-group {
+  display: flex;
+  flex-direction: column;
+  gap: $nd-space-sm;
+}
+
+// ---------------------------------------------------------------------------
+// Reduced motion — stop animation if user prefers reduced motion
+// ---------------------------------------------------------------------------
+@media (prefers-reduced-motion: reduce) {
+  .nd-skeleton {
+    animation: none;
+    background: var(--nd-bg-skeleton);
+  }
+}

@@ -1,0 +1,43 @@
+// ==========================================================================
+// Uploads — file input + upload progress bar styling
+// Native <input type="file"> has an unstyleable browser default; we re-theme
+// the ::file-selector-button pseudo to match nd-btn-style. The upload
+// progress bar is hidden until the XHR upload starts, then revealed by JS.
+// ==========================================================================
+@use 'tokens' as *;
+
+input[type="file"] {
+  display: block;
+  width: 100%;
+  font-family: $nd-font-family-sans;
+  font-size: $nd-font-sm;
+  color: var(--nd-text-secondary);
+  padding: $nd-space-xs 0;
+
+  &::file-selector-button {
+    padding: $nd-space-xs $nd-space-md;
+    margin-right: $nd-space-md;
+    border: 1px solid var(--nd-btn-border);
+    border-radius: $nd-radius-md;
+    background: var(--nd-btn-bg);
+    color: var(--nd-btn-text);
+    font-family: $nd-font-family-sans;
+    font-size: $nd-font-sm;
+    font-weight: $nd-font-weight-medium;
+    cursor: pointer;
+    transition: background $nd-transition-fast;
+
+    &:hover {
+      background: var(--nd-btn-bg-hover);
+    }
+  }
+}
+
+// Upload progress bar — hidden until upload starts, revealed by upload.js
+.nd-upload-progress[hidden] {
+  display: none;
+}
+
+.nd-upload-progress {
+  margin-top: $nd-space-sm;
+}

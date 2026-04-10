@@ -80,6 +80,154 @@ Multiple elements can bind to the same URL. ndesign deduplicates requests -- ele
 <p>CPU: <strong data-nd-bind="/api/stats" data-nd-field="cpu_usage"></strong>%</p>
 ```
 
+### Targeting an attribute -- `data-nd-attr`
+
+By default `data-nd-field` writes to the element's `textContent`. When combined with `data-nd-attr`, the extracted value is written to an HTML attribute instead. This makes it trivial to drive native elements like `<progress>`, `<img>`, or `<a>` directly from backend state.
+
+```html
+<progress data-nd-bind="/api/job/status"
+          data-nd-field="percent"
+          data-nd-attr="value"
+          max="100"></progress>
+```
+
+Common use cases:
+
+| Attribute | Example |
+|-----------|---------|
+| `value` | `<progress>`, `<meter>`, `<input>` bound to a backend value |
+| `src` | `<img data-nd-bind="/api/user/me" data-nd-field="avatar_url" data-nd-attr="src">` |
+| `href` | `<a data-nd-bind="/api/download" data-nd-field="url" data-nd-attr="href">Download</a>` |
+| `disabled` | Enable or disable a control based on server state |
+
+If the resolved field value is `null` or `undefined`, ndesign removes the attribute entirely rather than setting it to the string `"null"`.
+
+### Query parameters -- `data-nd-params`
+
+`data-nd-params` appends a query string to the bind URL before fetching. It can be set as an initial attribute, or updated dynamically at runtime (for example by a pagination link -- see below).
+
+```html
+<tbody data-nd-bind="/api/users/paginated"
+       data-nd-params="page=1&per_page=25"
+       data-nd-template="user-row"></tbody>
+```
+
+The above fetches `/api/users/paginated?page=1&per_page=25`. When the attribute changes and an `nd:refresh` event is dispatched on the element, the next fetch uses the new query string.
+
+### Unwrapping envelope responses -- `data-nd-select`
+
+Many REST backends wrap list responses in an envelope such as `{data: [...], meta: {...}}` so they can carry pagination metadata alongside the payload. `data-nd-select` tells ndesign to pluck a sub-field from the response (dot notation supported) before handing it to the template engine:
+
+```html
+<tbody data-nd-bind="/api/users/paginated"
+       data-nd-select="data"
+       data-nd-params="page=1&per_page=10"
+       data-nd-template="user-row"></tbody>
+```
+
+With the Go handler responding:
+
+```json
+{
+  "data": [
+    {"id":1,"name":"Will","email":"will@example.com","role":"admin","active":true}
+  ],
+  "meta": {"page":1,"per_page":10,"total":42,"total_pages":5,"has_next":true,"has_prev":false}
+}
+```
+
+ndesign extracts `data` and renders it via the template exactly as if the handler had returned a bare array. Empty-state detection (`<template data-nd-empty>`) also honours the selected sub-field.
+
+### Pagination -- `data-nd-bind-trigger`
+
+Pagination is wired up declaratively. Put `data-nd-bind-trigger="#target"` on a link (or any element), and ndesign will:
+
+1. Copy the query string from the link's `href` into the target's `data-nd-params`
+2. Maintain `aria-current="page"` across sibling links in the same nav
+3. Dispatch `nd:refresh` on the target so it refetches with the new params
+
+```html
+<!-- Bound table with initial params -->
+<tbody id="user-table"
+       data-nd-bind="/api/users/paginated"
+       data-nd-select="data"
+       data-nd-params="page=1&per_page=5"
+       data-nd-template="user-row">
+  <template id="user-row">
+    <tr>
+      <td>{{name}}</td>
+      <td>{{email}}</td>
+      <td>{{role}}</td>
+    </tr>
+  </template>
+</tbody>
+
+<!-- Pagination that refetches the table -->
+<nav class="nd-pagination" aria-label="Pagination">
+  <ul>
+    <li><a href="?page=1&per_page=5" data-nd-bind-trigger="#user-table" aria-current="page">1</a></li>
+    <li><a href="?page=2&per_page=5" data-nd-bind-trigger="#user-table">2</a></li>
+    <li><a href="?page=3&per_page=5" data-nd-bind-trigger="#user-table">3</a></li>
+  </ul>
+</nav>
+```
+
+The trigger pattern works with any bound element -- lists, grids, cards, or scalar-bound elements. You do not need any JavaScript: the framework handles preventDefault, param propagation, and the refresh dispatch in a single delegated click handler.
+
+### Load More (append mode)
+
+The same trigger mechanism drives "Load More" buttons. Instead of pulling params from an `href`, the button supplies its own `data-nd-params`, and optionally overrides the render mode via `data-nd-bind-mode="append"`:
+
+```html
+<tbody id="feed"
+       data-nd-bind="/api/feed"
+       data-nd-params="offset=0&limit=20"
+       data-nd-template="feed-row"
+       data-nd-mode="append"></tbody>
+
+<button data-nd-bind-trigger="#feed"
+        data-nd-params="offset=20&limit=20"
+        data-nd-bind-mode="append">Load More</button>
+```
+
+When clicked, the button sets `data-nd-params="offset=20&limit=20"` on `#feed`, ensures `data-nd-mode="append"`, and fires `nd:refresh`. The new rows are appended to the existing feed rather than replacing it. Increment the offset server-side (or in a click handler) on each subsequent click for true infinite scroll.
+
+> **Server-driven "end of list"**: the framework does not know when the server has run out of rows — only the server knows. To hide the Load More button when no more pages remain, drive it from the `meta` envelope that your endpoint returns (e.g., `{"data": [...], "meta": {"has_next": false}}`) and hook `NDesign.configure({ onRender })`:
+>
+> ```js
+> NDesign.configure({
+>   onRender(el, json) {
+>     if (el.id === 'feed' && json?.meta?.has_next === false) {
+>       document.querySelector('[data-nd-bind-trigger="#feed"]')?.setAttribute('hidden', '');
+>     }
+>   }
+> });
+> ```
+>
+> Alternately, return an empty array and let the button sit disabled — but the `onRender` approach keeps all state decisions on the server.
+
+### Loading skeletons -- `<template data-nd-loading>`
+
+A child `<template data-nd-loading>` inside a bound container is shown while a fetch is in flight, then automatically replaced with real data. This pairs well with the built-in `nd-skeleton` utilities:
+
+```html
+<tbody data-nd-bind="/api/users" data-nd-template="user-row">
+  <template data-nd-loading>
+    <tr>
+      <td colspan="3"><div class="nd-skeleton nd-skeleton-text"></div></td>
+    </tr>
+    <tr>
+      <td colspan="3"><div class="nd-skeleton nd-skeleton-text"></div></td>
+    </tr>
+  </template>
+  <template id="user-row">
+    <tr><td>{{name}}</td><td>{{email}}</td><td>{{role}}</td></tr>
+  </template>
+</tbody>
+```
+
+While `/api/users` is fetching, ndesign clones the loading template into the container. Once the response arrives (or an error occurs), the placeholder is removed and the real template (or `.nd-error` class) takes over.
+
 ### Binding a list with templates
 
 Render an array of objects using a `<template>` element:
@@ -304,6 +452,66 @@ func broadcast(v interface{}) {
 }
 ```
 
+### Authentication
+
+WebSocket connections cannot carry `Authorization` headers from the browser, so ndesign supports two patterns for auth. Pick based on how your infrastructure routes WebSocket traffic.
+
+**Sub-protocol auth (preferred).** The browser sends the configured strings in the `Sec-WebSocket-Protocol` handshake header. This is the cleanest option when your server (or at least your WebSocket gateway) can inspect the handshake:
+
+```js
+NDesign.configure({
+  wsProtocols: ['ndesign.v1', 'jwt.' + localStorage.getItem('auth_token')]
+});
+```
+
+On the Go side, the upgrader echoes one of the offered protocols back:
+
+```go
+var upgrader = websocket.Upgrader{
+    CheckOrigin: func(r *http.Request) bool { return true },
+    Subprotocols: []string{"ndesign.v1"},
+}
+
+func handleWSFeed(w http.ResponseWriter, r *http.Request) {
+    // Sub-protocol token: "jwt.<value>"
+    for _, p := range websocket.Subprotocols(r) {
+        if strings.HasPrefix(p, "jwt.") {
+            if !validateJWT(strings.TrimPrefix(p, "jwt.")) {
+                http.Error(w, "unauthorized", http.StatusUnauthorized)
+                return
+            }
+            break
+        }
+    }
+    conn, err := upgrader.Upgrade(w, r, nil)
+    // ...
+}
+```
+
+**Query-parameter auth.** Some load balancers (notably older AWS ALB configurations and certain nginx setups) strip sub-protocols before forwarding. In that case, use `wsTokenProvider` -- a function that returns a token string, which ndesign appends to every WebSocket URL as `?token=<value>`:
+
+```js
+NDesign.configure({
+  wsTokenProvider: () => localStorage.getItem('auth_token')
+});
+```
+
+The provider is called fresh on every connect (and every reconnect), so rotating tokens just work. The Go handler reads the token from the query string:
+
+```go
+func handleWSFeed(w http.ResponseWriter, r *http.Request) {
+    token := r.URL.Query().Get("token")
+    if !validateJWT(token) {
+        http.Error(w, "unauthorized", http.StatusUnauthorized)
+        return
+    }
+    conn, err := upgrader.Upgrade(w, r, nil)
+    // ...
+}
+```
+
+If both `wsProtocols` and `wsTokenProvider` are configured, both are used: the protocols go in the handshake header and the token is appended to the URL. Handlers that support both patterns can prefer the sub-protocol and fall back to the query param.
+
 ---
 
 ## Server-Sent Events -- `data-nd-sse`
@@ -400,6 +608,41 @@ data: {"version":"2.4.2","environment":"production","status":"complete"}
 Each message ends with a blank line (`\n\n`). The `event:` line is the named event type that `data-nd-sse-event` filters on. The `data:` line contains the JSON payload.
 
 The browser's `EventSource` handles reconnection natively. If the connection drops, it reconnects automatically without any intervention from ndesign.
+
+### Resumable streams -- `Last-Event-ID`
+
+The SSE protocol includes a resumption mechanism: if the server emits an `id:` line with each event, the browser remembers the last id it saw. On reconnect, it automatically sends a `Last-Event-ID: <value>` header, and the server can replay any events the client missed.
+
+ndesign does not need to do anything special for this to work -- native `EventSource` handles the round-trip -- but it does expose the most recently observed id for debugging and manual resume scenarios:
+
+```js
+const lastId = NDesign.getLastEventId('/events/stream');
+console.log('last SSE id seen:', lastId);
+```
+
+The latest id is also written to the bound element's dataset as `data-nd-sse-last-id` on every event, so you can inspect it from DevTools without any code.
+
+The Go handler simply prepends an `id:` line to each event:
+
+```go
+id := 0
+for {
+    select {
+    case <-r.Context().Done():
+        return
+    case <-ticker.C:
+        id++
+        data, _ := json.Marshal(map[string]interface{}{
+            "version": "2.4.2", "environment": "production", "status": "complete",
+        })
+        // id: <n> lets native EventSource resume via Last-Event-ID on reconnect.
+        fmt.Fprintf(w, "id: %d\nevent: deployment\ndata: %s\n\n", id, data)
+        flusher.Flush()
+    }
+}
+```
+
+On reconnect the handler can read `r.Header.Get("Last-Event-ID")` and replay anything newer than that id.
 
 ---
 
@@ -687,7 +930,8 @@ NDesign.configure({
 | `onResponse` | `function` | `null` | Called after every fetch with `(url, response)` |
 | `onError` | `function` | `null` | Called on fetch/WS/SSE errors with `(url, error)` |
 | `onRender` | `function` | `null` | Called after every template render with `(element, data)` |
-| `wsProtocols` | `string[]` | `[]` | WebSocket sub-protocols passed to `new WebSocket(url, protocols)` |
+| `wsProtocols` | `string[]` | `[]` | WebSocket sub-protocols passed to `new WebSocket(url, protocols)` -- use for handshake-based auth |
+| `wsTokenProvider` | `function` | `null` | Called on every WebSocket connect; its return value is appended as `?token=<value>`. Use when load balancers strip sub-protocols. |
 
 CSRF tokens are handled automatically. If your page includes `<meta name="csrf-token" content="...">`, ndesign adds an `X-CSRF-Token` header to every request.
 
@@ -1064,6 +1308,215 @@ func main() {
 
 ---
 
+## File Upload with Progress -- `data-nd-upload`
+
+The `data-nd-upload` attribute turns a plain `<form>` into an XHR-backed file uploader with a live progress bar. Unlike `data-nd-action` (which is JSON-only), upload forms send `multipart/form-data` built from a native `FormData` — so every `<input type="file">` on the form is transmitted byte-for-byte. XHR is used instead of `fetch` because `fetch` cannot report upload progress events.
+
+### Minimal form
+
+```html
+<form data-nd-upload="POST /api/upload"
+      data-nd-feedback="upload-feedback"
+      data-nd-success="refresh:#uploaded-files">
+  <label class="nd-form-label" for="file">Choose a file</label>
+  <input class="nd-input" type="file" name="file" id="file" required>
+
+  <progress class="nd-upload-progress" value="0" max="100" hidden></progress>
+
+  <div id="upload-feedback"></div>
+
+  <button type="submit" class="nd-btn nd-btn-primary">Upload</button>
+</form>
+```
+
+What happens on submit:
+
+1. `clearFormErrors()` wipes any prior `.nd-form-error` messages.
+2. A `FormData` is built from the form and posted with `X-Requested-With: NDesign`.
+3. `xhr.upload.onprogress` updates the `<progress class="nd-upload-progress">` element live.
+4. On `2xx` the `data-nd-success` chain fires (same vocabulary as `data-nd-action`).
+5. On `4xx` with `{ "errors": { ... } }`, errors are field-mapped. Other errors go to the feedback element.
+6. On network failure the feedback element shows `"Network error. Please try again."`.
+
+The submit button is disabled and given the `.nd-loading` class for the duration; the progress bar is re-hidden 1 second after completion.
+
+### Pairing with a bound file list
+
+Combine an upload form with a bound table that refreshes on success to get a complete "upload + see result" loop with zero custom JavaScript:
+
+```html
+<form data-nd-upload="POST /api/upload"
+      data-nd-feedback="upload-feedback"
+      data-nd-success="refresh:#uploaded-files,reset">
+  <input class="nd-input" type="file" name="file" required>
+  <progress class="nd-upload-progress" value="0" max="100" hidden></progress>
+  <div id="upload-feedback"></div>
+  <button type="submit" class="nd-btn nd-btn-primary">Upload</button>
+</form>
+
+<table class="nd-table">
+  <thead><tr><th>Name</th><th>Size</th><th>Uploaded</th></tr></thead>
+  <tbody id="uploaded-files"
+         data-nd-bind="/api/files"
+         data-nd-template="file-row"></tbody>
+</table>
+
+<template id="file-row">
+  <tr><td>{{name}}</td><td>{{size}}</td><td>{{uploaded_at}}</td></tr>
+</template>
+```
+
+The chained `refresh:#uploaded-files,reset` on success re-fetches the file list and then clears the form — both declaratively.
+
+### Server endpoint (Go)
+
+Parse the multipart form, copy the upload to disk, and return JSON. Enforce a size limit with `http.MaxBytesReader`:
+
+```go
+func handleUpload(w http.ResponseWriter, r *http.Request) {
+    if r.Method != http.MethodPost {
+        http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
+    // Hard cap at 10 MB on the wire.
+    r.Body = http.MaxBytesReader(w, r.Body, 10<<20)
+    if err := r.ParseMultipartForm(10 << 20); err != nil {
+        writeJSON(w, http.StatusBadRequest, map[string]any{
+            "errors": map[string]string{"file": "file too large (max 10 MB)"},
+        })
+        return
+    }
+
+    file, hdr, err := r.FormFile("file")
+    if err != nil {
+        writeJSON(w, http.StatusBadRequest, map[string]any{
+            "errors": map[string]string{"file": "no file provided"},
+        })
+        return
+    }
+    defer file.Close()
+
+    // Basename only — never trust client paths.
+    name := filepath.Base(hdr.Filename)
+    dst, err := os.Create(filepath.Join("./uploads", name))
+    if err != nil {
+        writeJSON(w, http.StatusInternalServerError, map[string]any{
+            "message": "could not save file",
+        })
+        return
+    }
+    defer dst.Close()
+
+    if _, err := io.Copy(dst, file); err != nil {
+        writeJSON(w, http.StatusInternalServerError, map[string]any{
+            "message": "write failed",
+        })
+        return
+    }
+
+    writeJSON(w, http.StatusOK, map[string]any{
+        "message": fmt.Sprintf("uploaded %s", name),
+        "name":    name,
+        "size":    hdr.Size,
+    })
+}
+```
+
+**Security notes.**
+- Always call `filepath.Base()` on `hdr.Filename` — browsers can and do send path segments. Never `filepath.Join(dir, hdr.Filename)` directly.
+- Always wrap `r.Body` with `http.MaxBytesReader` to avoid unbounded memory use.
+- If you accept arbitrary file types, store them under randomly-named files and serve them via a content-sniffing-aware handler to prevent stored XSS.
+
+---
+
+## Sortable (Drag-and-Drop) -- `data-nd-sortable`
+
+The `data-nd-sortable` attribute turns any container element into a sortable list whose direct children can be reordered by dragging. Children are automatically marked `draggable="true"` on init; the module uses the native HTML5 drag-and-drop API and delegated listeners, so there is nothing per-item to wire up.
+
+Every successful drop fires a `nd:sortable:reorder` custom event on the container with `detail.order` — an array of identifiers in their new order. The identifier for each child is its `data-id` attribute if present, otherwise the current index as a string.
+
+### Client-only (fires an event, no server sync)
+
+```html
+<ul class="nd-list-reset" data-nd-sortable>
+  <li data-id="a" class="nd-card nd-p-md">Alpha</li>
+  <li data-id="b" class="nd-card nd-p-md">Bravo</li>
+  <li data-id="c" class="nd-card nd-p-md">Charlie</li>
+</ul>
+
+<script>
+  document.querySelector('[data-nd-sortable]')
+    .addEventListener('nd:sortable:reorder', (e) => {
+      console.log('new order:', e.detail.order); // ["b", "a", "c"]
+    });
+</script>
+```
+
+Use this pattern when the new order is purely a UI affordance, e.g. reordering filters in a local state store.
+
+### Server sync (POSTs the new order)
+
+Add a `METHOD URL` value to `data-nd-sortable`, and every drop POSTs `{ "order": [...] }` to that endpoint. The client DOM is already updated optimistically; on failure the container briefly gets the `nd-sortable-error` class (shake animation).
+
+```html
+<ul class="nd-list-reset" data-nd-sortable="POST /api/tasks/reorder">
+  <li data-id="1" class="nd-card nd-p-md">Write report</li>
+  <li data-id="2" class="nd-card nd-p-md">Send invoice</li>
+  <li data-id="3" class="nd-card nd-p-md">Deploy build</li>
+</ul>
+```
+
+### Server endpoint (Go)
+
+```go
+type reorderBody struct {
+    Order []string `json:"order"`
+}
+
+func handleReorder(w http.ResponseWriter, r *http.Request) {
+    if r.Method != http.MethodPost {
+        http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+    var body reorderBody
+    if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+        writeJSON(w, http.StatusBadRequest, map[string]string{"message": "bad json"})
+        return
+    }
+
+    // Persist the new ordering — e.g. update a sort_index column.
+    if err := tasks.Reorder(body.Order); err != nil {
+        writeJSON(w, http.StatusInternalServerError, map[string]string{"message": err.Error()})
+        return
+    }
+
+    writeJSON(w, http.StatusOK, map[string]any{
+        "ok":    true,
+        "order": body.Order,
+    })
+}
+```
+
+### Listening for the reorder event
+
+You can always layer custom handling on top of the declarative attribute — the custom event still fires even when server sync is configured:
+
+```js
+document.querySelector('#task-list')
+  .addEventListener('nd:sortable:reorder', (e) => {
+    showToast(`Moved to position ${e.detail.order.indexOf(e.detail.item.dataset.id) + 1}`);
+  });
+```
+
+### Accessibility limitation (v1)
+
+The sortable module is **mouse/pointer-only** in v1. There is no keyboard affordance for lifting, moving, and dropping items — users with keyboard-only input cannot reorder the list via `data-nd-sortable` alone. The module does set `role="list"` / `role="listitem"` so the list is still announced correctly by screen readers, and `aria-grabbed` tracks the dragging state.
+
+Until keyboard reorder lands in v2, provide an accessible fallback such as up/down buttons that dispatch `nd:sortable:reorder` manually, or a separate "Reorder items" modal that uses native `<select>` / position inputs.
+
+---
+
 ## Attribute Reference
 
 Quick reference of every `data-nd-*` attribute:
@@ -1072,11 +1525,16 @@ Quick reference of every `data-nd-*` attribute:
 |-----------|----------|-------------|
 | `data-nd-bind` | Any | Fetch JSON from a REST URL and render into this element |
 | `data-nd-field` | Any | Extract a single field from the JSON response (dot notation supported) |
+| `data-nd-attr` | With `data-nd-field` | Target an HTML attribute instead of textContent (e.g., `value`, `src`, `href`) |
+| `data-nd-params` | With `data-nd-bind` | Query string appended to the bind URL (e.g., `page=1&per_page=25`) |
+| `data-nd-select` | With `data-nd-bind` | Dot-notation path to pluck a sub-field from the response before rendering (e.g., `data`) |
 | `data-nd-template` | Any | ID of a `<template>` element to clone and interpolate |
 | `data-nd-mode` | Any with template | Render mode: `replace`, `append`, or `prepend` |
 | `data-nd-max` | Any with template | Maximum number of rendered items (oldest removed) |
 | `data-nd-if` | Inside template | Conditional rendering -- remove element if field is falsy |
 | `data-nd-refresh` | With `data-nd-bind` | Polling interval in milliseconds |
+| `data-nd-bind-trigger` | Any element | Dispatches `nd:refresh` on the selector target; auto-updates `data-nd-params` from href or own attribute |
+| `data-nd-bind-mode` | With `data-nd-bind-trigger` | Sets `data-nd-mode` on the target before refresh (e.g., `append`) |
 | `data-nd-ws` | Any | WebSocket URL to connect to |
 | `data-nd-sse` | Any | SSE endpoint URL to subscribe to |
 | `data-nd-sse-event` | With `data-nd-sse` | Named SSE event type to filter on |
@@ -1085,3 +1543,5 @@ Quick reference of every `data-nd-*` attribute:
 | `data-nd-feedback` | `<form>` with action | ID of element to show success/error messages in |
 | `data-nd-confirm` | With `data-nd-action` | Confirmation prompt shown before the action fires |
 | `data-nd-on` | Any | Custom event binding: `event:handlerFunctionName` |
+| `data-nd-upload` | `<form>` | Upload endpoint: `METHOD /url`. Submits via XHR with live progress on child `<progress class="nd-upload-progress">` |
+| `data-nd-sortable` | Any container | Make direct children draggable. Optional `METHOD /url` value POSTs the new order to the server on every drop |

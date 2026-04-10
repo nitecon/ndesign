@@ -175,6 +175,108 @@
     </div>
 
     <!-- ============================================================== -->
+    <!-- Row 1.5: Phase 2 — Pagination + Load More                      -->
+    <!-- ============================================================== -->
+    <div class="nd-row nd-mb-lg">
+
+      <!-- Pagination demo -->
+      <div class="nd-col-6">
+        <div class="nd-card">
+          <div class="nd-card-header">Pagination + Data Binding</div>
+          <div class="nd-card-body">
+            <p class="nd-text-secondary nd-mb-md">
+              Click a page number to refetch the table. <code>data-nd-bind-trigger</code>
+              updates <code>data-nd-params</code> and fires <code>nd:refresh</code> automatically.
+              The envelope <code>{data, meta}</code> response is unwrapped via
+              <code>data-nd-select="data"</code>.
+            </p>
+            <div class="nd-table-responsive">
+              <table class="nd-table-striped nd-table-hover nd-table-compact">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Active</th>
+                  </tr>
+                </thead>
+                <tbody id="paginated-users"
+                       data-nd-bind="/api/users/paginated"
+                       data-nd-select="data"
+                       data-nd-params="page=1&per_page=5"
+                       data-nd-template="pu-row">
+                  <template data-nd-loading>
+                    <tr><td colspan="4"><div class="nd-skeleton nd-skeleton-text"></div></td></tr>
+                    <tr><td colspan="4"><div class="nd-skeleton nd-skeleton-text"></div></td></tr>
+                    <tr><td colspan="4"><div class="nd-skeleton nd-skeleton-text"></div></td></tr>
+                  </template>
+                  <template id="pu-row">
+                    <tr>
+                      <td>{{name}}</td>
+                      <td>{{email}}</td>
+                      <td><span class="nd-badge nd-badge-primary">{{role}}</span></td>
+                      <td data-nd-if="active"><span class="nd-badge nd-badge-success">Yes</span></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="nd-card-footer">
+            <nav class="nd-pagination" aria-label="Users pagination">
+              <ul>
+                <li><a href="?page=1&per_page=5" data-nd-bind-trigger="#paginated-users" aria-current="page">1</a></li>
+                <li><a href="?page=2&per_page=5" data-nd-bind-trigger="#paginated-users">2</a></li>
+                <li><a href="?page=3&per_page=5" data-nd-bind-trigger="#paginated-users">3</a></li>
+                <li><a href="?page=4&per_page=5" data-nd-bind-trigger="#paginated-users">4</a></li>
+                <li><a href="?page=5&per_page=5" data-nd-bind-trigger="#paginated-users">5</a></li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+
+      <!-- Load more demo -->
+      <div class="nd-col-6">
+        <div class="nd-card">
+          <div class="nd-card-header">Load More (Append Mode)</div>
+          <div class="nd-card-body">
+            <p class="nd-text-secondary nd-mb-md">
+              The button appends more items via <code>data-nd-bind-mode="append"</code>
+              and its own <code>data-nd-params</code>. New rows are added to the bottom
+              of the list rather than replacing it.
+            </p>
+            <div id="feed-list"
+                 data-nd-bind="/api/feed"
+                 data-nd-params="offset=0&limit=10"
+                 data-nd-template="feed-item"
+                 data-nd-mode="append"
+                 data-nd-max="100">
+              <template data-nd-loading>
+                <div class="nd-skeleton nd-skeleton-text nd-mb-sm"></div>
+                <div class="nd-skeleton nd-skeleton-text nd-mb-sm"></div>
+                <div class="nd-skeleton nd-skeleton-text nd-mb-sm"></div>
+              </template>
+              <template id="feed-item">
+                <div class="nd-border-b nd-mb-sm nd-pb-sm">
+                  <strong>#{{id}} [{{type}}]</strong>
+                  <span class="nd-text-secondary">{{time}}</span>
+                </div>
+              </template>
+            </div>
+          </div>
+          <div class="nd-card-footer">
+            <button class="nd-btn-primary"
+                    data-nd-bind-trigger="#feed-list"
+                    data-nd-params="offset=10&limit=10"
+                    data-nd-bind-mode="append">Load More</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================== -->
     <!-- Row 2: WebSocket Feed (full width)                             -->
     <!-- ============================================================== -->
     <div class="nd-row nd-mb-lg">
@@ -295,6 +397,90 @@
         <li><code>DELETE /api/users/3</code> &mdash; delete user #3</li>
       </ul>
     </aside>
+
+    <!-- ============================================================== -->
+    <!-- Row 5: File Upload with Progress                                -->
+    <!-- ============================================================== -->
+    <section>
+      <h3>File Upload with Progress</h3>
+      <div class="nd-card">
+        <div class="nd-card-header">Upload Files</div>
+        <div class="nd-card-body">
+          <form data-nd-upload="POST /api/upload" data-nd-feedback="upload-feedback" data-nd-success="refresh:#uploaded-table">
+            <div class="nd-form-group">
+              <label for="upload-file">Select file(s)</label>
+              <input type="file" id="upload-file" name="files" multiple>
+            </div>
+            <progress class="nd-upload-progress" value="0" max="100" hidden></progress>
+            <div id="upload-feedback" class="nd-mt-sm"></div>
+            <button type="submit" class="nd-btn-primary nd-mt-md">Upload</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="nd-card nd-mt-md">
+        <div class="nd-card-header">Uploaded Files</div>
+        <div class="nd-card-body nd-p-0">
+          <div class="nd-table-responsive">
+            <table class="nd-table-striped nd-table-compact">
+              <thead>
+                <tr><th>Filename</th><th>Size</th><th>Type</th><th>Uploaded</th></tr>
+              </thead>
+              <tbody id="uploaded-table" data-nd-bind="/api/uploaded-files" data-nd-template="uploaded-row">
+                <template data-nd-empty>
+                  <tr><td colspan="4" class="nd-text-center nd-text-muted">No files uploaded yet</td></tr>
+                </template>
+                <template id="uploaded-row">
+                  <tr>
+                    <td><strong>{{filename}}</strong></td>
+                    <td>{{size}}</td>
+                    <td>{{type}}</td>
+                    <td>{{uploaded}}</td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- Row 6: Drag and Drop (Sortable)                                 -->
+    <!-- ============================================================== -->
+    <section class="nd-mt-lg">
+      <h3>Drag and Drop (Sortable)</h3>
+      <div class="nd-row">
+        <div class="nd-col-6">
+          <div class="nd-card">
+            <div class="nd-card-header">Reorder (client-only)</div>
+            <div class="nd-card-body">
+              <p class="nd-text-secondary nd-mb-md">Drag to reorder. No server sync &mdash; a <code>nd:sortable:reorder</code> event is fired on the list.</p>
+              <ul class="nd-sortable" data-nd-sortable>
+                <li data-id="1" class="nd-well nd-well-sm nd-mb-xs">First item</li>
+                <li data-id="2" class="nd-well nd-well-sm nd-mb-xs">Second item</li>
+                <li data-id="3" class="nd-well nd-well-sm nd-mb-xs">Third item</li>
+                <li data-id="4" class="nd-well nd-well-sm nd-mb-xs">Fourth item</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="nd-col-6">
+          <div class="nd-card">
+            <div class="nd-card-header">Reorder (with server sync)</div>
+            <div class="nd-card-body">
+              <p class="nd-text-secondary nd-mb-md">Drag to reorder. Each change POSTs to <code>/api/reorder</code>.</p>
+              <ul class="nd-sortable" data-nd-sortable="POST /api/reorder">
+                <li data-id="task-1" class="nd-well nd-well-sm nd-mb-xs">Write documentation</li>
+                <li data-id="task-2" class="nd-well nd-well-sm nd-mb-xs">Fix bug #432</li>
+                <li data-id="task-3" class="nd-well nd-well-sm nd-mb-xs">Review PR #128</li>
+                <li data-id="task-4" class="nd-well nd-well-sm nd-mb-xs">Deploy to staging</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
   </main>
 

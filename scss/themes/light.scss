@@ -192,4 +192,10 @@
   --nd-info-bg:     linear-gradient(180deg, #dbeafe 0%, #bfdbfe 100%);
   --nd-info-border: #93c5fd;
   --nd-info-text:   #1e40af;
+
+  // -----------------------------------------------------------------------
+  // Tooltip — inverted surface for high contrast against the page
+  // -----------------------------------------------------------------------
+  --nd-tooltip-bg:   rgba(15, 20, 29, 0.92);
+  --nd-tooltip-text: #ffffff;
 }

@@ -1,0 +1,72 @@
+// ==========================================================================
+// Tooltips — Floating descriptive popups anchored to elements.
+// Created and managed by js/tooltip.js. A single .nd-tooltip element is
+// reused for all tooltips and appended to <body>. Styling only; positioning
+// is handled in JavaScript.
+// ==========================================================================
+@use 'tokens' as *;
+
+.nd-tooltip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: $nd-z-tooltip;
+  padding: $nd-space-xs $nd-space-sm;
+  font-family: $nd-font-family-sans;
+  font-size: $nd-font-sm;
+  font-weight: $nd-font-weight-medium;
+  line-height: $nd-line-height-tight;
+  color: var(--nd-tooltip-text, #ffffff);
+  background: var(--nd-tooltip-bg, rgba(0, 0, 0, 0.85));
+  border-radius: $nd-radius-sm;
+  box-shadow: var(--nd-shadow-md);
+  pointer-events: none;
+  max-width: 18rem;
+  white-space: normal;
+  opacity: 0;
+  transform: translateY(2px);
+  transition: opacity $nd-transition-fast, transform $nd-transition-fast;
+
+  &.nd-tooltip-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Arrow indicator pointing at the anchor element.
+.nd-tooltip::before {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 5px solid transparent;
+}
+
+// ── Placements ────────────────────────────────────────────────────────────
+.nd-tooltip-top::before {
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-top-color: var(--nd-tooltip-bg, rgba(0, 0, 0, 0.85));
+}
+
+.nd-tooltip-bottom::before {
+  bottom: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-bottom-color: var(--nd-tooltip-bg, rgba(0, 0, 0, 0.85));
+}
+
+.nd-tooltip-left::before {
+  left: 100%;
+  top: 50%;
+  margin-top: -5px;
+  border-left-color: var(--nd-tooltip-bg, rgba(0, 0, 0, 0.85));
+}
+
+.nd-tooltip-right::before {
+  right: 100%;
+  top: 50%;
+  margin-top: -5px;
+  border-right-color: var(--nd-tooltip-bg, rgba(0, 0, 0, 0.85));
+}

@@ -26,6 +26,30 @@ const MIN_RETRY_MS = 1000;
 const MAX_RETRY_MS = 30000;
 
 /**
+ * Build the final WebSocket URL. If the user has supplied a
+ * `wsTokenProvider` function in config, its return value is appended
+ * as a `token=` query parameter. This supports backends behind load
+ * balancers that cannot read WebSocket sub-protocols for auth.
+ * @param {string} url    — base WebSocket URL
+ * @param {Object} config — NDesign configuration object
+ * @returns {string} the URL to pass to `new WebSocket(...)`
+ */
+function buildWSURL(url, config) {
+  if (typeof config.wsTokenProvider === 'function') {
+    try {
+      const token = config.wsTokenProvider();
+      if (token) {
+        const sep = url.includes('?') ? '&' : '?';
+        return url + sep + 'token=' + encodeURIComponent(token);
+      }
+    } catch (err) {
+      console.error('[ndesign] wsTokenProvider threw:', err);
+    }
+  }
+  return url;
+}
+
+/**
  * Apply a received WebSocket message to a bound element.
  * @param {HTMLElement} el    — the bound element
  * @param {Object} data       — parsed JSON message
@@ -73,9 +97,10 @@ function connect(url, config) {
 
   try {
     const protocols = config.wsProtocols || [];
+    const fullURL = buildWSURL(url, config);
     const socket = protocols.length > 0
-      ? new WebSocket(url, protocols)
-      : new WebSocket(url);
+      ? new WebSocket(fullURL, protocols)
+      : new WebSocket(fullURL);
 
     conn.socket = socket;
 

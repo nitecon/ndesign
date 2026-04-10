@@ -1,0 +1,97 @@
+// ==========================================================================
+// Breadcrumbs — .nd-breadcrumb
+// Native <nav> + <ol> with ARIA. Resets top-bar <nav> styles from _nav.scss.
+// ==========================================================================
+@use 'tokens' as *;
+
+.nd-breadcrumb {
+  // Reset the native <nav> top-bar styles from _nav.scss for this context
+  display: block;
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  position: static;
+
+  ol {
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    gap: $nd-space-xs;
+    align-items: center;
+    font-size: $nd-font-sm;
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    color: var(--nd-text-muted);
+
+    // Separator — chevron between items
+    & + li::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      margin: 0 $nd-space-sm 0 $nd-space-xs;
+      border-top: 1.5px solid var(--nd-text-muted);
+      border-right: 1.5px solid var(--nd-text-muted);
+      transform: rotate(45deg);
+      opacity: 0.6;
+    }
+  }
+
+  li a {
+    color: var(--nd-text-secondary);
+    text-decoration: none;
+    transition: color $nd-transition-fast;
+    padding: $nd-space-xs $nd-space-xs;
+    border-radius: $nd-radius-sm;
+
+    &:hover {
+      color: var(--nd-accent);
+      text-decoration: none;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--nd-focus-ring);
+      outline-offset: 2px;
+    }
+  }
+
+  li[aria-current="page"] {
+    color: var(--nd-text-primary);
+    font-weight: $nd-font-weight-medium;
+  }
+}
+
+// Slash separator variant
+.nd-breadcrumb-slash {
+  li + li::before {
+    content: '/';
+    display: inline;
+    width: auto;
+    height: auto;
+    margin: 0 $nd-space-sm;
+    border: none;
+    transform: none;
+    color: var(--nd-text-muted);
+    opacity: 0.5;
+  }
+}
+
+// Arrow separator variant
+.nd-breadcrumb-arrow {
+  li + li::before {
+    content: '→';
+    display: inline;
+    width: auto;
+    height: auto;
+    margin: 0 $nd-space-sm;
+    border: none;
+    transform: none;
+    color: var(--nd-text-muted);
+  }
+}

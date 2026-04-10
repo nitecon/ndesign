@@ -133,16 +133,6 @@
   }
 }
 
-// Skeleton loading shimmer
-@keyframes nd-shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
 // ---------------------------------------------------------------------------
 // Animation Utility Classes
 // ---------------------------------------------------------------------------
@@ -179,39 +169,6 @@
 }
 
 // ---------------------------------------------------------------------------
-// Skeleton Loading
-// ---------------------------------------------------------------------------
-.nd-skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--nd-bg-skeleton) 25%,
-    var(--nd-bg-skeleton-shimmer) 50%,
-    var(--nd-bg-skeleton) 75%
-  );
-  background-size: 200% 100%;
-  animation: nd-shimmer 1.5s ease-in-out infinite;
-  border-radius: $nd-radius-sm;
-  color: transparent;
-  user-select: none;
-  pointer-events: none;
-
-  // Prevent child content from showing
-  * {
-    visibility: hidden;
-  }
-}
-
-.nd-skeleton-text {
-  height: 1em;
-  margin-bottom: $nd-space-xs;
-  border-radius: $nd-radius-sm;
-}
-
-.nd-skeleton-circle {
-  border-radius: $nd-radius-circle;
-}
-
-// ---------------------------------------------------------------------------
 // Reduced Motion — respect user preferences
 // ---------------------------------------------------------------------------
 @media (prefers-reduced-motion: reduce) {
@@ -222,9 +179,5 @@
     animation-iteration-count: 1;
     transition-duration: 0.01ms;
     scroll-behavior: auto;
-  }
-
-  .nd-skeleton {
-    animation: none;
   }
 }
