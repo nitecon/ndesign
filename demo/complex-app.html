@@ -5,134 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ndesign — Settings Page</title>
   <link rel="stylesheet" href="../dist/ndesign.css">
-  <link rel="stylesheet" href="../dist/themes/light.css" id="nd-theme">
-  <style>
-    body { padding: 0; min-width: 0; }
-
-    /* App layout: sidebar + content */
-    .app-layout {
-      display: flex;
-      min-height: calc(100vh - 3.5rem);
-    }
-    .app-sidebar {
-      width: 15rem;
-      flex-shrink: 0;
-      background: var(--nd-bg-surface);
-      border-right: 1px solid var(--nd-border);
-      padding: 1.25rem 0;
-    }
-    .app-content {
-      flex: 1;
-      padding: 1.5rem 2rem;
-      overflow-y: auto;
-    }
-    @media (max-width: 1279px) {
-      .app-sidebar { display: none; }
-      .app-sidebar.active {
-        display: block;
-        position: fixed;
-        top: 3.5rem;
-        left: 0;
-        bottom: 0;
-        z-index: 1020;
-        box-shadow: var(--nd-shadow-lg);
-      }
-      .app-content { padding: 1.25rem; }
-    }
-
-    /* Sidebar section headings */
-    .sidebar-section {
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--nd-text-muted);
-      padding: 0.5rem 1.25rem;
-      margin-top: 0.5rem;
-    }
-    .sidebar-section:first-child {
-      margin-top: 0;
-    }
-
-    /* Sidebar menu items */
-    .sidebar-menu {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    .sidebar-menu li a {
-      display: block;
-      padding: 0.5rem 1.25rem;
-      color: var(--nd-text-secondary);
-      text-decoration: none;
-      border-left: 3px solid transparent;
-      transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
-    }
-    .sidebar-menu li a:hover {
-      background: var(--nd-bg-surface-hover);
-      color: var(--nd-text-primary);
-    }
-    .sidebar-menu li a.active {
-      color: var(--nd-accent);
-      border-left-color: var(--nd-accent);
-      background: var(--nd-bg-surface-hover);
-      font-weight: 500;
-    }
-
-    /* Avatar circle (large, for profile photo card) */
-    .avatar-lg {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 6rem;
-      height: 6rem;
-      border-radius: 50%;
-      background: var(--nd-accent);
-      color: var(--nd-accent-text);
-      font-size: 1.75rem;
-      font-weight: 600;
-      margin: 0 auto 1rem;
-    }
-
-    /* Danger zone card border */
-    .nd-card-danger {
-      border: 1px solid var(--nd-danger);
-    }
-    .nd-card-danger .nd-card-header {
-      background: var(--nd-danger);
-      color: #fff;
-    }
-
-    /* Mobile sidebar toggle (visible below 1280px) */
-    .sidebar-toggle {
-      display: none;
-      border: none;
-      background: var(--nd-bg-surface);
-      border: 1px solid var(--nd-border);
-      border-radius: 0.375rem;
-      padding: 0.375rem 0.75rem;
-      color: var(--nd-text-primary);
-      cursor: pointer;
-      font-size: 0.875rem;
-      margin-bottom: 1rem;
-    }
-    @media (max-width: 1279px) {
-      .sidebar-toggle { display: inline-block; }
-    }
-
-    /* Sidebar overlay for mobile */
-    .sidebar-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      top: 3.5rem;
-      background: rgba(0, 0, 0, 0.4);
-      z-index: 1019;
-    }
-    .sidebar-overlay.active { display: block; }
-  </style>
+  <link rel="stylesheet" href="../dist/themes/light.css" class="theme" title="light">
+  <meta name="nd-theme" content="light" data-href="../dist/themes/light.css">
+  <meta name="nd-theme" content="dark" data-href="../dist/themes/dark.css">
+  <style>/* You may not use custom styles under any circumstance on the demo pages */</style>
 </head>
-<body>
+<body class="app-page">
 
   <!-- ====================================================================== -->
   <!-- Top Navigation Bar                                                     -->
@@ -140,7 +18,7 @@
   <nav>
     <span class="nd-nav-brand">Acme Platform</span>
 
-    <button class="nd-nav-toggle" aria-label="Toggle navigation" onclick="toggleTopNav()">&#9776;</button>
+    <button class="nd-nav-toggle" aria-label="Toggle navigation">&#9776;</button>
 
     <ul class="nd-nav-menu">
       <li><a href="#">Dashboard</a></li>
@@ -159,15 +37,15 @@
       <div class="nd-dropdown nd-dropdown-right">
         <button class="nd-btn-ghost nd-btn-sm">Theme &#9662;</button>
         <ul class="nd-dropdown-menu" role="menu">
-          <li><a href="#" role="menuitem" onclick="setTheme('light'); return false;">Light</a></li>
-          <li><a href="#" role="menuitem" onclick="setTheme('dark'); return false;">Dark</a></li>
+          <li><a href="#" role="menuitem" data-nd-theme="light">Light</a></li>
+          <li><a href="#" role="menuitem" data-nd-theme="dark">Dark</a></li>
         </ul>
       </div>
 
       <!-- User dropdown -->
       <div class="nd-dropdown nd-dropdown-right">
         <button class="nd-btn-ghost nd-btn-sm">
-          <span style="display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 50%; background: var(--nd-accent); color: var(--nd-accent-text); font-size: 0.75rem; font-weight: 600; margin-right: 0.25rem;">WH</span>
+          <span class="avatar nd-mr-xs">WH</span>
           Will &#9662;
         </button>
         <ul class="nd-dropdown-menu" role="menu">
@@ -181,17 +59,17 @@
   </nav>
 
   <!-- Mobile sidebar overlay -->
-  <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+  <div class="overlay"></div>
 
   <!-- ====================================================================== -->
   <!-- App Layout: Sidebar + Content                                          -->
   <!-- ====================================================================== -->
-  <div class="app-layout">
+  <div class="app-layout app-layout-below-nav">
 
     <!-- ================================================================== -->
     <!-- Left Side Navigation                                               -->
     <!-- ================================================================== -->
-    <aside class="app-sidebar">
+    <nav class="sidebar">
       <div class="sidebar-section">Account</div>
       <ul class="sidebar-menu">
         <li><a href="#profile" class="active">Profile</a></li>
@@ -212,7 +90,7 @@
         <li><a href="#roles">Roles</a></li>
         <li><a href="#invites">Invites</a></li>
       </ul>
-    </aside>
+    </nav>
 
     <!-- ================================================================== -->
     <!-- Main Content                                                       -->
@@ -220,7 +98,7 @@
     <main class="app-content">
 
       <!-- Mobile sidebar toggle -->
-      <button class="sidebar-toggle" onclick="toggleSidebar()">&#9776; Settings Menu</button>
+      <button class="hamburger nd-mb-md" data-nd-toggle="sidebar">&#9776; Settings Menu</button>
 
       <!-- Page header -->
       <h2 style="margin-top: 0;">Profile Settings</h2>
@@ -318,7 +196,7 @@
           <div class="nd-card">
             <div class="nd-card-header">Profile Photo</div>
             <div class="nd-card-body" style="text-align: center;">
-              <div class="avatar-lg">WH</div>
+              <div class="nd-text-center nd-mb-md"><span class="avatar avatar-xl">WH</span></div>
               <div style="display: flex; gap: 0.5rem; justify-content: center; align-items: center; flex-wrap: wrap;">
                 <button class="nd-btn-secondary nd-btn-sm">Upload Photo</button>
                 <button class="nd-btn-ghost nd-btn-sm" style="color: var(--nd-danger);">Remove</button>
@@ -434,73 +312,5 @@
   <!-- Scripts                                                                -->
   <!-- ====================================================================== -->
   <script src="../dist/ndesign.min.js"></script>
-  <script>
-    /**
-     * Theme switcher — sets the theme stylesheet to light or dark.
-     */
-    function setTheme(name) {
-      var link = document.getElementById('nd-theme');
-      link.href = '../dist/themes/' + name + '.css';
-    }
-
-    /**
-     * Theme toggle — swaps light / dark.
-     * Falls back to manual href swap if NDesign.toggleTheme is not available.
-     */
-    function toggleTheme() {
-      if (typeof NDesign !== 'undefined' && typeof NDesign.toggleTheme === 'function') {
-        NDesign.toggleTheme();
-        return;
-      }
-      var link = document.getElementById('nd-theme');
-      if (link.href.includes('light')) {
-        link.href = link.href.replace('light', 'dark');
-      } else {
-        link.href = link.href.replace('dark', 'light');
-      }
-    }
-
-    /**
-     * Top nav hamburger toggle — opens/closes the mobile nav menu.
-     */
-    function toggleTopNav() {
-      document.querySelector('nav').classList.toggle('nd-nav-open');
-    }
-
-    /**
-     * Sidebar toggle — opens/closes the sidebar on mobile.
-     */
-    function toggleSidebar() {
-      document.querySelector('.app-sidebar').classList.toggle('active');
-      document.querySelector('.sidebar-overlay').classList.toggle('active');
-    }
-
-    /**
-     * Sidebar link click — activates the clicked item and closes sidebar on mobile.
-     */
-    document.querySelectorAll('.sidebar-menu a').forEach(function(link) {
-      link.addEventListener('click', function(e) {
-        document.querySelectorAll('.sidebar-menu a.active').forEach(function(el) {
-          el.classList.remove('active');
-        });
-        this.classList.add('active');
-        // Close sidebar on mobile after selection
-        if (window.innerWidth < 1280) {
-          toggleSidebar();
-        }
-      });
-    });
-
-    /**
-     * Toggle switch click handler — flips aria-pressed.
-     */
-    document.addEventListener('click', function(e) {
-      var sw = e.target.closest('.nd-switch');
-      if (sw && !sw.disabled) {
-        var pressed = sw.getAttribute('aria-pressed') === 'true';
-        sw.setAttribute('aria-pressed', String(!pressed));
-      }
-    });
-  </script>
 </body>
 </html>

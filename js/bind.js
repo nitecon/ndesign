@@ -14,6 +14,9 @@ const pendingRequests = new Map();
 /** @type {Map<Element, number>} active polling intervals by element */
 const pollingIntervals = new Map();
 
+/** @type {MutationObserver|null} watches for removed polling elements */
+let pollingObserver = null;
+
 /**
  * Fetch JSON from a URL with request deduplication.
  * Multiple elements bound to the same URL within the same tick share
@@ -66,6 +69,16 @@ async function processBind(el, config) {
   const url = el.getAttribute('data-nd-bind');
   if (!url) return;
 
+  // Show loading placeholder if a loading template exists
+  const loadingTpl = el.querySelector('template[data-nd-loading]');
+  if (loadingTpl && !el.querySelector('[data-nd-loading-active]')) {
+    const fragment = loadingTpl.content.cloneNode(true);
+    const wrapper = document.createElement('div');
+    wrapper.setAttribute('data-nd-loading-active', '');
+    wrapper.appendChild(fragment);
+    el.appendChild(wrapper);
+  }
+
   try {
     el.classList.remove('nd-error');
     el.classList.add('nd-loading');
@@ -73,6 +86,10 @@ async function processBind(el, config) {
     const data = await fetchJSON(url, config);
 
     el.classList.remove('nd-loading');
+
+    // Remove loading placeholder
+    const loadingEl = el.querySelector('[data-nd-loading-active]');
+    if (loadingEl) loadingEl.remove();
 
     const templateId = el.getAttribute('data-nd-template');
     const field = el.getAttribute('data-nd-field');
@@ -88,11 +105,27 @@ async function processBind(el, config) {
       el.textContent = typeof data === 'string' ? data : JSON.stringify(data);
     }
 
+    // Handle empty state — show empty template if data is an empty array
+    if (Array.isArray(data) && data.length === 0) {
+      const emptyTpl = el.querySelector('template[data-nd-empty]');
+      if (emptyTpl) {
+        const fragment = emptyTpl.content.cloneNode(true);
+        // Clear non-template children
+        Array.from(el.childNodes).forEach(child => {
+          if (child.nodeName !== 'TEMPLATE') el.removeChild(child);
+        });
+        el.appendChild(fragment);
+      }
+    }
+
     if (typeof config.onRender === 'function') {
       config.onRender(el, data);
     }
   } catch (err) {
     el.classList.remove('nd-loading');
+    // Remove loading placeholder on error too
+    const loadingEl = el.querySelector('[data-nd-loading-active]');
+    if (loadingEl) loadingEl.remove();
     el.classList.add('nd-error');
     console.error(`[ndesign] Bind error for ${url}:`, err);
     if (typeof config.onError === 'function') {
@@ -110,6 +143,9 @@ export function initBindings(config) {
   const elements = document.querySelectorAll('[data-nd-bind]');
 
   for (const el of elements) {
+    // Listen for nd:refresh custom event to allow external re-triggers
+    el.addEventListener('nd:refresh', () => processBind(el, config));
+
     // Initial fetch
     processBind(el, config);
 
@@ -124,12 +160,37 @@ export function initBindings(config) {
       pollingIntervals.set(el, intervalId);
     }
   }
+
+  // Watch for removed polling elements
+  pollingObserver = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      for (const removed of mutation.removedNodes) {
+        if (removed.nodeType !== Node.ELEMENT_NODE) continue;
+        // Check if the removed node or any descendants had polling
+        const checkElements = [removed];
+        if (removed.querySelectorAll) {
+          checkElements.push(...removed.querySelectorAll('[data-nd-refresh]'));
+        }
+        for (const el of checkElements) {
+          if (pollingIntervals.has(el)) {
+            clearInterval(pollingIntervals.get(el));
+            pollingIntervals.delete(el);
+          }
+        }
+      }
+    }
+  });
+  pollingObserver.observe(document.body, { childList: true, subtree: true });
 }
 
 /**
  * Tear down all active polling intervals. Called on cleanup/re-init.
  */
 export function destroyBindings() {
+  if (pollingObserver) {
+    pollingObserver.disconnect();
+    pollingObserver = null;
+  }
   for (const [el, intervalId] of pollingIntervals) {
     clearInterval(intervalId);
   }

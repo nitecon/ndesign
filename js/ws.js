@@ -95,6 +95,16 @@ function connect(url, config) {
       }
 
       for (const el of conn.elements) {
+        const filter = el.getAttribute('data-nd-ws-filter');
+        if (filter) {
+          const colonIdx = filter.indexOf(':');
+          if (colonIdx !== -1) {
+            const filterField = filter.substring(0, colonIdx).trim();
+            const filterValue = filter.substring(colonIdx + 1).trim();
+            const actualValue = getByPath(data, filterField);
+            if (String(actualValue) !== filterValue) continue;
+          }
+        }
         applyMessage(el, data, config);
       }
     });
@@ -139,8 +149,9 @@ function scheduleReconnect(url, config) {
     connect(url, config);
   }, conn.retryDelay);
 
-  // Exponential backoff: 1s -> 2s -> 4s -> 8s -> ... -> 30s max
-  conn.retryDelay = Math.min(conn.retryDelay * 2, MAX_RETRY_MS);
+  // Exponential backoff with jitter to prevent thundering herd
+  const jitter = Math.random() * 500;
+  conn.retryDelay = Math.min((conn.retryDelay * 2) + jitter, MAX_RETRY_MS);
 }
 
 /**

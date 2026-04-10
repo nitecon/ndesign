@@ -77,6 +77,10 @@ export function initNav() {
           }
         }
       }
+
+      // Sync aria-expanded with open state
+      const isNowOpen = nav.classList.contains('nd-nav-open');
+      toggle.setAttribute('aria-expanded', String(isNowOpen));
     };
 
     toggle.addEventListener('click', handler);

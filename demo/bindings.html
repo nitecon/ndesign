@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ndesign Data Bindings</title>
+  <link rel="stylesheet" href="/dist/ndesign.css">
+  <link rel="stylesheet" href="/dist/themes/light.css" class="theme" title="light">
+  <meta name="nd-theme" content="light" data-href="/dist/themes/light.css">
+  <meta name="nd-theme" content="dark" data-href="/dist/themes/dark.css">
+  <style>/* You may not use custom styles under any circumstance on the demo pages */</style>
+</head>
+<body class="app-page">
+
+  <!-- ================================================================== -->
+  <!-- Top Nav                                                            -->
+  <!-- ================================================================== -->
+  <nav>
+    <span class="nd-nav-brand">ndesign <span class="nd-nav-brand-sub">Data Bindings</span></span>
+    <div class="nd-nav-end">
+      <span class="nd-badge nd-badge-success" id="conn-status">Connected</span>
+      <button class="nd-btn-secondary" data-nd-theme-toggle aria-label="Toggle theme">
+        Toggle Theme
+      </button>
+    </div>
+  </nav>
+
+  <!-- ================================================================== -->
+  <!-- Main Content                                                       -->
+  <!-- ================================================================== -->
+  <main class="nd-p-lg">
+
+    <!-- ============================================================== -->
+    <!-- Row 1: REST Bindings (left) + Form Actions (right)             -->
+    <!-- ============================================================== -->
+    <div class="nd-row nd-mb-lg">
+
+      <!-- Left Column: REST Data Binding -->
+      <div class="nd-col-6">
+
+        <!-- Scalar field binding -->
+        <div class="nd-card nd-mb-md">
+          <div class="nd-card-header">Server Info (Scalar Binding)</div>
+          <div class="nd-card-body">
+            <p>Version: <strong data-nd-bind="/api/stats" data-nd-field="version"></strong></p>
+            <p>Uptime: <strong data-nd-bind="/api/stats" data-nd-field="uptime"></strong></p>
+            <p>CPU: <strong data-nd-bind="/api/stats" data-nd-field="cpu_usage"></strong>%</p>
+          </div>
+        </div>
+
+        <!-- Template binding (array) -->
+        <div class="nd-card nd-mb-md">
+          <div class="nd-card-header">Users (Template Binding)</div>
+          <div class="nd-card-body">
+            <div class="nd-table-responsive">
+              <table class="nd-table-striped nd-table-hover">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="user-table" data-nd-bind="/api/users" data-nd-template="user-row">
+                  <template id="user-row">
+                    <tr>
+                      <td>{{name}}</td>
+                      <td>{{email}}</td>
+                      <td><span class="nd-badge nd-badge-primary">{{role}}</span></td>
+                      <td data-nd-if="active"><span class="nd-badge nd-badge-success">Active</span></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Polling (data-nd-refresh) -->
+        <div class="nd-card nd-mb-md">
+          <div class="nd-card-header">Live Stats (Polling every 2s)</div>
+          <div class="nd-card-body">
+            <div class="nd-row">
+              <div class="nd-col-4">
+                <p class="nd-text-secondary">CPU Usage</p>
+                <h2 data-nd-bind="/api/stats/live" data-nd-field="cpu_usage" data-nd-refresh="2000"></h2>
+              </div>
+              <div class="nd-col-4">
+                <p class="nd-text-secondary">Active Sessions</p>
+                <h2 data-nd-bind="/api/stats/live" data-nd-field="active_sessions" data-nd-refresh="2000"></h2>
+              </div>
+              <div class="nd-col-4">
+                <p class="nd-text-secondary">Memory (GB)</p>
+                <h2 data-nd-bind="/api/stats/live" data-nd-field="memory_used" data-nd-refresh="2000"></h2>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Form Actions -->
+      <div class="nd-col-6">
+
+        <!-- Create user form -->
+        <div class="nd-card nd-mb-md">
+          <div class="nd-card-header">Create User (Form Action)</div>
+          <div class="nd-card-body">
+            <form data-nd-action="POST /api/users" data-nd-success="refresh:#user-table,reset" data-nd-feedback="user-feedback">
+              <div class="nd-row">
+                <div class="nd-col-6">
+                  <div class="nd-form-group">
+                    <label for="new-name">Name</label>
+                    <input type="text" id="new-name" name="name" placeholder="Full name" required>
+                    <span class="nd-form-error"></span>
+                  </div>
+                </div>
+                <div class="nd-col-6">
+                  <div class="nd-form-group">
+                    <label for="new-email">Email</label>
+                    <input type="email" id="new-email" name="email" placeholder="user@example.com" required>
+                    <span class="nd-form-error"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="nd-form-group">
+                <label for="new-role">Role</label>
+                <select id="new-role" name="role">
+                  <option value="">Select role...</option>
+                  <option value="admin">Administrator</option>
+                  <option value="editor">Editor</option>
+                  <option value="viewer">Viewer</option>
+                </select>
+                <span class="nd-form-error"></span>
+              </div>
+              <div id="user-feedback"></div>
+              <button type="submit" class="nd-btn-primary">Create User</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Login form (global error test) -->
+        <div class="nd-card nd-mb-md">
+          <div class="nd-card-header">Login (Global Error Test)</div>
+          <div class="nd-card-body">
+            <form data-nd-action="POST /api/login" data-nd-success="redirect:/" data-nd-feedback="login-feedback">
+              <div class="nd-form-group">
+                <label for="login-user">Username</label>
+                <input type="text" id="login-user" name="username" placeholder="admin">
+              </div>
+              <div class="nd-form-group">
+                <label for="login-pass">Password</label>
+                <input type="password" id="login-pass" name="password" placeholder="password">
+              </div>
+              <div id="login-feedback"></div>
+              <button type="submit" class="nd-btn-primary">Sign In</button>
+            </form>
+            <p class="nd-text-small nd-text-muted nd-mt-sm">Hint: username "admin", password "password"</p>
+          </div>
+        </div>
+
+        <!-- Button action (DELETE) -->
+        <div class="nd-card nd-mb-md">
+          <div class="nd-card-header">Button Action (DELETE)</div>
+          <div class="nd-card-body">
+            <p class="nd-mb-sm">Demonstrates a standalone button with confirmation dialog:</p>
+            <button data-nd-action="DELETE /api/users/3" data-nd-confirm="Delete user James Miller?" class="nd-btn-danger">
+              Delete User #3
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- Row 2: WebSocket Feed (full width)                             -->
+    <!-- ============================================================== -->
+    <div class="nd-row nd-mb-lg">
+      <div class="nd-col-12">
+        <div class="nd-card">
+          <div class="nd-card-header">
+            Live Trade Feed (WebSocket)
+            <span class="nd-badge nd-badge-sm" data-nd-ws="ws://localhost:28080/ws/feed" data-nd-field="type">connecting...</span>
+          </div>
+          <div class="nd-card-body">
+            <div class="nd-table-responsive">
+              <table class="nd-table-hover nd-table-compact">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Symbol</th>
+                    <th>Price</th>
+                    <th>Volume</th>
+                  </tr>
+                </thead>
+                <tbody data-nd-ws="ws://localhost:28080/ws/feed" data-nd-ws-filter="type:trade" data-nd-template="trade-row" data-nd-mode="prepend" data-nd-max="20">
+                  <template id="trade-row">
+                    <tr>
+                      <td>{{time}}</td>
+                      <td><strong>{{symbol}}</strong></td>
+                      <td>{{price}}</td>
+                      <td>{{volume}}</td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- Row 3: SSE Cards (side by side)                                -->
+    <!-- ============================================================== -->
+    <div class="nd-row nd-mb-lg">
+
+      <!-- SSE: Deployment events -->
+      <div class="nd-col-6">
+        <div class="nd-card">
+          <div class="nd-card-header">Deployment Events (SSE)</div>
+          <div class="nd-card-body" data-nd-sse="/events/stream" data-nd-sse-event="deployment" data-nd-template="deploy-event" data-nd-mode="prepend" data-nd-max="10">
+            <template id="deploy-event">
+              <div class="nd-alert nd-alert-info nd-mb-sm">
+                Deploy <strong>{{version}}</strong> to <strong>{{environment}}</strong>: <span class="nd-badge">{{status}}</span>
+              </div>
+            </template>
+            <p class="nd-text-muted">Waiting for events...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SSE: System metrics (scalar field) -->
+      <div class="nd-col-6">
+        <div class="nd-card">
+          <div class="nd-card-header">System Metrics (SSE)</div>
+          <div class="nd-card-body">
+            <div class="nd-row">
+              <div class="nd-col-4">
+                <p class="nd-text-secondary">CPU</p>
+                <h3 data-nd-sse="/events/stream" data-nd-sse-event="metric" data-nd-field="cpu">--</h3>
+              </div>
+              <div class="nd-col-4">
+                <p class="nd-text-secondary">Memory</p>
+                <h3 data-nd-sse="/events/stream" data-nd-sse-event="metric" data-nd-field="memory">--</h3>
+              </div>
+              <div class="nd-col-4">
+                <p class="nd-text-secondary">Disk</p>
+                <h3 data-nd-sse="/events/stream" data-nd-sse-event="metric" data-nd-field="disk">--</h3>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- Row 4: Push test instructions (fold)                           -->
+    <!-- ============================================================== -->
+    <aside class="fold fold-info nd-mb-lg">
+      <h4>Testing Push Connections</h4>
+      <p class="nd-mb-sm">
+        The WebSocket feed and SSE streams above connect to the Go test server
+        at <code>http://localhost:28080</code>. Ensure the server is running before
+        loading this page.
+      </p>
+      <p class="nd-mb-sm"><strong>WebSocket</strong> &mdash; connects to
+        <code>ws://localhost:28080/ws/feed</code>. The server should push JSON
+        messages with fields: <code>time</code>, <code>symbol</code>,
+        <code>price</code>, <code>volume</code>, <code>type</code>.
+      </p>
+      <p class="nd-mb-sm"><strong>SSE</strong> &mdash; connects to
+        <code>/events/stream</code>. The server should emit named events:
+      </p>
+      <ul class="nd-mb-sm">
+        <li><code>deployment</code> &mdash; fields: <code>version</code>,
+          <code>environment</code>, <code>status</code></li>
+        <li><code>metric</code> &mdash; fields: <code>cpu</code>,
+          <code>memory</code>, <code>disk</code></li>
+      </ul>
+      <p><strong>REST Endpoints</strong>:</p>
+      <ul>
+        <li><code>GET /api/stats</code> &mdash; returns <code>version</code>,
+          <code>uptime</code>, <code>cpu_usage</code></li>
+        <li><code>GET /api/stats/live</code> &mdash; returns <code>cpu_usage</code>,
+          <code>active_sessions</code>, <code>memory_used</code></li>
+        <li><code>GET /api/users</code> &mdash; returns array with <code>name</code>,
+          <code>email</code>, <code>role</code>, <code>active</code></li>
+        <li><code>POST /api/users</code> &mdash; create user (validates <code>name</code>,
+          <code>email</code>, <code>role</code>)</li>
+        <li><code>POST /api/login</code> &mdash; login (returns <code>_form</code> error on failure)</li>
+        <li><code>DELETE /api/users/3</code> &mdash; delete user #3</li>
+      </ul>
+    </aside>
+
+  </main>
+
+  <script src="/dist/ndesign.min.js"></script>
+</body>
+</html>

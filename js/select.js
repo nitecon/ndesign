@@ -7,8 +7,6 @@
  * @module select
  */
 
-import { escapeHTML } from './utils.js';
-
 /** @type {Array<{wrapper: HTMLDivElement, select: HTMLSelectElement}>} */
 let instances = [];
 
@@ -112,8 +110,14 @@ function selectOption(select, wrapper, optionEl) {
  * @param {HTMLSelectElement} select — the native select element
  */
 function buildCustomSelect(select) {
-  // Hide the native select
-  select.style.display = 'none';
+  // Hide the native select visually but keep it in layout flow
+  // so browser validation (e.g. required) still fires.
+  select.style.position = 'absolute';
+  select.style.opacity = '0';
+  select.style.pointerEvents = 'none';
+  select.style.width = '0';
+  select.style.height = '0';
+  select.style.overflow = 'hidden';
 
   // Create wrapper
   const wrapper = document.createElement('div');
@@ -141,16 +145,19 @@ function buildCustomSelect(select) {
   list.className = 'nd-select-dropdown';
   list.setAttribute('role', 'listbox');
 
-  // Build options from native <option> elements
-  const nativeOptions = select.querySelectorAll('option');
+  // Build options from native <option> and <optgroup> elements
   let selectedText = '';
 
-  for (const nativeOpt of nativeOptions) {
+  /**
+   * Create a single option list item from a native <option>.
+   * @param {HTMLOptionElement} nativeOpt
+   */
+  function appendOption(nativeOpt) {
     const li = document.createElement('li');
     li.className = 'nd-select-option';
     li.setAttribute('role', 'option');
     li.dataset.value = nativeOpt.value;
-    li.textContent = escapeHTML(nativeOpt.textContent);
+    li.textContent = nativeOpt.textContent;
 
     if (nativeOpt.value === '') {
       li.dataset.placeholder = '';
@@ -173,6 +180,24 @@ function buildCustomSelect(select) {
     });
 
     list.appendChild(li);
+  }
+
+  for (const child of select.children) {
+    if (child.tagName === 'OPTGROUP') {
+      // Create a group header
+      const groupHeader = document.createElement('li');
+      groupHeader.className = 'nd-select-group';
+      groupHeader.textContent = child.label;
+      groupHeader.setAttribute('role', 'presentation');
+      list.appendChild(groupHeader);
+
+      // Add options within the group
+      for (const opt of child.children) {
+        appendOption(/** @type {HTMLOptionElement} */ (opt));
+      }
+    } else if (child.tagName === 'OPTION') {
+      appendOption(/** @type {HTMLOptionElement} */ (child));
+    }
   }
 
   // Set initial display text
@@ -308,10 +333,51 @@ function buildCustomSelect(select) {
     }
   });
 
+  // Propagate label to custom trigger for screen readers
+  let labelText = '';
+  if (select.id) {
+    const label = document.querySelector(`label[for="${select.id}"]`);
+    if (label) labelText = label.textContent;
+  }
+  if (!labelText) {
+    const parentLabel = select.closest('label');
+    if (parentLabel) labelText = parentLabel.textContent;
+  }
+  if (labelText) {
+    trigger.setAttribute('aria-label', labelText.trim());
+  }
+
+  // Clear custom validity on option selection so required validation resets
+  select.addEventListener('change', () => {
+    select.setCustomValidity('');
+  });
+
   // Assemble and insert
   wrapper.appendChild(trigger);
   wrapper.appendChild(list);
   select.insertAdjacentElement('afterend', wrapper);
+
+  // Form reset: sync custom dropdown display when form is reset
+  const form = select.closest('form');
+  if (form) {
+    form.addEventListener('reset', () => {
+      // reset event fires before values are actually restored; defer to next tick
+      setTimeout(() => {
+        const selectedOpt = select.options[select.selectedIndex];
+        const resetTrigger = wrapper.querySelector('.nd-select-value');
+        if (resetTrigger && selectedOpt) {
+          resetTrigger.textContent = selectedOpt.textContent;
+        }
+        // Update selected state in dropdown
+        const opts = wrapper.querySelectorAll('.nd-select-option');
+        opts.forEach(opt => {
+          const isSelected = opt.getAttribute('data-value') === selectedOpt.value;
+          opt.classList.toggle('nd-selected', isSelected);
+          opt.setAttribute('aria-selected', String(isSelected));
+        });
+      }, 0);
+    });
+  }
 
   // Track instance
   instances.push({ wrapper, select });
@@ -353,7 +419,12 @@ export function initSelects() {
  */
 export function destroySelects() {
   for (const { wrapper, select } of instances) {
-    select.style.display = '';
+    select.style.position = '';
+    select.style.opacity = '';
+    select.style.pointerEvents = '';
+    select.style.width = '';
+    select.style.height = '';
+    select.style.overflow = '';
     wrapper.remove();
   }
   instances = [];

@@ -34,7 +34,9 @@ cdn.example.com/ndesign/<version>/
 <html lang="en">
 <head>
   <link rel="stylesheet" href="/cdn/ndesign/1.0.0/ndesign.min.css">
-  <link rel="stylesheet" href="/cdn/ndesign/1.0.0/themes/light.min.css" id="nd-theme">
+  <link rel="stylesheet" href="/cdn/ndesign/1.0.0/themes/light.min.css" class="theme" title="light">
+  <meta name="nd-theme" content="light" data-href="/cdn/ndesign/1.0.0/themes/light.min.css">
+  <meta name="nd-theme" content="dark"  data-href="/cdn/ndesign/1.0.0/themes/dark.min.css">
 </head>
 <body>
   <!-- server-rendered HTML with nd-* attributes -->
@@ -43,7 +45,7 @@ cdn.example.com/ndesign/<version>/
 </html>
 ```
 
-No build step required. No npm. No bundler. Just `<link>` + `<script>`.
+No build step required. No npm. No bundler. Just `<link>` + `<script>` + `<meta>` tags.
 
 ---
 
@@ -68,10 +70,18 @@ scss/
 ├── _cards.scss             # .nd-card, .nd-card-header, .nd-card-body, .nd-card-footer
 ├── _panels.scss            # .nd-panel — bordered content sections
 ├── _wells.scss             # .nd-well — inset/recessed background regions
-├── _buttons.scss           # .nd-btn, .nd-btn-primary/secondary/danger, sizes
+├── _buttons.scss           # .nd-btn, .nd-btn-primary/secondary/danger, sizes, .nd-switch
 ├── _forms.scss             # inputs, selects, textareas, checkboxes, radios, labels
 ├── _tables.scss            # .nd-table, striped, hover, responsive wrapper
 ├── _alerts.scss            # .nd-alert, .nd-alert-success/warning/error/info
+├── _badges.scss            # .nd-badge, .nd-badge-primary/danger/success
+├── _asides.scss            # .fold — edge-pinned callouts with semantic variants
+├── _nav.scss               # <nav>, .sidebar, .nd-nav-menu, mobile collapse
+├── _dropdowns.scss         # .nd-dropdown, .nd-dropdown-menu, alignment/direction
+├── _modals.scss            # <dialog> — native modal with backdrop, size variants
+├── _toasts.scss            # .nd-toast, .nd-toast-container, slide-in animation
+├── _app-layout.scss        # .app-layout, .app-page, .overlay, .hamburger
+├── _avatars.scss           # .avatar, .avatar-sm/lg/xl
 ├── _utilities.scss         # spacing helpers, text alignment, visibility, display
 ├── _responsive.scss        # breakpoint mixins, responsive overrides
 ├── _transitions.scss       # shared transition/animation tokens
@@ -138,10 +148,33 @@ Theme files define those properties on `:root`:
 }
 ```
 
-**Theme switching in JS:**
+**Theme switching mechanism:**
+
+A single `<link class="theme">` tag carries the active stylesheet. Available themes
+are registered via `<meta name="nd-theme">` tags that map a name to a CSS href:
+
+```html
+<link rel="stylesheet" href="themes/light.css" class="theme" title="light">
+<meta name="nd-theme" content="light" data-href="themes/light.css">
+<meta name="nd-theme" content="dark"  data-href="themes/dark.css">
+```
+
+**Switching in JS:**
 
 ```js
-document.getElementById('nd-theme').href = '/cdn/ndesign/1.0.0/themes/dark.min.css';
+NDesign.setTheme('dark');   // sets link.theme href to the matching meta's data-href
+NDesign.toggleTheme();      // cycles to the next registered theme
+NDesign.getThemes();        // returns [{ name, label, active }, ...]
+```
+
+**Declarative switching in HTML:**
+
+```html
+<!-- Set a specific theme -->
+<button data-nd-theme="dark">Dark Mode</button>
+
+<!-- Cycle through all registered themes -->
+<button data-nd-theme-toggle>Toggle Theme</button>
 ```
 
 **Why this approach:**
@@ -150,6 +183,7 @@ document.getElementById('nd-theme').href = '/cdn/ndesign/1.0.0/themes/dark.min.c
 - Zero duplication of structural rules across theme files
 - Theme files are tiny (just custom property declarations)
 - Works without JS (server can render the correct `<link>` tag)
+- Declarative HTML attributes for zero-JS theme toggling
 
 ### 3.4 Spacing & Typography Scale
 
@@ -213,8 +247,11 @@ ndesign styles native HTML elements directly — no base classes needed for comm
 | `<input>`, `<textarea>`, `<select>` | Full form input styling | Error/size modifiers |
 | `<input type="checkbox/radio">` | Custom appearance, large hit targets | (none) |
 | `<table>` | Full table styling with headers | `.nd-table-striped`, `.nd-table-hover` etc. |
+| `<nav>` | Top bar layout (sticky, flex, shadow) | `.sidebar` for vertical side navigation |
+| `<dialog>` | Modal styling with backdrop | `.nd-modal-sm`, `.nd-modal-lg`, `.nd-modal-full` |
 | `<label>` in `.nd-form-group` | Tab label appearance | (none) |
 | `<label>` in `.nd-form-check` | Check label appearance | (none) |
+| `<aside>` | **Not styled natively** | Requires `.fold` class (see Fold component) |
 
 ### 3.8 Component Class Reference
 
@@ -223,13 +260,22 @@ ndesign styles native HTML elements directly — no base classes needed for comm
 | Card | `.nd-card` | `.nd-card-header`, `.nd-card-body`, `.nd-card-footer`, `.nd-card-flush` |
 | Panel | `.nd-panel` | `.nd-panel-bordered`, `.nd-panel-compact` |
 | Well | `.nd-well` | `.nd-well-sm`, `.nd-well-lg` |
-| Fold | `<aside class="fold">` | `.fold-left`, `.fold-info`, `.fold-warning`, `.fold-danger`, `.fold-success` |
+| Fold | `.fold` | `.fold-left`, `.fold-title`, `.fold-info`, `.fold-warning`, `.fold-danger`, `.fold-success` |
 | Button | `<button>` (native) | `.nd-btn-primary`, `.nd-btn-secondary`, `.nd-btn-danger`, `.nd-btn-ghost`, `.nd-btn-sm`, `.nd-btn-lg` |
 | Form Group | `.nd-form-group` | `.nd-form-group-attached`, `.nd-form-help`, `.nd-form-error` |
 | Alert | `.nd-alert` | `.nd-alert-success`, `.nd-alert-warning`, `.nd-alert-error`, `.nd-alert-info` |
 | Table | `<table>` (native) | `.nd-table-striped`, `.nd-table-hover`, `.nd-table-responsive` |
 | Badge | `.nd-badge` | `.nd-badge-primary`, `.nd-badge-danger`, `.nd-badge-success` |
 | Switch | `<button class="nd-switch">` | `.nd-switch-sm`, `aria-pressed="true\|false"`, `disabled` |
+| Avatar | `.avatar` | `.avatar-sm`, `.avatar-lg`, `.avatar-xl` |
+| Nav (top) | `<nav>` (native) | `.nd-nav-brand`, `.nd-nav-menu`, `.nd-nav-end`, `.nd-nav-toggle`, `.nd-nav-section` |
+| Sidebar | `.sidebar` | `.sidebar-fixed`, `.sidebar-section`, `.sidebar-menu`, `.nd-nav-open` |
+| Dropdown | `.nd-dropdown` | `.nd-dropdown-menu`, `.nd-dropdown-right`, `.nd-dropdown-up`, `.nd-dropdown-divider`, `.nd-open` |
+| Modal | `<dialog>` (native) | `.nd-modal-close`, `.nd-modal-body`, `.nd-modal-sm`, `.nd-modal-lg`, `.nd-modal-full` |
+| Toast | `.nd-toast` | `.nd-toast-container`, `.nd-toast-message`, `.nd-toast-close`, `.nd-toast-success`, `.nd-toast-error`, `.nd-toast-warning`, `.nd-toast-info` |
+| App Layout | `.app-layout` | `.app-page`, `.app-content`, `.app-main`, `.app-header`, `.app-footer`, `.app-layout-below-nav` |
+| Overlay | `.overlay` | `.active` |
+| Hamburger | `.hamburger` | (mobile-only toggle button) |
 | Container | `.nd-container` | Opt-in for narrow/centered content |
 | Grid | `.nd-row` | `.nd-col-{1-12}`, `.nd-col-md-{1-12}` etc. |
 
@@ -290,6 +336,15 @@ Subscribes to a WebSocket channel for real-time push updates.
 
 <!-- Single value update -->
 <span data-nd-ws="ws://host/feed/price" data-nd-field="last"></span>
+
+<!-- Filtered — only render messages where type == "alert" -->
+<div data-nd-ws="ws://host/feed/events"
+     data-nd-ws-filter="type:alert"
+     data-nd-template="alert-row">
+  <template id="alert-row">
+    <div class="nd-alert nd-alert-warning">{{message}}</div>
+  </template>
+</div>
 ```
 
 #### Server-Sent Events — `data-nd-sse`
@@ -352,6 +407,29 @@ Bind custom JS behavior to DOM events (escape hatch for edge cases).
 <button data-nd-on="click:handleExport">Export CSV</button>
 ```
 
+#### Theme Switching — `data-nd-theme` / `data-nd-theme-toggle`
+
+Declarative theme controls without writing JS.
+
+```html
+<!-- Set a specific theme by name -->
+<button data-nd-theme="dark">Dark Mode</button>
+<button data-nd-theme="light">Light Mode</button>
+
+<!-- Cycle through all registered themes -->
+<button data-nd-theme-toggle>Toggle Theme</button>
+```
+
+#### Sidebar Toggle — `data-nd-toggle="sidebar"`
+
+Opens/closes the `.sidebar` element and its associated `.overlay` on mobile.
+
+```html
+<button class="hamburger" data-nd-toggle="sidebar" aria-expanded="false">
+  &#9776;
+</button>
+```
+
 ### 4.3 Template System
 
 Templates use `<template>` elements with `{{field}}` placeholders.
@@ -375,6 +453,27 @@ Templates use `<template>` elements with `{{field}}` placeholders.
     </div>
   </div>
 </template>
+```
+
+**State templates:**
+
+```html
+<div data-nd-bind="/api/users" data-nd-template="user-row">
+  <!-- Loading placeholder — shown while the fetch is in flight -->
+  <template data-nd-loading>
+    <div class="nd-well">Loading users...</div>
+  </template>
+
+  <!-- Empty state — shown when the response is an empty array -->
+  <template data-nd-empty>
+    <div class="nd-well">No users found.</div>
+  </template>
+
+  <!-- Data template — rendered per item -->
+  <template id="user-row">
+    <div class="nd-card"><div class="nd-card-body">{{name}}</div></div>
+  </template>
+</div>
 ```
 
 **Render modes:**
@@ -430,6 +529,7 @@ ndesign maps each key to the matching `name` input and displays the error in the
 | `redirect:/path` | Navigate to path |
 | `reset` | Clear the form |
 | `reload` | Reload the page |
+| `refresh:#selector` | Re-fetch `data-nd-bind` on the matched element(s) |
 | `close` | Close parent modal/panel (future) |
 | `emit:event-name` | Dispatch custom DOM event |
 
@@ -472,34 +572,52 @@ NDesign.configure({
 ndesign/
 ├── docs/
 │   ├── Architecture.md          # this file
-│   └── CodingGuidelines.md      # coding standards
+│   ├── CodingGuidelines.md      # coding standards
+│   └── bindings.md              # binding attribute reference
 ├── scss/
-│   ├── core.scss
-│   ├── _reset.scss
-│   ├── _tokens.scss
-│   ├── _typography.scss
-│   ├── _layout.scss
-│   ├── _cards.scss
-│   ├── _panels.scss
-│   ├── _wells.scss
-│   ├── _buttons.scss
-│   ├── _forms.scss
-│   ├── _tables.scss
-│   ├── _alerts.scss
-│   ├── _utilities.scss
-│   ├── _responsive.scss
-│   ├── _transitions.scss
+│   ├── core.scss                # master import — compiles to ndesign.css
+│   ├── _reset.scss              # normalize + box-sizing
+│   ├── _tokens.scss             # spacing, fonts, radii, breakpoints, z-index
+│   ├── _typography.scss         # headings, body, monospace, links
+│   ├── _layout.scss             # grid, flex helpers, containers
+│   ├── _cards.scss              # .nd-card
+│   ├── _panels.scss             # .nd-panel
+│   ├── _wells.scss              # .nd-well
+│   ├── _buttons.scss            # buttons, .nd-btn-*, .nd-switch
+│   ├── _forms.scss              # inputs, selects, textareas, checkboxes
+│   ├── _tables.scss             # tables, striped, hover, responsive
+│   ├── _alerts.scss             # .nd-alert
+│   ├── _badges.scss             # .nd-badge
+│   ├── _asides.scss             # .fold (edge-pinned callouts)
+│   ├── _nav.scss                # <nav>, .sidebar, .nd-nav-*
+│   ├── _dropdowns.scss          # .nd-dropdown
+│   ├── _modals.scss             # <dialog> modal styling
+│   ├── _toasts.scss             # .nd-toast, .nd-toast-container
+│   ├── _app-layout.scss         # .app-layout, .app-page, .overlay, .hamburger
+│   ├── _avatars.scss            # .avatar
+│   ├── _utilities.scss          # spacing, display, text helpers
+│   ├── _responsive.scss         # breakpoint overrides
+│   ├── _transitions.scss        # keyframes, animation tokens
 │   └── themes/
 │       ├── light.scss
 │       └── dark.scss
 ├── js/
-│   ├── ndesign.js               # entry point
+│   ├── ndesign.js               # entry point, theme API, auto-init
 │   ├── bind.js                  # data-nd-bind handler
 │   ├── ws.js                    # data-nd-ws handler
 │   ├── sse.js                   # data-nd-sse handler
 │   ├── action.js                # data-nd-action handler (forms + buttons)
 │   ├── template.js              # template cloning + interpolation
+│   ├── nav.js                   # top nav collapse toggle
+│   ├── dropdown.js              # dropdown open/close
+│   ├── modal.js                 # dialog open/close, openModal(), closeModal()
+│   ├── toast.js                 # toast(), auto-dismiss
+│   ├── select.js                # custom select styling
 │   └── utils.js                 # shared helpers
+├── testserver/                  # Go test server for local development
+│   ├── go.mod
+│   ├── go.sum
+│   └── main.go
 ├── dist/                        # compiled output
 │   ├── ndesign.min.js
 │   ├── ndesign.min.css
@@ -507,8 +625,12 @@ ndesign/
 │       ├── light.min.css
 │       └── dark.min.css
 ├── demo/                        # local demo/test pages
-│   └── index.html
-├── package.json                 # build tooling only (sass, esbuild/rollup)
+│   ├── index.html
+│   ├── app-shell.html
+│   ├── bindings.html
+│   ├── complex-app.html
+│   └── control-panel.html
+├── package.json                 # build tooling only (sass, esbuild)
 └── README.md
 ```
 
@@ -564,8 +686,12 @@ npx serve demo
 
 ## 8. Future Extensions (Out of Scope for v0.1)
 
-- Modal/dialog component
-- Toast/notification system
+- Tabs component
+- Skeleton loaders
+- Tooltips
+- Pagination component
+- Progress bars
+- Breadcrumbs
 - Drag-and-drop
 - File upload with progress
 - Lazy loading / infinite scroll

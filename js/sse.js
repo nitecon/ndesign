@@ -8,8 +8,14 @@
 import { getByPath } from './utils.js';
 import { render } from './template.js';
 
-/** @type {Map<HTMLElement, EventSource>} active SSE connections by element */
-const sources = new Map();
+/**
+ * @typedef {Object} SSEConnection
+ * @property {EventSource} source     — the shared EventSource instance
+ * @property {Set<HTMLElement>} elements — elements bound to this URL
+ */
+
+/** @type {Map<string, SSEConnection>} shared connections keyed by full URL */
+const connections = new Map();
 
 /**
  * Apply a received SSE message to a bound element.
@@ -51,38 +57,87 @@ function parseEventData(event) {
 }
 
 /**
+ * Dispatch an SSE event to all elements bound to a connection,
+ * respecting each element's individual data-nd-sse-event filter.
+ * @param {SSEConnection} conn   — the shared connection object
+ * @param {string} eventType     — the SSE event type ("message" or a named type)
+ * @param {MessageEvent} event   — the raw SSE MessageEvent
+ * @param {Object} config        — NDesign configuration object
+ */
+function dispatchToElements(conn, eventType, event, config) {
+  const data = parseEventData(event);
+  if (!data) return;
+
+  for (const el of conn.elements) {
+    const elFilter = el.getAttribute('data-nd-sse-event');
+    if (elFilter && elFilter !== eventType) continue;
+    if (!elFilter && eventType !== 'message') continue;
+    applyEvent(el, data, config);
+  }
+}
+
+/**
  * Initialize all data-nd-sse elements in the document.
- * Each element gets its own EventSource connection. The browser handles
- * auto-reconnect natively for SSE.
+ * Elements sharing the same SSE URL share a single EventSource connection.
+ * The browser handles auto-reconnect natively for SSE.
  * @param {Object} config — NDesign configuration object
  */
 export function initSSE(config) {
   const elements = document.querySelectorAll('[data-nd-sse]');
+
+  // Group elements by their resolved URL
+  /** @type {Map<string, Set<HTMLElement>>} */
+  const grouped = new Map();
 
   for (const el of elements) {
     const url = el.getAttribute('data-nd-sse');
     if (!url) continue;
 
     const fullURL = (config.baseURL || '') + url;
-    const eventFilter = el.getAttribute('data-nd-sse-event');
+    if (!grouped.has(fullURL)) {
+      grouped.set(fullURL, new Set());
+    }
+    grouped.get(fullURL).add(el);
+  }
+
+  // Create one EventSource per unique URL
+  for (const [fullURL, elSet] of grouped) {
+    if (connections.has(fullURL)) {
+      // Connection already exists — merge elements
+      const conn = connections.get(fullURL);
+      for (const el of elSet) {
+        conn.elements.add(el);
+      }
+      continue;
+    }
 
     const source = new EventSource(fullURL);
+    const conn = { source, elements: elSet };
 
-    if (eventFilter) {
-      // Listen only for the specific named event type
-      source.addEventListener(eventFilter, (event) => {
-        const data = parseEventData(event);
-        if (data) {
-          applyEvent(el, data, config);
-        }
+    // Collect all distinct event types needed by bound elements
+    const namedEvents = new Set();
+    let needsGenericMessage = false;
+
+    for (const el of elSet) {
+      const eventFilter = el.getAttribute('data-nd-sse-event');
+      if (eventFilter) {
+        namedEvents.add(eventFilter);
+      } else {
+        needsGenericMessage = true;
+      }
+    }
+
+    // Register one listener per distinct named event type
+    for (const eventType of namedEvents) {
+      source.addEventListener(eventType, (event) => {
+        dispatchToElements(conn, eventType, event, config);
       });
-    } else {
-      // Listen for generic "message" events
+    }
+
+    // Register the generic "message" listener if any element needs it
+    if (needsGenericMessage) {
       source.addEventListener('message', (event) => {
-        const data = parseEventData(event);
-        if (data) {
-          applyEvent(el, data, config);
-        }
+        dispatchToElements(conn, 'message', event, config);
       });
     }
 
@@ -93,16 +148,17 @@ export function initSSE(config) {
       }
     });
 
-    sources.set(el, source);
+    connections.set(fullURL, conn);
   }
 }
 
 /**
- * Tear down all SSE connections. Called on cleanup.
+ * Tear down all SSE connections. Each EventSource is closed once.
+ * Called on cleanup.
  */
 export function destroySSE() {
-  for (const [el, source] of sources) {
-    source.close();
+  for (const [url, conn] of connections) {
+    conn.source.close();
   }
-  sources.clear();
+  connections.clear();
 }

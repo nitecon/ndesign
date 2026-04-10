@@ -5,278 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ndesign Control Panel</title>
   <link rel="stylesheet" href="../dist/ndesign.css">
-  <link rel="stylesheet" href="../dist/themes/light.css" id="nd-theme">
-  <style>
-    /* ------------------------------------------------------------------ */
-    /* Layout — demo-only styles (not part of ndesign)                    */
-    /* ------------------------------------------------------------------ */
-    html, body {
-      height: 100%;
-      overflow: hidden;
-      padding: 0;
-      min-width: 0;
-    }
-
-    .cp-layout {
-      display: flex;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    /* Sidebar — flush against header and footer, resets native nav top-bar */
-    .cp-sidebar {
-      width: 240px;
-      min-width: 240px;
-      background: var(--nd-bg-surface);
-      border-right: 1px solid var(--nd-border);
-      border-bottom: none;
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      overflow-y: auto;
-      z-index: 1030;
-      transition: transform 250ms ease;
-      flex-shrink: 0;
-      position: static;
-      box-shadow: none;
-      padding: 0;
-    }
-    .cp-sidebar-brand {
-      padding: 1.25rem 1rem;
-      font-size: 1.125rem;
-      font-weight: 700;
-      border-bottom: 1px solid var(--nd-border);
-      color: var(--nd-text-primary);
-    }
-    .cp-sidebar-brand span {
-      font-weight: 400;
-      color: var(--nd-text-muted);
-      font-size: 0.75rem;
-      display: block;
-      margin-top: 0.125rem;
-    }
-    .cp-sidebar-section {
-      padding: 0.75rem 0.75rem 0.25rem;
-      font-size: 0.8125rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--nd-text-muted);
-    }
-    .cp-sidebar-nav {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-    }
-    .cp-sidebar-nav li a {
-      display: block;
-      padding: 0.5rem 0.75rem;
-      color: var(--nd-text-secondary);
-      text-decoration: none;
-      font-size: 0.875rem;
-      border-left: 3px solid transparent;
-      transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
-    }
-    .cp-sidebar-nav li a:hover {
-      background: var(--nd-bg-surface-hover);
-      color: var(--nd-text-primary);
-      text-decoration: none;
-    }
-    .cp-sidebar-nav li a.nd-active {
-      color: var(--nd-accent);
-      border-left-color: var(--nd-accent);
-      background: var(--nd-bg-surface-hover);
-      font-weight: 500;
-    }
-
-    /* Main wrapper (header + content) */
-    .cp-main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      min-width: 0;
-    }
-
-    /* Top header bar */
-    .cp-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 1.5rem;
-      height: 56px;
-      min-height: 56px;
-      background: var(--nd-bg-surface);
-      border-bottom: 1px solid var(--nd-border);
-    }
-    .cp-header-left {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-    .cp-header-title {
-      font-size: 1rem;
-      font-weight: 600;
-      margin: 0;
-      color: var(--nd-text-primary);
-    }
-    .cp-header-right {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    .cp-avatar {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.875rem;
-      color: var(--nd-text-secondary);
-    }
-    .cp-avatar-circle {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: var(--nd-accent);
-      color: #fff;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-
-    /* Hamburger (mobile) */
-    .cp-hamburger {
-      display: none;
-      background: none;
-      border: none;
-      font-size: 1.25rem;
-      cursor: pointer;
-      color: var(--nd-text-primary);
-      padding: 0.25rem;
-    }
-
-    /* Scrollable content */
-    .cp-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 1.5rem 2rem;
-    }
-
-    /* Stat cards */
-    .cp-stat-value {
-      font-size: 1.75rem;
-      font-weight: 700;
-      line-height: 1.2;
-      margin-bottom: 0.25rem;
-      color: var(--nd-text-primary);
-    }
-    .cp-stat-label {
-      font-size: 0.8125rem;
-      color: var(--nd-text-secondary);
-    }
-    .cp-stat-accent {
-      width: 4px;
-      border-radius: 4px;
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-    }
-    .cp-stat-card {
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* Footer */
-    .cp-footer {
-      padding: 0.75rem 1.5rem;
-      font-size: 0.75rem;
-      color: var(--nd-text-muted);
-      border-top: 1px solid var(--nd-border);
-      text-align: center;
-      background: var(--nd-bg-surface);
-    }
-
-    /* Overlay for mobile sidebar */
-    .cp-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.4);
-      z-index: 1020;
-    }
-
-    /* ------------------------------------------------------------------ */
-    /* Responsive                                                         */
-    /* ------------------------------------------------------------------ */
-    @media (max-width: 991px) {
-      .cp-sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        transform: translateX(-100%);
-      }
-      .cp-sidebar.cp-sidebar-open {
-        transform: translateX(0);
-      }
-      .cp-overlay.cp-overlay-visible {
-        display: block;
-      }
-      .cp-hamburger {
-        display: block;
-      }
-    }
-
-    @media (max-width: 767px) {
-      .cp-content {
-        padding: 1rem;
-      }
-      .cp-stat-value {
-        font-size: 1.375rem;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="../dist/themes/light.css" class="theme" title="light">
+  <meta name="nd-theme" content="light" data-href="../dist/themes/light.css">
+  <meta name="nd-theme" content="dark" data-href="../dist/themes/dark.css">
+  <style>/* You may not use custom styles under any circumstance on the demo pages */</style>
 </head>
-<body>
+<body class="app-page">
 
-  <!-- Overlay for mobile sidebar -->
-  <div class="cp-overlay" id="cp-overlay" onclick="closeSidebar()"></div>
-
-  <div class="cp-layout">
+  <div class="app-layout nd-h-screen nd-overflow-hidden">
 
     <!-- ================================================================ -->
     <!-- Sidebar                                                          -->
     <!-- ================================================================ -->
-    <nav class="cp-sidebar" id="cp-sidebar">
-      <div class="cp-sidebar-brand">
+    <nav class="sidebar" id="cp-sidebar">
+      <div class="nd-nav-brand">
         ndesign
-        <span>Control Panel v0.1.0</span>
+        <span class="nd-nav-brand-sub">Control Panel v0.1.0</span>
       </div>
 
-      <div class="cp-sidebar-section">Main</div>
-      <ul class="cp-sidebar-nav">
+      <div class="nd-nav-section">Main</div>
+      <ul class="nd-nav-menu">
         <li><a href="#" class="nd-active">Dashboard</a></li>
         <li><a href="#">Analytics</a></li>
       </ul>
 
-      <div class="cp-sidebar-section">Management</div>
-      <ul class="cp-sidebar-nav">
+      <div class="nd-nav-section">Management</div>
+      <ul class="nd-nav-menu">
         <li><a href="#">Users</a></li>
         <li><a href="#">Roles &amp; Permissions</a></li>
         <li><a href="#">Teams</a></li>
       </ul>
 
-      <div class="cp-sidebar-section">Content</div>
-      <ul class="cp-sidebar-nav">
+      <div class="nd-nav-section">Content</div>
+      <ul class="nd-nav-menu">
         <li><a href="#">Pages</a></li>
         <li><a href="#">Media Library</a></li>
         <li><a href="#">Reports</a></li>
       </ul>
 
-      <div class="cp-sidebar-section">System</div>
-      <ul class="cp-sidebar-nav">
+      <div class="nd-nav-section">System</div>
+      <ul class="nd-nav-menu">
         <li><a href="#">Settings</a></li>
         <li><a href="#">Integrations</a></li>
         <li><a href="#">Audit Log</a></li>
@@ -286,63 +54,59 @@
     <!-- ================================================================ -->
     <!-- Main Area                                                        -->
     <!-- ================================================================ -->
-    <div class="cp-main">
+    <div class="nd-flex nd-flex-col nd-flex-grow nd-overflow-hidden">
 
       <!-- Header Bar -->
-      <header class="cp-header">
-        <div class="cp-header-left">
-          <button class="cp-hamburger" onclick="toggleSidebar()" aria-label="Toggle navigation">&#9776;</button>
-          <h1 class="cp-header-title">Dashboard</h1>
+      <header class="app-header">
+        <div class="app-header-left">
+          <button class="hamburger" data-nd-toggle="sidebar" aria-label="Toggle navigation">&#9776;</button>
+          <h1 class="app-header-title">Dashboard</h1>
         </div>
-        <div class="cp-header-right">
-          <button class="nd-btn-ghost nd-btn-sm" onclick="toggleTheme()">Toggle Theme</button>
-          <div class="cp-avatar">
-            <span class="cp-avatar-circle">AJ</span>
-            <span>Alice Johnson</span>
+        <div class="app-header-right">
+          <button class="nd-btn-ghost nd-btn-sm" data-nd-theme-toggle>Toggle Theme</button>
+          <div class="nd-inline-flex nd-align-center nd-gap-sm">
+            <span class="avatar">AJ</span>
+            <span class="nd-text-small nd-text-secondary">Alice Johnson</span>
           </div>
         </div>
       </header>
 
       <!-- Scrollable Content -->
-      <main class="cp-content">
+      <main class="app-content">
 
         <!-- ============================================================ -->
         <!-- Stat Cards                                                   -->
         <!-- ============================================================ -->
-        <div class="nd-row" style="margin-bottom: 1.5rem;">
+        <div class="nd-row nd-mb-lg">
           <div class="nd-col-3 nd-col-md-6">
-            <div class="nd-card cp-stat-card">
-              <div class="cp-stat-accent" style="background: var(--nd-accent);"></div>
-              <div class="nd-card-body" style="padding-left: 1.25rem;">
-                <div class="cp-stat-value">1,234</div>
-                <div class="cp-stat-label">Total Users</div>
+            <div class="nd-card nd-relative nd-overflow-hidden" style="border-left: 4px solid var(--nd-accent)">
+              <div class="nd-card-body">
+                <h2 class="nd-m-0">1,234</h2>
+                <p class="nd-text-small nd-text-secondary nd-m-0">Total Users</p>
               </div>
             </div>
           </div>
           <div class="nd-col-3 nd-col-md-6">
-            <div class="nd-card cp-stat-card">
-              <div class="cp-stat-accent" style="background: var(--nd-success);"></div>
-              <div class="nd-card-body" style="padding-left: 1.25rem;">
-                <div class="cp-stat-value">567</div>
-                <div class="cp-stat-label">Active Sessions</div>
+            <div class="nd-card nd-relative nd-overflow-hidden" style="border-left: 4px solid var(--nd-success)">
+              <div class="nd-card-body">
+                <h2 class="nd-m-0">567</h2>
+                <p class="nd-text-small nd-text-secondary nd-m-0">Active Sessions</p>
               </div>
             </div>
           </div>
           <div class="nd-col-3 nd-col-md-6">
-            <div class="nd-card cp-stat-card">
-              <div class="cp-stat-accent" style="background: var(--nd-warning);"></div>
-              <div class="nd-card-body" style="padding-left: 1.25rem;">
-                <div class="cp-stat-value">$12,345</div>
-                <div class="cp-stat-label">Revenue</div>
+            <div class="nd-card nd-relative nd-overflow-hidden" style="border-left: 4px solid var(--nd-warning)">
+              <div class="nd-card-body">
+                <h2 class="nd-m-0">$12,345</h2>
+                <p class="nd-text-small nd-text-secondary nd-m-0">Revenue</p>
               </div>
             </div>
           </div>
           <div class="nd-col-3 nd-col-md-6">
-            <div class="nd-card cp-stat-card">
-              <div class="cp-stat-accent" style="background: var(--nd-danger);"></div>
-              <div class="nd-card-body" style="padding-left: 1.25rem;">
-                <div class="cp-stat-value">23</div>
-                <div class="cp-stat-label">Errors</div>
+            <div class="nd-card nd-relative nd-overflow-hidden" style="border-left: 4px solid var(--nd-danger)">
+              <div class="nd-card-body">
+                <h2 class="nd-m-0">23</h2>
+                <p class="nd-text-small nd-text-secondary nd-m-0">Errors</p>
               </div>
             </div>
           </div>
@@ -351,19 +115,19 @@
         <!-- ============================================================ -->
         <!-- Alerts — System Notifications                                -->
         <!-- ============================================================ -->
-        <div class="nd-alert nd-alert-info" style="margin-bottom: 1.5rem;">
+        <div class="nd-alert nd-alert-info nd-mb-lg">
           <strong>System Notice:</strong> Scheduled maintenance window on Saturday, 12 Apr 2026, 02:00-04:00 UTC.
         </div>
 
         <!-- ============================================================ -->
         <!-- Data Table                                                   -->
         <!-- ============================================================ -->
-        <div class="nd-card" style="margin-bottom: 1.5rem;">
-          <div class="nd-card-header" style="display: flex; align-items: center; justify-content: space-between;">
-            <h3 style="margin: 0;">Users</h3>
+        <div class="nd-card nd-mb-lg">
+          <div class="nd-card-header nd-flex nd-align-center nd-justify-between">
+            <h3 class="nd-m-0">Users</h3>
             <span class="nd-badge nd-badge-primary">248 total</span>
           </div>
-          <div class="nd-card-body" style="padding: 0;">
+          <div class="nd-card-body nd-p-0">
             <div class="nd-table-responsive">
               <table class="nd-table-striped nd-table-hover">
                 <thead>
@@ -469,9 +233,9 @@
 
           <!-- Add New User Form -->
           <div class="nd-col-6 nd-col-md-12">
-            <div class="nd-card" style="margin-bottom: 1.5rem;">
+            <div class="nd-card nd-mb-lg">
               <div class="nd-card-header">
-                <h3 style="margin: 0;">Add New User</h3>
+                <h3 class="nd-m-0">Add New User</h3>
               </div>
               <div class="nd-card-body">
                 <form>
@@ -518,9 +282,9 @@
 
           <!-- System Notifications -->
           <div class="nd-col-6 nd-col-md-12">
-            <div class="nd-card" style="margin-bottom: 1.5rem;">
+            <div class="nd-card nd-mb-lg">
               <div class="nd-card-header">
-                <h3 style="margin: 0;">System Notifications</h3>
+                <h3 class="nd-m-0">System Notifications</h3>
               </div>
               <div class="nd-card-body">
                 <div class="nd-alert nd-alert-success">
@@ -536,7 +300,7 @@
                   <strong>Update Available:</strong> ndesign v0.2.0 is now available with new modal component.
                 </div>
 
-                <div class="nd-well nd-well-sm" style="margin-top: 1rem;">
+                <div class="nd-well nd-well-sm nd-mt-md">
                   <strong>Uptime:</strong> 99.97% over the last 30 days. Last incident: 2026-03-22.
                 </div>
               </div>
@@ -548,73 +312,17 @@
       </main>
 
       <!-- Footer -->
-      <footer class="cp-footer">
+      <footer class="app-footer">
         ndesign v0.1.0 &mdash; Built for server-rendered applications.
       </footer>
 
-    </div><!-- /.cp-main -->
+    </div><!-- /.nd-flex wrapper -->
 
-  </div><!-- /.cp-layout -->
+  </div><!-- /.app-layout -->
+
+  <!-- Overlay for mobile sidebar -->
+  <div class="overlay" id="cp-overlay"></div>
 
   <script src="../dist/ndesign.min.js"></script>
-  <script>
-    /**
-     * Theme toggle — swaps the theme stylesheet between light and dark.
-     * Falls back to manual href swap if NDesign.toggleTheme is not available.
-     */
-    function toggleTheme() {
-      if (typeof NDesign !== 'undefined' && typeof NDesign.toggleTheme === 'function') {
-        NDesign.toggleTheme();
-        return;
-      }
-      const link = document.getElementById('nd-theme');
-      if (link.href.includes('light')) {
-        link.href = link.href.replace('light', 'dark');
-      } else {
-        link.href = link.href.replace('dark', 'light');
-      }
-    }
-
-    // Toggle switch click handler — flips aria-pressed
-    document.addEventListener('click', function(e) {
-      const sw = e.target.closest('.nd-switch');
-      if (sw && !sw.disabled) {
-        const pressed = sw.getAttribute('aria-pressed') === 'true';
-        sw.setAttribute('aria-pressed', String(!pressed));
-      }
-    });
-
-    /**
-     * Sidebar toggle for mobile/tablet viewports.
-     */
-    function toggleSidebar() {
-      const sidebar = document.getElementById('cp-sidebar');
-      const overlay = document.getElementById('cp-overlay');
-      sidebar.classList.toggle('cp-sidebar-open');
-      overlay.classList.toggle('cp-overlay-visible');
-    }
-
-    function closeSidebar() {
-      const sidebar = document.getElementById('cp-sidebar');
-      const overlay = document.getElementById('cp-overlay');
-      sidebar.classList.remove('cp-sidebar-open');
-      overlay.classList.remove('cp-overlay-visible');
-    }
-
-    /* Activate nav items on click */
-    document.querySelectorAll('.cp-sidebar-nav a').forEach(function(link) {
-      link.addEventListener('click', function(e) {
-        e.preventDefault();
-        document.querySelectorAll('.cp-sidebar-nav a').forEach(function(el) {
-          el.classList.remove('nd-active');
-        });
-        this.classList.add('nd-active');
-        /* Close sidebar on mobile after selection */
-        if (window.innerWidth < 992) {
-          closeSidebar();
-        }
-      });
-    });
-  </script>
 </body>
 </html>

@@ -5,82 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ndesign Component Showcase</title>
   <link rel="stylesheet" href="../dist/ndesign.css">
-  <link rel="stylesheet" href="../dist/themes/light.css" id="nd-theme">
-  <style>
-    /* Demo-only styles -- not part of ndesign */
-    .demo-section {
-      margin-bottom: 3rem;
-      padding-bottom: 2rem;
-      border-bottom: 1px solid var(--nd-border);
-    }
-    .demo-section:last-child {
-      border-bottom: none;
-    }
-    .demo-label {
-      display: inline-block;
-      font-size: 0.75rem;
-      font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-      color: var(--nd-text-muted);
-      margin-bottom: 0.5rem;
-    }
-    .demo-grid-cell {
-      background: var(--nd-bg-well);
-      border: 1px solid var(--nd-border);
-      padding: 0.75rem;
-      text-align: center;
-      font-size: 0.875rem;
-      border-radius: 4px;
-    }
-    .demo-swatch {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-right: 1.5rem;
-      margin-bottom: 0.5rem;
-    }
-    .demo-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1rem 0;
-      margin-bottom: 2rem;
-      border-bottom: 2px solid var(--nd-border);
-    }
-    .demo-header h1 {
-      margin: 0;
-      font-size: 1.5rem;
-    }
-    .demo-header h1 span {
-      font-weight: 400;
-      color: var(--nd-text-secondary);
-    }
-    .demo-btn-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 0.75rem;
-    }
-  </style>
+  <link rel="stylesheet" href="../dist/themes/light.css" class="theme" title="light">
+  <meta name="nd-theme" content="light" data-href="../dist/themes/light.css">
+  <meta name="nd-theme" content="dark" data-href="../dist/themes/dark.css">
+  <style>/* You may not use custom styles under any circumstance on the demo pages */</style>
 </head>
 <body>
     <!-- ================================================================== -->
     <!-- Header                                                             -->
     <!-- ================================================================== -->
-    <header class="demo-header">
-      <h1>ndesign <span>Component Showcase</span></h1>
-      <button class="nd-btn-secondary" onclick="toggleTheme()" aria-label="Toggle theme">
-        Toggle Theme
-      </button>
-    </header>
+    <nav>
+      <span class="nd-nav-brand">ndesign <span class="nd-nav-brand-sub">Component Showcase</span></span>
+      <div class="nd-nav-end">
+        <button class="nd-btn-secondary" data-nd-theme-toggle aria-label="Toggle theme">
+          Toggle Theme
+        </button>
+      </div>
+    </nav>
 
     <!-- ================================================================== -->
     <!-- Typography                                                         -->
     <!-- ================================================================== -->
-    <section class="demo-section" id="typography">
+    <section class="nd-mb-2xl nd-pb-lg nd-border-b" id="typography">
       <h2>Typography</h2>
 
-      <div class="demo-label">.h1 &ndash; .h6</div>
+      <p class="nd-mb-sm"><code class="nd-text-xs nd-text-muted">.h1 &ndash; .h6</code></p>
       <h1>Heading 1 &mdash; The quick brown fox</h1>
       <h2>Heading 2 &mdash; The quick brown fox</h2>
       <h3>Heading 3 &mdash; The quick brown fox</h3>
@@ -90,14 +39,14 @@
 
       <hr>
 
-      <div class="demo-label">Body text</div>
+      <p class="nd-mb-sm"><code class="nd-text-xs nd-text-muted">Body text</code></p>
       <p>
         This is a standard paragraph of body text. ndesign uses <strong>Inter</strong> as its
         primary sans-serif typeface and <strong>JetBrains Mono</strong> for monospace contexts.
         The base font size is <code>1rem</code> (16px) with a line-height of 1.5.
       </p>
 
-      <div class="demo-label">Monospace / code</div>
+      <p class="nd-mb-sm"><code class="nd-text-xs nd-text-muted">Monospace / code</code></p>
       <pre><code>const NDesign = {
   version: '0.1.0',
   init() {
@@ -105,19 +54,19 @@
   }
 };</code></pre>
 
-      <div class="demo-label">Inline code</div>
+      <p class="nd-mb-sm"><code class="nd-text-xs nd-text-muted">Inline code</code></p>
       <p>
         Use <code>data-nd-bind="/api/users"</code> to bind an element to a REST endpoint.
       </p>
 
-      <div class="demo-label">Links</div>
+      <p class="nd-mb-sm"><code class="nd-text-xs nd-text-muted">Links</code></p>
       <p>
         Visit the <a href="#typography">Typography section</a> or check the
         <a href="#buttons">Buttons section</a> below. Links use
         <code>var(--nd-accent)</code> and darken on hover.
       </p>
 
-      <div class="demo-label">Prose block / blockquote</div>
+      <p class="nd-mb-sm"><code class="nd-text-xs nd-text-muted">Prose block / blockquote</code></p>
       <blockquote>
         "The backend is always authoritative. The frontend is a thin presentation and binding
         layer delivered via CDN." &mdash; ndesign Architecture Spec
@@ -127,35 +76,35 @@
     <!-- ================================================================== -->
     <!-- Buttons                                                            -->
     <!-- ================================================================== -->
-    <section class="demo-section" id="buttons">
+    <section class="nd-mb-2xl nd-pb-lg nd-border-b" id="buttons">
       <h2>Buttons</h2>
 
-      <div class="demo-label">Primary</div>
-      <div class="demo-btn-row">
+      <p class="nd-mb-sm"><code class="nd-text-xs nd-text-muted">Primary</code></p>
+      <div class="nd-flex nd-flex-wrap nd-align-center nd-gap-sm nd-mb-md">
         <button class="nd-btn-primary nd-btn-sm">Small</button>
         <button class="nd-btn-primary">Default</button>
         <button class="nd-btn-primary nd-btn-lg">Large</button>
         <button class="nd-btn-primary" disabled>Disabled</button>
       </div>
 
-      <div class="demo-label">Secondary</div>
-      <div class="demo-btn-row">
+      <p class="nd-mb-sm"><code class="nd-text-xs nd-text-muted">Secondary</code></p>
+      <div class="nd-flex nd-flex-wrap nd-align-center nd-gap-sm nd-mb-md">
         <button class="nd-btn-secondary nd-btn-sm">Small</button>
         <button class="nd-btn-secondary">Default</button>
         <button class="nd-btn-secondary nd-btn-lg">Large</button>
         <button class="nd-btn-secondary" disabled>Disabled</button>
       </div>
 
-      <div class="demo-label">Danger</div>
-      <div class="demo-btn-row">
+      <p class="nd-mb-sm"><code class="nd-text-xs nd-text-muted">Danger</code></p>
+      <div class="nd-flex nd-flex-wrap nd-align-center nd-gap-sm nd-mb-md">
         <button class="nd-btn-danger nd-btn-sm">Small</button>
         <button class="nd-btn-danger">Default</button>
         <button class="nd-btn-danger nd-btn-lg">Large</button>
         <button class="nd-btn-danger" disabled>Disabled</button>
       </div>
 
-      <div class="demo-label">Ghost</div>
-      <div class="demo-btn-row">
+      <p class="nd-mb-sm"><code class="nd-text-xs nd-text-muted">Ghost</code></p>
+      <div class="nd-flex nd-flex-wrap nd-align-center nd-gap-sm nd-mb-md">
         <button class="nd-btn-ghost nd-btn-sm">Small</button>
         <button class="nd-btn-ghost">Default</button>
         <button class="nd-btn-ghost nd-btn-lg">Large</button>
@@ -166,7 +115,7 @@
     <!-- ================================================================== -->
     <!-- Cards                                                              -->
     <!-- ================================================================== -->
-    <section class="demo-section" id="cards">
+    <section class="nd-mb-2xl nd-pb-lg nd-border-b" id="cards">
       <h2>Cards</h2>
 
       <div class="nd-row">
@@ -214,7 +163,7 @@
     <!-- ================================================================== -->
     <!-- Panels                                                             -->
     <!-- ================================================================== -->
-    <section class="demo-section" id="panels">
+    <section class="nd-mb-2xl nd-pb-lg nd-border-b" id="panels">
       <h2>Panels</h2>
 
       <div class="nd-row">
@@ -246,7 +195,7 @@
     <!-- ================================================================== -->
     <!-- Wells                                                              -->
     <!-- ================================================================== -->
-    <section class="demo-section" id="wells">
+    <section class="nd-mb-2xl nd-pb-lg nd-border-b" id="wells">
       <h2>Wells</h2>
 
       <div class="nd-well nd-well-sm">
@@ -265,15 +214,15 @@
     <!-- ================================================================== -->
     <!-- Navigation                                                         -->
     <!-- ================================================================== -->
-    <section class="demo-section" id="nav">
+    <section class="nd-mb-2xl nd-pb-lg nd-border-b" id="nav">
       <h2>Navigation</h2>
       <p class="nd-text-secondary nd-mb-lg">Top bar and sidebar navigation with mobile collapse.</p>
 
       <div class="nd-row">
         <!-- Top nav bar example -->
         <div class="nd-col-6">
-          <div class="demo-label">Top Nav Bar</div>
-          <nav style="position: relative">
+          <p class="nd-mb-sm"><code class="nd-text-xs nd-text-muted">Top Nav Bar</code></p>
+          <nav class="nd-relative">
             <span class="nd-nav-brand">AppName</span>
             <button class="nd-nav-toggle" aria-label="Toggle navigation">&#9776;</button>
             <ul class="nd-nav-menu">
@@ -290,10 +239,10 @@
 
         <!-- Sidebar nav description -->
         <div class="nd-col-6">
-          <div class="demo-label">Side Nav</div>
+          <p class="nd-mb-sm"><code class="nd-text-xs nd-text-muted">Side Nav</code></p>
           <div class="nd-well">
             <p><strong>Sidebar Navigation</strong></p>
-            <p class="nd-text-secondary">The side nav (<code>.nd-nav.nd-nav-side</code>) is a fixed 16rem column with section headers, vertical link lists, and mobile slide-in behavior with an overlay backdrop.</p>
+            <p class="nd-text-secondary">The sidebar (<code>&lt;nav class="sidebar"&gt;</code>) is a 16rem vertical column with section headers, border-left active indicators, and mobile slide-in behavior. Add <code>sidebar-fixed</code> for a fixed full-app sidebar. See <a href="app-shell.html" class="nd-link">app-shell.html</a> and <a href="complex-app.html" class="nd-link">complex-app.html</a> for examples.</p>
             <p class="nd-text-secondary nd-mt-md">See <a href="app-shell.html" class="nd-link"><strong>demo/app-shell.html</strong></a> for a full sidebar layout demo.</p>
           </div>
         </div>
@@ -303,11 +252,11 @@
     <!-- ================================================================== -->
     <!-- Dropdowns                                                          -->
     <!-- ================================================================== -->
-    <section class="demo-section" id="dropdowns">
+    <section class="nd-mb-2xl nd-pb-lg nd-border-b" id="dropdowns">
       <h2>Dropdowns</h2>
       <p class="nd-text-secondary nd-mb-lg">Click-triggered menus for actions and navigation.</p>
 
-      <div class="demo-btn-row">
+      <div class="nd-flex nd-flex-wrap nd-align-center nd-gap-sm nd-mb-md">
         <!-- Default dropdown -->
         <div class="nd-dropdown">
           <button class="nd-btn-secondary">Options &#9662;</button>
@@ -356,11 +305,11 @@
     <!-- ================================================================== -->
     <!-- Modals                                                             -->
     <!-- ================================================================== -->
-    <section class="demo-section" id="modals">
+    <section class="nd-mb-2xl nd-pb-lg nd-border-b" id="modals">
       <h2>Modals</h2>
       <p class="nd-text-secondary nd-mb-lg">Native &lt;dialog&gt; elements &mdash; focus trapping and backdrop handled by the browser.</p>
 
-      <div class="demo-btn-row">
+      <div class="nd-flex nd-flex-wrap nd-align-center nd-gap-sm nd-mb-md">
         <button class="nd-btn-primary" data-nd-modal="#modal-default">Default Modal</button>
         <button class="nd-btn-secondary" data-nd-modal="#modal-sm">Small Confirmation</button>
         <button class="nd-btn-secondary" data-nd-modal="#modal-lg">Large Form Modal</button>
@@ -448,11 +397,11 @@
     <!-- ================================================================== -->
     <!-- Toasts                                                             -->
     <!-- ================================================================== -->
-    <section class="demo-section" id="toasts">
+    <section class="nd-mb-2xl nd-pb-lg nd-border-b" id="toasts">
       <h2>Toasts</h2>
       <p class="nd-text-secondary nd-mb-lg">Notification popups triggered via JavaScript API.</p>
 
-      <div class="demo-btn-row">
+      <div class="nd-flex nd-flex-wrap nd-align-center nd-gap-sm nd-mb-md">
         <button class="nd-btn-primary" onclick="NDesign.toast('User created successfully', 'success')">Success</button>
         <button class="nd-btn-danger" onclick="NDesign.toast('Failed to save changes', 'error')">Error</button>
         <button class="nd-btn-secondary" onclick="NDesign.toast('API rate limit approaching', 'warning')">Warning</button>
@@ -461,7 +410,7 @@
       </div>
 
       <div class="nd-well nd-mt-md">
-        <div class="demo-label">API Usage</div>
+        <p class="nd-mb-sm"><code class="nd-text-xs nd-text-muted">API Usage</code></p>
         <code>NDesign.toast(message, type?, duration?)</code>
         <p class="nd-text-secondary nd-mt-sm">Types: <code>success</code>, <code>error</code>, <code>warning</code>, <code>info</code>. Duration defaults to 5000ms; pass <code>0</code> for persistent.</p>
       </div>
@@ -470,7 +419,7 @@
     <!-- ================================================================== -->
     <!-- Stacking                                                           -->
     <!-- ================================================================== -->
-    <section class="demo-section" id="stacking">
+    <section class="nd-mb-2xl nd-pb-lg nd-border-b" id="stacking">
       <h2>Stacking</h2>
       <p class="nd-text-secondary nd-mb-lg">Components nested inside each other — testing depth, spacing, and shadow layering.</p>
 
@@ -679,7 +628,7 @@
     <!-- ================================================================== -->
     <!-- Asides                                                             -->
     <!-- ================================================================== -->
-    <section class="demo-section" id="asides">
+    <section class="nd-mb-2xl nd-pb-lg nd-border-b" id="asides">
       <h2>Asides</h2>
       <p class="nd-text-secondary nd-mb-lg">Edge-pinned callouts that fold onto the page — outer corners straight, inner corners rounded.</p>
 
@@ -844,7 +793,7 @@
     <!-- ================================================================== -->
     <!-- Forms                                                              -->
     <!-- ================================================================== -->
-    <section class="demo-section" id="forms">
+    <section class="nd-mb-2xl nd-pb-lg nd-border-b" id="forms">
       <h2>Forms</h2>
 
       <div class="nd-row">
@@ -940,7 +889,7 @@
                   </div>
                 </div>
 
-                <div class="demo-btn-row">
+                <div class="nd-flex nd-flex-wrap nd-align-center nd-gap-sm nd-mb-md">
                   <button class="nd-btn-primary" type="submit">Register</button>
                   <button class="nd-btn-secondary" type="reset">Reset</button>
                 </div>
@@ -1034,7 +983,7 @@
                   </div>
                 </div>
 
-                <div class="demo-btn-row">
+                <div class="nd-flex nd-flex-wrap nd-align-center nd-gap-sm nd-mb-md">
                   <button class="nd-btn-primary" type="submit">Save Profile</button>
                   <button class="nd-btn-secondary" type="reset">Reset</button>
                 </div>
@@ -1048,7 +997,7 @@
     <!-- ================================================================== -->
     <!-- Switches                                                           -->
     <!-- ================================================================== -->
-    <section class="demo-section" id="switches">
+    <section class="nd-mb-2xl nd-pb-lg nd-border-b" id="switches">
       <h2>Switches</h2>
       <p class="nd-text-secondary nd-mb-lg">Toggle switches for boolean values — ideal for settings and preferences.</p>
 
@@ -1094,10 +1043,10 @@
     <!-- ================================================================== -->
     <!-- Tables                                                             -->
     <!-- ================================================================== -->
-    <section class="demo-section" id="tables">
+    <section class="nd-mb-2xl nd-pb-lg nd-border-b" id="tables">
       <h2>Tables</h2>
 
-      <div class="demo-label">.nd-table .nd-table-striped .nd-table-hover</div>
+      <p class="nd-mb-sm"><code class="nd-text-xs nd-text-muted">.nd-table .nd-table-striped .nd-table-hover</code></p>
       <div class="nd-table-responsive">
         <table class="nd-table-striped nd-table-hover">
           <thead>
@@ -1159,7 +1108,7 @@
     <!-- ================================================================== -->
     <!-- Alerts                                                             -->
     <!-- ================================================================== -->
-    <section class="demo-section" id="alerts">
+    <section class="nd-mb-2xl nd-pb-lg nd-border-b" id="alerts">
       <h2>Alerts</h2>
 
       <div class="nd-alert nd-alert-success">
@@ -1182,10 +1131,10 @@
     <!-- ================================================================== -->
     <!-- Badges                                                             -->
     <!-- ================================================================== -->
-    <section class="demo-section" id="badges">
+    <section class="nd-mb-2xl nd-pb-lg nd-border-b" id="badges">
       <h2>Badges</h2>
 
-      <div class="demo-btn-row">
+      <div class="nd-flex nd-flex-wrap nd-align-center nd-gap-sm nd-mb-md">
         <span class="nd-badge nd-badge-primary">Primary</span>
         <span class="nd-badge nd-badge-danger">Danger</span>
         <span class="nd-badge nd-badge-success">Success</span>
@@ -1204,72 +1153,72 @@
     <!-- ================================================================== -->
     <!-- Grid                                                               -->
     <!-- ================================================================== -->
-    <section class="demo-section" id="grid">
+    <section class="nd-mb-2xl nd-pb-lg nd-border-b" id="grid">
       <h2>Grid System</h2>
 
-      <div class="demo-label">.nd-row &gt; .nd-col-{n} (12 columns)</div>
+      <p class="nd-mb-sm"><code class="nd-text-xs nd-text-muted">.nd-row &gt; .nd-col-{n} (12 columns)</code></p>
 
-      <div class="nd-row" style="margin-bottom: 0.5rem;">
-        <div class="nd-col-12"><div class="demo-grid-cell">col-12</div></div>
+      <div class="nd-row nd-mb-sm">
+        <div class="nd-col-12"><div class="nd-well nd-well-sm nd-text-center nd-text-small">col-12</div></div>
       </div>
-      <div class="nd-row" style="margin-bottom: 0.5rem;">
-        <div class="nd-col-6"><div class="demo-grid-cell">col-6</div></div>
-        <div class="nd-col-6"><div class="demo-grid-cell">col-6</div></div>
+      <div class="nd-row nd-mb-sm">
+        <div class="nd-col-6"><div class="nd-well nd-well-sm nd-text-center nd-text-small">col-6</div></div>
+        <div class="nd-col-6"><div class="nd-well nd-well-sm nd-text-center nd-text-small">col-6</div></div>
       </div>
-      <div class="nd-row" style="margin-bottom: 0.5rem;">
-        <div class="nd-col-4"><div class="demo-grid-cell">col-4</div></div>
-        <div class="nd-col-4"><div class="demo-grid-cell">col-4</div></div>
-        <div class="nd-col-4"><div class="demo-grid-cell">col-4</div></div>
+      <div class="nd-row nd-mb-sm">
+        <div class="nd-col-4"><div class="nd-well nd-well-sm nd-text-center nd-text-small">col-4</div></div>
+        <div class="nd-col-4"><div class="nd-well nd-well-sm nd-text-center nd-text-small">col-4</div></div>
+        <div class="nd-col-4"><div class="nd-well nd-well-sm nd-text-center nd-text-small">col-4</div></div>
       </div>
-      <div class="nd-row" style="margin-bottom: 0.5rem;">
-        <div class="nd-col-3"><div class="demo-grid-cell">col-3</div></div>
-        <div class="nd-col-3"><div class="demo-grid-cell">col-3</div></div>
-        <div class="nd-col-3"><div class="demo-grid-cell">col-3</div></div>
-        <div class="nd-col-3"><div class="demo-grid-cell">col-3</div></div>
+      <div class="nd-row nd-mb-sm">
+        <div class="nd-col-3"><div class="nd-well nd-well-sm nd-text-center nd-text-small">col-3</div></div>
+        <div class="nd-col-3"><div class="nd-well nd-well-sm nd-text-center nd-text-small">col-3</div></div>
+        <div class="nd-col-3"><div class="nd-well nd-well-sm nd-text-center nd-text-small">col-3</div></div>
+        <div class="nd-col-3"><div class="nd-well nd-well-sm nd-text-center nd-text-small">col-3</div></div>
       </div>
-      <div class="nd-row" style="margin-bottom: 0.5rem;">
-        <div class="nd-col-2"><div class="demo-grid-cell">col-2</div></div>
-        <div class="nd-col-2"><div class="demo-grid-cell">col-2</div></div>
-        <div class="nd-col-2"><div class="demo-grid-cell">col-2</div></div>
-        <div class="nd-col-2"><div class="demo-grid-cell">col-2</div></div>
-        <div class="nd-col-2"><div class="demo-grid-cell">col-2</div></div>
-        <div class="nd-col-2"><div class="demo-grid-cell">col-2</div></div>
+      <div class="nd-row nd-mb-sm">
+        <div class="nd-col-2"><div class="nd-well nd-well-sm nd-text-center nd-text-small">col-2</div></div>
+        <div class="nd-col-2"><div class="nd-well nd-well-sm nd-text-center nd-text-small">col-2</div></div>
+        <div class="nd-col-2"><div class="nd-well nd-well-sm nd-text-center nd-text-small">col-2</div></div>
+        <div class="nd-col-2"><div class="nd-well nd-well-sm nd-text-center nd-text-small">col-2</div></div>
+        <div class="nd-col-2"><div class="nd-well nd-well-sm nd-text-center nd-text-small">col-2</div></div>
+        <div class="nd-col-2"><div class="nd-well nd-well-sm nd-text-center nd-text-small">col-2</div></div>
       </div>
-      <div class="nd-row" style="margin-bottom: 0.5rem;">
-        <div class="nd-col-1"><div class="demo-grid-cell">1</div></div>
-        <div class="nd-col-1"><div class="demo-grid-cell">1</div></div>
-        <div class="nd-col-1"><div class="demo-grid-cell">1</div></div>
-        <div class="nd-col-1"><div class="demo-grid-cell">1</div></div>
-        <div class="nd-col-1"><div class="demo-grid-cell">1</div></div>
-        <div class="nd-col-1"><div class="demo-grid-cell">1</div></div>
-        <div class="nd-col-1"><div class="demo-grid-cell">1</div></div>
-        <div class="nd-col-1"><div class="demo-grid-cell">1</div></div>
-        <div class="nd-col-1"><div class="demo-grid-cell">1</div></div>
-        <div class="nd-col-1"><div class="demo-grid-cell">1</div></div>
-        <div class="nd-col-1"><div class="demo-grid-cell">1</div></div>
-        <div class="nd-col-1"><div class="demo-grid-cell">1</div></div>
+      <div class="nd-row nd-mb-sm">
+        <div class="nd-col-1"><div class="nd-well nd-well-sm nd-text-center nd-text-small">1</div></div>
+        <div class="nd-col-1"><div class="nd-well nd-well-sm nd-text-center nd-text-small">1</div></div>
+        <div class="nd-col-1"><div class="nd-well nd-well-sm nd-text-center nd-text-small">1</div></div>
+        <div class="nd-col-1"><div class="nd-well nd-well-sm nd-text-center nd-text-small">1</div></div>
+        <div class="nd-col-1"><div class="nd-well nd-well-sm nd-text-center nd-text-small">1</div></div>
+        <div class="nd-col-1"><div class="nd-well nd-well-sm nd-text-center nd-text-small">1</div></div>
+        <div class="nd-col-1"><div class="nd-well nd-well-sm nd-text-center nd-text-small">1</div></div>
+        <div class="nd-col-1"><div class="nd-well nd-well-sm nd-text-center nd-text-small">1</div></div>
+        <div class="nd-col-1"><div class="nd-well nd-well-sm nd-text-center nd-text-small">1</div></div>
+        <div class="nd-col-1"><div class="nd-well nd-well-sm nd-text-center nd-text-small">1</div></div>
+        <div class="nd-col-1"><div class="nd-well nd-well-sm nd-text-center nd-text-small">1</div></div>
+        <div class="nd-col-1"><div class="nd-well nd-well-sm nd-text-center nd-text-small">1</div></div>
       </div>
 
-      <div class="demo-label">Mixed widths</div>
-      <div class="nd-row" style="margin-bottom: 0.5rem;">
-        <div class="nd-col-8"><div class="demo-grid-cell">col-8</div></div>
-        <div class="nd-col-4"><div class="demo-grid-cell">col-4</div></div>
+      <p class="nd-mb-sm"><code class="nd-text-xs nd-text-muted">Mixed widths</code></p>
+      <div class="nd-row nd-mb-sm">
+        <div class="nd-col-8"><div class="nd-well nd-well-sm nd-text-center nd-text-small">col-8</div></div>
+        <div class="nd-col-4"><div class="nd-well nd-well-sm nd-text-center nd-text-small">col-4</div></div>
       </div>
-      <div class="nd-row" style="margin-bottom: 0.5rem;">
-        <div class="nd-col-3"><div class="demo-grid-cell">col-3</div></div>
-        <div class="nd-col-6"><div class="demo-grid-cell">col-6</div></div>
-        <div class="nd-col-3"><div class="demo-grid-cell">col-3</div></div>
+      <div class="nd-row nd-mb-sm">
+        <div class="nd-col-3"><div class="nd-well nd-well-sm nd-text-center nd-text-small">col-3</div></div>
+        <div class="nd-col-6"><div class="nd-well nd-well-sm nd-text-center nd-text-small">col-6</div></div>
+        <div class="nd-col-3"><div class="nd-well nd-well-sm nd-text-center nd-text-small">col-3</div></div>
       </div>
     </section>
 
     <!-- ================================================================== -->
     <!-- Utilities                                                          -->
     <!-- ================================================================== -->
-    <section class="demo-section" id="utilities">
+    <section class="nd-mb-2xl nd-pb-lg nd-border-b" id="utilities">
       <h2>Utilities</h2>
 
       <h3>Spacing</h3>
-      <div class="demo-label">Margin &amp; padding helpers: .nd-m-{size}, .nd-p-{size}, .nd-mt-{size}, etc.</div>
+      <p class="nd-mb-sm"><code class="nd-text-xs nd-text-muted">Margin &amp; padding helpers: .nd-m-{size}, .nd-p-{size}, .nd-mt-{size}, etc.</code></p>
       <div class="nd-well nd-well-sm">
         <div style="background: var(--nd-accent); color: #fff; padding: 0.5rem; border-radius: 4px;" class="nd-mb-sm">
           .nd-mb-sm (margin-bottom: 8px)
@@ -1286,7 +1235,7 @@
       </div>
 
       <h3>Text Alignment</h3>
-      <div class="demo-label">.nd-text-left, .nd-text-center, .nd-text-right</div>
+      <p class="nd-mb-sm"><code class="nd-text-xs nd-text-muted">.nd-text-left, .nd-text-center, .nd-text-right</code></p>
       <div class="nd-row">
         <div class="nd-col-4">
           <div class="nd-well nd-well-sm nd-text-left">Left aligned</div>
@@ -1301,32 +1250,5 @@
     </section>
 
   <script src="../dist/ndesign.min.js"></script>
-  <script>
-    /**
-     * Theme toggle — swaps the theme stylesheet between light and dark.
-     * Falls back to manual href swap if NDesign.toggleTheme is not available.
-     */
-    function toggleTheme() {
-      if (typeof NDesign !== 'undefined' && typeof NDesign.toggleTheme === 'function') {
-        NDesign.toggleTheme();
-        return;
-      }
-      const link = document.getElementById('nd-theme');
-      if (link.href.includes('light')) {
-        link.href = link.href.replace('light', 'dark');
-      } else {
-        link.href = link.href.replace('dark', 'light');
-      }
-    }
-
-    // Toggle switch click handler — flips aria-pressed
-    document.addEventListener('click', function(e) {
-      const sw = e.target.closest('.nd-switch');
-      if (sw && !sw.disabled) {
-        const pressed = sw.getAttribute('aria-pressed') === 'true';
-        sw.setAttribute('aria-pressed', String(!pressed));
-      }
-    });
-  </script>
 </body>
 </html>

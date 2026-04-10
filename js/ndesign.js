@@ -87,50 +87,138 @@ export function init() {
   initModals();
   initToasts();
 
+  // ── Auto-wiring: single delegated click handler ──────────────────────
+  document.addEventListener('click', (e) => {
+    // Switch auto-toggle (aria-pressed)
+    const sw = e.target.closest('.nd-switch');
+    if (sw && !sw.disabled) {
+      const pressed = sw.getAttribute('aria-pressed') === 'true';
+      sw.setAttribute('aria-pressed', String(!pressed));
+      return;
+    }
+
+    // Theme set — data-nd-theme="<name>"
+    const themeBtn = e.target.closest('[data-nd-theme]');
+    if (themeBtn) {
+      e.preventDefault();
+      setTheme(themeBtn.getAttribute('data-nd-theme'));
+      return;
+    }
+
+    // Theme cycle — data-nd-theme-toggle
+    const themeCycle = e.target.closest('[data-nd-theme-toggle]');
+    if (themeCycle) {
+      e.preventDefault();
+      toggleTheme();
+      return;
+    }
+
+    // Sidebar toggle — data-nd-toggle="sidebar"
+    const sidebarToggle = e.target.closest('[data-nd-toggle="sidebar"]');
+    if (sidebarToggle) {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.querySelector('.overlay, .nd-nav-overlay');
+      if (sidebar) sidebar.classList.toggle('nd-nav-open');
+      if (overlay) overlay.classList.toggle('active');
+      // Update aria-expanded
+      const isOpen = sidebar ? sidebar.classList.contains('nd-nav-open') : false;
+      sidebarToggle.setAttribute('aria-expanded', String(isOpen));
+      return;
+    }
+
+    // Overlay click closes sidebar
+    if (e.target.matches('.overlay.active, .nd-nav-overlay.nd-active')) {
+      const sidebar = document.querySelector('.sidebar.nd-nav-open');
+      if (sidebar) sidebar.classList.remove('nd-nav-open');
+      e.target.classList.remove('active');
+      e.target.classList.remove('nd-active');
+      return;
+    }
+
+    // Sidebar nav active state
+    const link = e.target.closest('.sidebar .nd-nav-menu a, .sidebar .sidebar-menu a');
+    if (link) {
+      const menu = link.closest('.nd-nav-menu, .sidebar-menu');
+      if (menu) {
+        menu.querySelectorAll('a').forEach(a => {
+          a.classList.remove('nd-active', 'active');
+        });
+        link.classList.add(link.closest('.nd-nav-menu') ? 'nd-active' : 'active');
+      }
+      // Close sidebar on mobile
+      if (window.innerWidth < 1280) {
+        const sidebar = link.closest('.sidebar');
+        const overlay = document.querySelector('.overlay, .nd-nav-overlay');
+        if (sidebar) sidebar.classList.remove('nd-nav-open');
+        if (overlay) {
+          overlay.classList.remove('active');
+          overlay.classList.remove('nd-active');
+        }
+      }
+      return;
+    }
+  });
+
   initialized = true;
 }
 
 /**
- * Toggle the active theme. Swaps the <link id="nd-theme"> href between
- * light and dark themes. If the current href contains "light", switches
- * to "dark" and vice versa.
+ * Set a specific theme by name. Uses a single `<link class="theme">` tag
+ * for the active stylesheet, and `<meta name="nd-theme">` tags to register
+ * available themes with their href.
+ *
+ * HTML setup:
+ *   <link rel="stylesheet" href="themes/dark.css" class="theme" title="dark">
+ *   <meta name="nd-theme" content="light" data-href="themes/light.css">
+ *   <meta name="nd-theme" content="dark"  data-href="themes/dark.css">
+ *
+ * @param {string} name — theme name matching a meta tag's content attribute
  */
-export function toggleTheme() {
-  const link = document.getElementById('nd-theme');
-  if (!link) {
-    console.warn('[ndesign] No <link id="nd-theme"> found for theme switching');
+export function setTheme(name) {
+  const meta = document.querySelector(`meta[name="nd-theme"][content="${name}"]`);
+  if (!meta) {
+    console.warn(`[ndesign] Theme "${name}" not found in meta tags`);
     return;
   }
+  const href = meta.getAttribute('data-href');
+  if (!href) return;
 
-  const href = link.getAttribute('href');
-  if (href.includes('light')) {
-    link.setAttribute('href', href.replace('light', 'dark'));
-  } else if (href.includes('dark')) {
-    link.setAttribute('href', href.replace('dark', 'light'));
+  const link = document.querySelector('link.theme');
+  if (link) {
+    link.href = href;
+    link.title = name;
   }
 }
 
 /**
- * Set a specific theme by name. Updates the <link id="nd-theme"> href,
- * replacing the theme filename segment.
- *
- * @param {string} name — theme name (e.g. "light", "dark", "solarized")
+ * Cycle to the next available theme. Reads all `<meta name="nd-theme">`
+ * tags and advances to the next one after the currently active theme.
  */
-export function setTheme(name) {
-  const link = document.getElementById('nd-theme');
-  if (!link) {
-    console.warn('[ndesign] No <link id="nd-theme"> found for theme switching');
-    return;
-  }
+export function toggleTheme() {
+  const metas = Array.from(document.querySelectorAll('meta[name="nd-theme"]'));
+  if (metas.length === 0) return;
 
-  const href = link.getAttribute('href');
-  // Replace the theme file name: themes/whatever.css -> themes/{name}.css
-  // Handles both .css and .min.css extensions
-  const newHref = href.replace(
-    /themes\/[^/.]+(\.\w+)?\.css/,
-    `themes/${name}$1.css`
-  );
-  link.setAttribute('href', newHref);
+  const link = document.querySelector('link.theme');
+  const currentName = link ? link.title : '';
+  const currentIndex = metas.findIndex(m => m.content === currentName);
+  const nextIndex = (currentIndex + 1) % metas.length;
+  setTheme(metas[nextIndex].content);
+}
+
+/**
+ * Return an array describing every registered theme.
+ * Each entry has { name, label, active }.
+ *
+ * @returns {Array<{name: string, label: string, active: boolean}>}
+ */
+export function getThemes() {
+  const link = document.querySelector('link.theme');
+  const currentName = link ? link.title : '';
+  return Array.from(document.querySelectorAll('meta[name="nd-theme"]')).map(meta => ({
+    name: meta.content,
+    label: meta.content.charAt(0).toUpperCase() + meta.content.slice(1),
+    active: meta.content === currentName
+  }));
 }
 
 // Re-export utilities for advanced usage

@@ -1,0 +1,121 @@
+// ==========================================================================
+// App Layout — Full-application page layout patterns
+// ==========================================================================
+@use 'tokens' as *;
+
+// App page — resets body defaults for full-app layouts
+// Usage: <body class="app-page">
+.app-page {
+  padding: 0;
+  min-width: 0;
+}
+
+// App layout — flex wrapper for sidebar + content
+// Usage: <div class="app-layout">
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+// When sidebar is used with a top nav, subtract nav height
+.app-layout-below-nav {
+  min-height: calc(100vh - 3.5rem);
+}
+
+// App content — main scrollable content area
+// Usage: <main class="app-content">
+.app-content {
+  flex: 1;
+  padding: $nd-container-padding $nd-space-xl;
+  overflow-y: auto;
+  min-width: 0;
+
+  @include nd-below(lg) {
+    padding: $nd-container-padding;
+  }
+}
+
+// App main — for sidebar-fixed layouts where content needs margin offset
+// Usage: <div class="app-main">
+.app-main {
+  margin-left: 16rem; // matches sidebar width
+  padding: $nd-container-padding;
+  min-height: 100vh;
+
+  @include nd-below(lg) {
+    margin-left: 0;
+  }
+}
+
+// App header — top bar inside content area (not the nav)
+// Usage: <header class="app-header">
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 $nd-space-lg;
+  height: 3.5rem;
+  min-height: 3.5rem;
+  background: var(--nd-bg-surface);
+  border-bottom: 1px solid var(--nd-border);
+}
+
+.app-header-left {
+  display: flex;
+  align-items: center;
+  gap: $nd-space-md;
+}
+
+.app-header-right {
+  display: flex;
+  align-items: center;
+  gap: $nd-space-md;
+}
+
+.app-header-title {
+  font-size: $nd-font-base;
+  font-weight: $nd-font-weight-semibold;
+  margin: 0;
+  color: var(--nd-text-primary);
+}
+
+// App footer
+// Usage: <footer class="app-footer">
+.app-footer {
+  padding: $nd-space-sm $nd-space-lg;
+  font-size: $nd-font-xs;
+  color: var(--nd-text-muted);
+  border-top: 1px solid var(--nd-border);
+  text-align: center;
+  background: var(--nd-bg-surface);
+}
+
+// Overlay backdrop — generic, reusable
+// Usage: <div class="overlay">
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: $nd-z-overlay;
+
+  &.active {
+    display: block;
+  }
+}
+
+// Hamburger button — visible only on mobile
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: var(--nd-text-primary);
+  padding: $nd-space-xs;
+  box-shadow: none;
+
+  @include nd-below(lg) {
+    display: block;
+  }
+}

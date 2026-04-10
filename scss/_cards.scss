@@ -11,7 +11,10 @@
   border: 1px solid var(--nd-border);
   border-radius: var(--nd-radius-md);
   box-shadow: var(--nd-shadow-sm);
-  overflow: hidden;
+  // overflow: visible so absolutely-positioned children (select dropdowns)
+  // are not clipped.  Border-radius clipping on images is handled by
+  // explicit radii on .nd-card-img.
+  overflow: visible;
   transition: box-shadow $nd-transition-normal, border-color $nd-transition-normal;
 
   &:hover {
@@ -127,4 +130,17 @@
   display: flex;
   flex-direction: column;
   gap: $nd-space-md;
+}
+
+// ---------------------------------------------------------------------------
+// Danger variant — red border for destructive sections
+// ---------------------------------------------------------------------------
+.nd-card-danger {
+  border: 1px solid var(--nd-danger);
+
+  .nd-card-header {
+    background: var(--nd-error-bg);
+    color: var(--nd-error-text);
+    border-bottom-color: var(--nd-danger);
+  }
 }

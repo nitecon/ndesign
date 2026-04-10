@@ -34,6 +34,14 @@ nav,
   color: var(--nd-text-primary);
 }
 
+.nd-nav-brand-sub {
+  font-weight: $nd-font-weight-normal;
+  color: var(--nd-text-muted);
+  font-size: $nd-font-xs;
+  display: block;
+  margin-top: 0.125rem;
+}
+
 // ---------------------------------------------------------------------------
 // Hamburger toggle — hidden on desktop, visible below $nd-bp-lg
 // ---------------------------------------------------------------------------
@@ -105,20 +113,25 @@ nav,
 }
 
 // ---------------------------------------------------------------------------
-// Side nav variant
+// Sidebar — <nav class="sidebar">
+// Resets top-bar styles and applies vertical sidebar layout.
+// Works standalone (fixed) or inside a flex parent (stretches).
 // ---------------------------------------------------------------------------
-.nd-nav-side {
+.sidebar {
+  display: flex;
   flex-direction: column;
   align-items: stretch;
   width: 16rem;
-  height: 100vh;
-  position: fixed;
-  top: 0;
-  left: 0;
-  border-bottom: none;
+  flex-shrink: 0;
+  background: var(--nd-bg-surface);
   border-right: 1px solid var(--nd-border);
+  border-bottom: none;
+  box-shadow: none;
   overflow-y: auto;
   padding: 0;
+  position: static;
+  top: auto;
+  z-index: auto;
 
   .nd-nav-brand {
     padding: $nd-space-md $nd-space-lg;
@@ -160,7 +173,53 @@ nav,
     }
   }
 
-  // Dropdowns inside side nav act as expandable sub-menus
+  // Sidebar sections and links (non nd-nav-menu pattern)
+  .sidebar-section {
+    font-size: $nd-font-sm;
+    font-weight: $nd-font-weight-semibold;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--nd-text-muted);
+    padding: $nd-space-sm $nd-space-lg;
+    margin-top: $nd-space-md;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  .sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li a {
+      display: block;
+      padding: $nd-space-sm $nd-space-lg;
+      color: var(--nd-text-secondary);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition:
+        background $nd-transition-fast,
+        color $nd-transition-fast,
+        border-color $nd-transition-fast;
+
+      &:hover {
+        background: var(--nd-bg-surface-hover);
+        color: var(--nd-text-primary);
+      }
+
+      &.nd-active,
+      &.active {
+        color: var(--nd-accent);
+        border-left-color: var(--nd-accent);
+        background: var(--nd-bg-surface-hover);
+        font-weight: $nd-font-weight-medium;
+      }
+    }
+  }
+
+  // Dropdowns inside sidebar act as expandable sub-menus
   .nd-dropdown {
     width: 100%;
   }
@@ -188,17 +247,26 @@ nav,
   }
 }
 
+// Fixed sidebar variant — for full-app shells where sidebar is always visible
+.sidebar-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  z-index: $nd-z-sticky;
+}
+
 // ---------------------------------------------------------------------------
 // Mobile collapse — top nav (below $nd-bp-lg)
 // ---------------------------------------------------------------------------
 @include nd-below(lg) {
-  nav:not(.nd-nav-side) .nd-nav-menu,
-  .nd-nav:not(.nd-nav-side) .nd-nav-menu {
+  nav:not(.sidebar) .nd-nav-menu,
+  .nd-nav:not(.sidebar) .nd-nav-menu {
     display: none;
   }
 
-  nav.nd-nav-open:not(.nd-nav-side) .nd-nav-menu,
-  .nd-nav.nd-nav-open:not(.nd-nav-side) .nd-nav-menu {
+  nav.nd-nav-open:not(.sidebar) .nd-nav-menu,
+  .nd-nav.nd-nav-open:not(.sidebar) .nd-nav-menu {
     display: flex;
     flex-direction: column;
     position: absolute;
@@ -212,13 +280,18 @@ nav,
     z-index: $nd-z-dropdown;
   }
 
-  // Side nav — slide off-screen by default
-  .nd-nav-side {
+  // Sidebar — slide off-screen by default on mobile
+  .sidebar {
     transform: translateX(-100%);
     transition: transform $nd-transition-fast;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: $nd-z-sticky;
   }
 
-  .nd-nav-side.nd-nav-open {
+  .sidebar.nd-nav-open {
     transform: translateX(0);
   }
 }

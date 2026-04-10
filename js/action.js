@@ -140,6 +140,8 @@ function displayErrors(form, errors, feedbackId) {
 
 /**
  * Handle successful form submission based on data-nd-success attribute.
+ * Supports comma-separated chained actions (e.g. "refresh:#table,reset").
+ * Actions that navigate away (redirect, reload) stop the chain.
  * @param {HTMLFormElement|HTMLElement} el — the element with data-nd-success
  * @param {Object} responseData           — parsed JSON response from server
  */
@@ -147,28 +149,40 @@ function handleSuccess(el, responseData) {
   const successAttr = el.getAttribute('data-nd-success');
   if (!successAttr) return;
 
-  if (successAttr.startsWith('redirect:')) {
-    const path = successAttr.substring('redirect:'.length);
-    window.location.href = path;
-    return;
-  }
+  // Support comma-separated chained actions
+  const actions = successAttr.split(',').map(a => a.trim());
 
-  if (successAttr === 'reset' && el.tagName === 'FORM') {
-    el.reset();
-    return;
-  }
+  for (const action of actions) {
+    if (action.startsWith('redirect:')) {
+      window.location.href = action.substring('redirect:'.length);
+      return; // redirect stops the chain
+    }
 
-  if (successAttr === 'reload') {
-    window.location.reload();
-    return;
-  }
+    if (action === 'reset' && el.tagName === 'FORM') {
+      el.reset();
+      continue;
+    }
 
-  if (successAttr.startsWith('emit:')) {
-    const eventName = successAttr.substring('emit:'.length);
-    el.dispatchEvent(
-      new CustomEvent(eventName, { detail: responseData, bubbles: true })
-    );
-    return;
+    if (action === 'reload') {
+      window.location.reload();
+      return; // reload stops the chain
+    }
+
+    if (action.startsWith('refresh:')) {
+      const selector = action.substring('refresh:'.length);
+      document.querySelectorAll(selector).forEach(target => {
+        target.dispatchEvent(new CustomEvent('nd:refresh'));
+      });
+      continue;
+    }
+
+    if (action.startsWith('emit:')) {
+      const eventName = action.substring('emit:'.length);
+      el.dispatchEvent(
+        new CustomEvent(eventName, { detail: responseData, bubbles: true })
+      );
+      continue;
+    }
   }
 }
 

@@ -212,6 +212,12 @@ select.nd-form-input {
   position: relative;
   display: block;
   width: 100%;
+  z-index: auto; // don't create unnecessary stacking context when closed
+}
+
+// Elevate stacking context only when open so dropdown escapes overflow containers
+.nd-select.nd-open {
+  z-index: $nd-z-dropdown;
 }
 
 // Trigger — mirrors native input appearance exactly
@@ -328,6 +334,18 @@ select.nd-form-input {
   &[data-placeholder] {
     color: var(--nd-text-muted);
   }
+}
+
+// Optgroup header
+.nd-select-group {
+  padding: $nd-space-xs $nd-space-md;
+  font-size: $nd-font-xs;
+  font-weight: $nd-font-weight-semibold;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--nd-text-muted);
+  cursor: default;
+  margin-top: $nd-space-xs;
 }
 
 // Disabled state
