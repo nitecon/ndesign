@@ -59,7 +59,7 @@
   </nav>
 
   <!-- Mobile sidebar overlay -->
-  <div class="overlay"></div>
+  <div class="nd-nav-overlay"></div>
 
   <!-- ====================================================================== -->
   <!-- App Layout: Sidebar + Content                                          -->
@@ -70,22 +70,22 @@
     <!-- Left Side Navigation                                               -->
     <!-- ================================================================== -->
     <nav class="sidebar">
-      <div class="sidebar-section">Account</div>
-      <ul class="sidebar-menu">
-        <li><a href="#profile" class="active">Profile</a></li>
+      <p class="nd-nav-section">Account</p>
+      <ul class="nd-nav-menu">
+        <li><a href="#profile" class="nd-active">Profile</a></li>
         <li><a href="#security">Security</a></li>
         <li><a href="#billing">Billing</a></li>
       </ul>
 
-      <div class="sidebar-section">System</div>
-      <ul class="sidebar-menu">
+      <p class="nd-nav-section">System</p>
+      <ul class="nd-nav-menu">
         <li><a href="#general">General</a></li>
         <li><a href="#api-keys">API Keys</a></li>
         <li><a href="#webhooks">Webhooks</a></li>
       </ul>
 
-      <div class="sidebar-section">Team</div>
-      <ul class="sidebar-menu">
+      <p class="nd-nav-section">Team</p>
+      <ul class="nd-nav-menu">
         <li><a href="#members">Members</a></li>
         <li><a href="#roles">Roles</a></li>
         <li><a href="#invites">Invites</a></li>
@@ -292,7 +292,7 @@
       <h3>Delete Your Account?</h3>
       <button class="nd-modal-close" aria-label="Close">&times;</button>
     </header>
-    <div class="nd-modal-body">
+    <div>
       <p>You are about to permanently delete the account for <strong>will@example.com</strong>. This will:</p>
       <ul>
         <li>Remove all personal data and profile information</li>

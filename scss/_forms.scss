@@ -38,7 +38,6 @@
 }
 
 // Input following a tab label loses its top-left radius to connect seamlessly
-.nd-form-label + .nd-form-input,
 .nd-form-label + input,
 .nd-form-label + textarea,
 .nd-form-label + select,
@@ -64,8 +63,7 @@ input[type='month'],
 input[type='week'],
 input[type='time'],
 textarea,
-select,
-.nd-form-input {
+select {
   display: block;
   width: 100%;
   padding: $nd-space-sm $nd-space-md;
@@ -136,7 +134,6 @@ select,
     flex-shrink: 0;
   }
 
-  .nd-form-input,
   input,
   textarea,
   select {
@@ -147,11 +144,9 @@ select,
 }
 
 // Error state on input
-.nd-form-group.nd-error .nd-form-input,
 .nd-form-group.nd-error input,
 .nd-form-group.nd-error textarea,
-.nd-form-group.nd-error select,
-.nd-form-input.nd-error {
+.nd-form-group.nd-error select {
   border-color: var(--nd-danger);
 
   &:focus {
@@ -160,11 +155,9 @@ select,
 }
 
 // Success state on input
-.nd-form-group.nd-success .nd-form-input,
 .nd-form-group.nd-success input,
 .nd-form-group.nd-success textarea,
-.nd-form-group.nd-success select,
-.nd-form-input.nd-success {
+.nd-form-group.nd-success select {
   border-color: var(--nd-success);
 
   &:focus {
@@ -175,7 +168,7 @@ select,
 // ---------------------------------------------------------------------------
 // Textarea
 // ---------------------------------------------------------------------------
-textarea.nd-form-input {
+textarea {
   min-height: 6rem;
   resize: vertical;
   line-height: $nd-line-height-loose;
@@ -184,7 +177,7 @@ textarea.nd-form-input {
 // ---------------------------------------------------------------------------
 // Select
 // ---------------------------------------------------------------------------
-select.nd-form-input {
+select {
   padding-right: $nd-space-xl;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236c757d' d='M6 8.825L1.175 4 2.238 2.938 6 6.7l3.763-3.763L10.825 4z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -678,7 +671,9 @@ input[type='radio'],
   display: flex;
   align-items: stretch;
 
-  .nd-form-input {
+  input,
+  textarea,
+  select {
     flex: 1 1 auto;
     border-radius: 0;
 
@@ -735,24 +730,33 @@ input[type='radio'],
 }
 
 // ---------------------------------------------------------------------------
-// Form Fieldset
+// Fieldset — native <fieldset> styled by default (designed border + spacing).
+// The browser UA strips <fieldset> chrome inconsistently; we reset fully then
+// re-apply our own design. This is the correct default — fieldset's semantic
+// purpose IS to visually group fields; the border is not opt-in, it's default.
 // ---------------------------------------------------------------------------
-.nd-fieldset {
+fieldset {
   border: 1px solid var(--nd-border);
   border-radius: $nd-radius-md;
   padding: $nd-space-lg;
-  margin-bottom: $nd-space-lg;
+  margin: 0 0 $nd-space-lg;
 
   @include nd-below(sm) {
     padding: $nd-space-md;
   }
 }
 
-.nd-fieldset-legend {
+// Native <legend> — styled to match the designed treatment.
+// display:table + max-width from the old reset were needed to clip text overflow;
+// we keep them while applying the designed typography.
+legend {
+  display: table;
+  max-width: 100%;
+  white-space: normal;
+  padding: 0 $nd-space-xs;
   font-size: $nd-font-sm;
   font-weight: $nd-font-weight-semibold;
   color: var(--nd-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding: 0 $nd-space-xs;
 }

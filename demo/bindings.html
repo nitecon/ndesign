@@ -455,7 +455,7 @@
           <div class="nd-card">
             <div class="nd-card-header">Reorder (client-only)</div>
             <div class="nd-card-body">
-              <p class="nd-text-secondary nd-mb-md">Drag to reorder. No server sync &mdash; a <code>nd:sortable:reorder</code> event is fired on the list.</p>
+              <p class="nd-text-secondary nd-mb-md">Drag to reorder, or Tab to focus an item then Space to grab, Arrow keys to move, and Escape to cancel &mdash; a <code>nd:sortable:reorder</code> event fires on drop.</p>
               <ul class="nd-sortable" data-nd-sortable>
                 <li data-id="1" class="nd-well nd-well-sm nd-mb-xs">First item</li>
                 <li data-id="2" class="nd-well nd-well-sm nd-mb-xs">Second item</li>
@@ -469,12 +469,32 @@
           <div class="nd-card">
             <div class="nd-card-header">Reorder (with server sync)</div>
             <div class="nd-card-body">
-              <p class="nd-text-secondary nd-mb-md">Drag to reorder. Each change POSTs to <code>/api/reorder</code>.</p>
+              <p class="nd-text-secondary nd-mb-md">Drag to reorder (or use keyboard: Space to grab, Arrows to move, Escape to cancel) &mdash; each change POSTs to <code>/api/reorder</code>.</p>
               <ul class="nd-sortable" data-nd-sortable="POST /api/reorder">
                 <li data-id="task-1" class="nd-well nd-well-sm nd-mb-xs">Write documentation</li>
                 <li data-id="task-2" class="nd-well nd-well-sm nd-mb-xs">Fix bug #432</li>
                 <li data-id="task-3" class="nd-well nd-well-sm nd-mb-xs">Review PR #128</li>
                 <li data-id="task-4" class="nd-well nd-well-sm nd-mb-xs">Deploy to staging</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Failure-path demo: server always returns 500 so the revert + shake + toast fires -->
+      <div class="nd-row nd-mt-md">
+        <div class="nd-col-12">
+          <div class="nd-card">
+            <div class="nd-card-header">Reorder (server failure — revert demo)</div>
+            <div class="nd-card-body">
+              <p class="nd-text-secondary nd-mb-md">
+                Drag or use keyboard (Space to grab, Arrows to move, Escape to cancel) to reorder &mdash; the POST always returns HTTP&nbsp;500, so the list snaps back, a shake plays, and a toast shows the server error message.
+              </p>
+              <ul class="nd-sortable" data-nd-sortable="POST /api/reorder?fail=1" aria-label="Reorder failure demo">
+                <li data-id="step-1" class="nd-well nd-well-sm nd-mb-xs">Step 1 — always reverts</li>
+                <li data-id="step-2" class="nd-well nd-well-sm nd-mb-xs">Step 2 — always reverts</li>
+                <li data-id="step-3" class="nd-well nd-well-sm nd-mb-xs">Step 3 — always reverts</li>
+                <li data-id="step-4" class="nd-well nd-well-sm nd-mb-xs">Step 4 — always reverts</li>
               </ul>
             </div>
           </div>

@@ -52,7 +52,7 @@ export function initNav() {
   const toggles = document.querySelectorAll('.nd-nav-toggle');
 
   for (const toggle of toggles) {
-    const nav = toggle.closest('.nd-nav');
+    const nav = toggle.closest('nav, .nd-nav');
     if (!nav) continue;
 
     /** @param {MouseEvent} e */

@@ -508,3 +508,56 @@ func TestWSFeed(t *testing.T) {
 		t.Errorf("message missing 'type' field: %s", string(data))
 	}
 }
+
+// ---------------------------------------------------------------------------
+// Sortable reorder — REST handler
+// ---------------------------------------------------------------------------
+
+// TestReorder_Success verifies that POST /api/reorder echoes the submitted
+// order back to the caller on the happy path.
+func TestReorder_Success(t *testing.T) {
+	body := map[string]interface{}{"order": []string{"c", "a", "b"}}
+	w, out := doJSON(t, handleReorder, http.MethodPost, "/api/reorder", body)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	if msg, _ := out["message"].(string); msg != "Order saved" {
+		t.Errorf("unexpected message: %v", out["message"])
+	}
+	order, ok := out["order"].([]interface{})
+	if !ok {
+		t.Fatalf("order not an array: %v", out["order"])
+	}
+	want := []string{"c", "a", "b"}
+	if len(order) != len(want) {
+		t.Fatalf("order length %d, want %d", len(order), len(want))
+	}
+	for i, v := range want {
+		if order[i] != v {
+			t.Errorf("order[%d] = %v, want %q", i, order[i], v)
+		}
+	}
+}
+
+// TestReorder_SimulatedFailure verifies that the ?fail=1 variant returns
+// HTTP 500 with a ValidationErrors envelope so the frontend sortable demo
+// can exercise its revert-on-failure code path.
+func TestReorder_SimulatedFailure(t *testing.T) {
+	body := map[string]interface{}{"order": []string{"x", "y"}}
+	w, out := doJSON(t, handleReorder, http.MethodPost, "/api/reorder?fail=1", body)
+
+	if w.Code != http.StatusInternalServerError {
+		t.Fatalf("expected 500, got %d: %s", w.Code, w.Body.String())
+	}
+	errs, ok := out["errors"].(map[string]interface{})
+	if !ok {
+		t.Fatalf("response missing errors object: %v", out)
+	}
+	if _, ok := errs["_form"].(string); !ok {
+		t.Errorf("expected _form error message, got: %v", errs)
+	}
+	if _, ok := out["order"]; ok {
+		t.Errorf("failure response should not echo order: %v", out)
+	}
+}

@@ -7,6 +7,8 @@
 - All classes prefixed with `nd-` to avoid collisions with consumer styles.
 - BEM-lite: `.nd-card`, `.nd-card-header`, `.nd-card-body` (flat hierarchy, no `__` or `--`).
 - Modifier classes use descriptive suffixes: `.nd-btn-primary`, `.nd-btn-sm`, `.nd-card-flush`.
+- Native HTML elements (`<button>`, `<table>`, `<nav>`, `<input>`, `<textarea>`, `<select>`, `<dialog>`, `<progress>`) are styled by default. Do not introduce a bare alias class (e.g. `nd-btn`, `nd-table`) that simply mirrors the element selector — style the element directly instead.
+- **Prefer HTML5 semantic elements over `<div>`.** Use `<article>` for self-contained content (cards, posts, stat blocks), `<section>` for thematic grouping within a page, `<aside>` for tangential content (callouts, supplementary panels), `<figure>`/`<figcaption>` for captioned media, `<details>`/`<summary>` for disclosure widgets, `<time>` for timestamps, `<address>` for contact information. The framework styles all of these elements by default — reaching for a `<div>` with a class when a semantic element fits is almost always wrong.
 - State classes: `.nd-active`, `.nd-disabled`, `.nd-loading`, `.nd-error`.
 
 ### Structure

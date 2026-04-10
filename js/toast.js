@@ -67,6 +67,9 @@ export function toast(message, type, duration) {
 
   const el = document.createElement('div');
   el.className = 'nd-toast' + (type ? ` nd-toast-${type}` : '');
+  el.setAttribute('role', type === 'error' ? 'alert' : 'status');
+  el.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
+  el.setAttribute('aria-atomic', 'true');
 
   const msg = document.createElement('span');
   msg.className = 'nd-toast-message';

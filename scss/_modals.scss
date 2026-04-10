@@ -105,9 +105,9 @@ dialog > header {
 }
 
 // ---------------------------------------------------------------------------
-// Body
+// Body — native <div> inside <dialog> (content area, no class required)
 // ---------------------------------------------------------------------------
-.nd-modal-body {
+dialog > div {
   padding: $nd-space-lg;
   overflow-y: auto;
   flex: 1;

@@ -1061,6 +1061,14 @@ func handleUploadedFiles(w http.ResponseWriter, r *http.Request) {
 // handleReorder accepts a POST body of the form {"order": [...]} and
 // echoes it back after logging. It exists so the sortable demo has a
 // live endpoint to talk to.
+//
+// When the query parameter ?fail=1 is present the handler responds
+// with HTTP 500 and a ValidationErrors envelope instead of echoing
+// the payload. This deliberate-failure variant lets the frontend
+// sortable demo exercise its revert-on-failure path without needing
+// a real persistence layer. The request body is still bounded by
+// MaxBytesReader and fully decoded so the failure mirrors a realistic
+// "server accepted the request then failed" scenario.
 func handleReorder(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		writeJSON(w, http.StatusMethodNotAllowed, ValidationErrors{
@@ -1075,6 +1083,14 @@ func handleReorder(w http.ResponseWriter, r *http.Request) {
 		Order []string `json:"order"`
 	}
 	if !decodeJSON(w, r, &payload) {
+		return
+	}
+
+	if r.URL.Query().Get("fail") == "1" {
+		log.Printf("[reorder] Simulated failure for order: %v", payload.Order)
+		writeJSON(w, http.StatusInternalServerError, ValidationErrors{
+			Errors: map[string]string{"_form": "Simulated reorder failure"},
+		})
 		return
 	}
 

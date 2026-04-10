@@ -95,6 +95,10 @@ a {
     outline-offset: 2px;
     border-radius: $nd-radius-sm;
   }
+
+  &:active {
+    color: var(--nd-accent-active);
+  }
 }
 
 b,
@@ -166,18 +170,8 @@ button::-moz-focus-inner,
   padding: 0;
 }
 
-fieldset {
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-legend {
-  padding: 0;
-  display: table;
-  max-width: 100%;
-  white-space: normal;
-}
+// fieldset and legend defaults are set in _forms.scss after the UA-reset is
+// superseded by the designed defaults. No override needed here.
 
 textarea {
   overflow: auto;

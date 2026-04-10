@@ -47,19 +47,41 @@
   }
 }
 
-// App header — top bar inside content area (not the nav)
-// Usage: <header class="app-header">
-.app-header {
+// App body — content column alongside the sidebar; owns the top bar, main scroll area, and footer.
+// Using direct-child combinators (>) means dialog > header and dialog > footer in _modals.scss
+// are completely unaffected — those selectors are scoped to <dialog>, not to .app-body.
+// Usage: <div class="app-body">
+.app-body {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 $nd-space-lg;
-  height: 3.5rem;
-  min-height: 3.5rem;
-  background: var(--nd-bg-surface);
-  border-bottom: 1px solid var(--nd-border);
+  flex-direction: column;
+  flex-grow: 1;
+  min-width: 0;
+  overflow: hidden;
+
+  // Native <header> inside app body = the top app bar
+  > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 $nd-space-lg;
+    height: 3.5rem;
+    min-height: 3.5rem;
+    background: var(--nd-bg-surface);
+    border-bottom: 1px solid var(--nd-border);
+  }
+
+  // Native <footer> inside app body = the page footer
+  > footer {
+    padding: $nd-space-sm $nd-space-lg;
+    font-size: $nd-font-xs;
+    color: var(--nd-text-muted);
+    border-top: 1px solid var(--nd-border);
+    text-align: center;
+    background: var(--nd-bg-surface);
+  }
 }
 
+// Structural helpers for content inside .app-body > header
 .app-header-left {
   display: flex;
   align-items: center;
@@ -77,17 +99,6 @@
   font-weight: $nd-font-weight-semibold;
   margin: 0;
   color: var(--nd-text-primary);
-}
-
-// App footer
-// Usage: <footer class="app-footer">
-.app-footer {
-  padding: $nd-space-sm $nd-space-lg;
-  font-size: $nd-font-xs;
-  color: var(--nd-text-muted);
-  border-top: 1px solid var(--nd-border);
-  text-align: center;
-  background: var(--nd-bg-surface);
 }
 
 // Overlay backdrop — generic, reusable

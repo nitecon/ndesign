@@ -968,34 +968,34 @@ A realistic page combining REST binding, SSE, WebSocket, form actions, and butto
     <!-- ── Stats via SSE ────────────────────────────────────── -->
     <div class="nd-row nd-mb-lg">
       <div class="nd-col-4">
-        <div class="nd-card">
+        <article class="nd-card">
           <div class="nd-card-body">
             <p class="nd-text-secondary">CPU</p>
             <h2 data-nd-sse="/events/stream"
                 data-nd-sse-event="metric"
                 data-nd-field="cpu">--</h2>
           </div>
-        </div>
+        </article>
       </div>
       <div class="nd-col-4">
-        <div class="nd-card">
+        <article class="nd-card">
           <div class="nd-card-body">
             <p class="nd-text-secondary">Memory</p>
             <h2 data-nd-sse="/events/stream"
                 data-nd-sse-event="metric"
                 data-nd-field="memory">--</h2>
           </div>
-        </div>
+        </article>
       </div>
       <div class="nd-col-4">
-        <div class="nd-card">
+        <article class="nd-card">
           <div class="nd-card-body">
             <p class="nd-text-secondary">Disk</p>
             <h2 data-nd-sse="/events/stream"
                 data-nd-sse-event="metric"
                 data-nd-field="disk">--</h2>
           </div>
-        </div>
+        </article>
       </div>
     </div>
 
@@ -1081,7 +1081,7 @@ A realistic page combining REST binding, SSE, WebSocket, form actions, and butto
     <!-- ── Notification feed via WebSocket ───────────────────── -->
     <div class="nd-row">
       <div class="nd-col-12">
-        <div class="nd-card">
+        <section class="nd-card">
           <div class="nd-card-header">Live Feed</div>
           <div class="nd-card-body"
                data-nd-ws="ws://localhost:28080/ws/feed"
@@ -1094,7 +1094,7 @@ A realistic page combining REST binding, SSE, WebSocket, form actions, and butto
               </div>
             </template>
           </div>
-        </div>
+        </section>
       </div>
     </div>
 
@@ -1325,7 +1325,7 @@ The `data-nd-upload` attribute turns a plain `<form>` into an XHR-backed file up
 
   <div id="upload-feedback"></div>
 
-  <button type="submit" class="nd-btn nd-btn-primary">Upload</button>
+  <button type="submit" class="nd-btn-primary">Upload</button>
 </form>
 ```
 
@@ -1351,10 +1351,10 @@ Combine an upload form with a bound table that refreshes on success to get a com
   <input class="nd-input" type="file" name="file" required>
   <progress class="nd-upload-progress" value="0" max="100" hidden></progress>
   <div id="upload-feedback"></div>
-  <button type="submit" class="nd-btn nd-btn-primary">Upload</button>
+  <button type="submit" class="nd-btn-primary">Upload</button>
 </form>
 
-<table class="nd-table">
+<table>
   <thead><tr><th>Name</th><th>Size</th><th>Uploaded</th></tr></thead>
   <tbody id="uploaded-files"
          data-nd-bind="/api/files"
@@ -1457,7 +1457,7 @@ Use this pattern when the new order is purely a UI affordance, e.g. reordering f
 
 ### Server sync (POSTs the new order)
 
-Add a `METHOD URL` value to `data-nd-sortable`, and every drop POSTs `{ "order": [...] }` to that endpoint. The client DOM is already updated optimistically; on failure the container briefly gets the `nd-sortable-error` class (shake animation).
+Add a `METHOD URL` value to `data-nd-sortable`, and every drop POSTs `{ "order": [...] }` to that endpoint. The CSRF token is sent automatically via the shared `buildHeaders()` utility — no extra configuration needed.
 
 ```html
 <ul class="nd-list-reset" data-nd-sortable="POST /api/tasks/reorder">
@@ -1465,6 +1465,24 @@ Add a `METHOD URL` value to `data-nd-sortable`, and every drop POSTs `{ "order":
   <li data-id="2" class="nd-card nd-p-md">Send invoice</li>
   <li data-id="3" class="nd-card nd-p-md">Deploy build</li>
 </ul>
+```
+
+### Revert on failure
+
+The sortable module updates the DOM optimistically. If the server returns a non-2xx response, ndesign automatically:
+
+1. Restores the pre-drag DOM order.
+2. Plays a shake animation (`nd-sortable-error` class, 2 s).
+3. Calls `NDesign.toast()` with the error message parsed from the JSON response body (`errors._form` or `message` field), falling back to a generic message.
+4. Dispatches a `nd:sortable:revert` CustomEvent on the container with `detail.item` pointing to the moved element.
+5. Announces the revert to screen readers via the shared `aria-live` region.
+
+Your server should return a JSON body on failure for the best user experience:
+
+```go
+writeJSON(w, http.StatusInternalServerError, map[string]any{
+    "errors": map[string]string{"_form": "Could not save the new order — please try again."},
+})
 ```
 
 ### Server endpoint (Go)
@@ -1487,7 +1505,9 @@ func handleReorder(w http.ResponseWriter, r *http.Request) {
 
     // Persist the new ordering — e.g. update a sort_index column.
     if err := tasks.Reorder(body.Order); err != nil {
-        writeJSON(w, http.StatusInternalServerError, map[string]string{"message": err.Error()})
+        writeJSON(w, http.StatusInternalServerError, map[string]any{
+            "errors": map[string]string{"_form": err.Error()},
+        })
         return
     }
 
@@ -1498,9 +1518,34 @@ func handleReorder(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
+### Keyboard reordering (WAI-ARIA listbox pattern)
+
+Every sortable list is fully keyboard-accessible. Tab into the list to focus an item, then use these keys:
+
+| Key | Ungrabbed | Grabbed |
+|-----|-----------|---------|
+| `Space` | Grab the focused item | Drop at current position |
+| `ArrowUp` / `ArrowDown` | Move focus to previous / next item | Move grabbed item up / down one position |
+| `Home` | — | Move grabbed item to the first position |
+| `End` | — | Move grabbed item to the last position |
+| `Escape` | — | Cancel — restore item to its original position |
+
+When an item is grabbed, `aria-grabbed="true"` is set on it and an `aria-live` polite region announces each move (e.g. "Write report, position 2 of 3."). Dropping announces the final position; cancelling announces the revert.
+
+`UL` / `OL` containers get implicit listbox semantics from the browser. Non-list containers (e.g. `<div>`) receive `role="listbox"` and each child gets `role="option"` automatically.
+
+### MutationObserver auto-init
+
+Dynamically added children — e.g. items inserted by a server-sync template refresh — are automatically wired as draggable items by a `MutationObserver` attached during `initSortable()`. You do not need to call `initSortable()` again after mutating the list.
+
+```js
+// Safe: new <li> is automatically made draggable.
+document.querySelector('[data-nd-sortable]').appendChild(newItem);
+```
+
 ### Listening for the reorder event
 
-You can always layer custom handling on top of the declarative attribute — the custom event still fires even when server sync is configured:
+The `nd:sortable:reorder` event fires on every successful drop (mouse or keyboard) even when server sync is configured. `detail.order` is the new identifier array; `detail.item` is the moved element.
 
 ```js
 document.querySelector('#task-list')
@@ -1509,11 +1554,14 @@ document.querySelector('#task-list')
   });
 ```
 
-### Accessibility limitation (v1)
+Listening for the revert event:
 
-The sortable module is **mouse/pointer-only** in v1. There is no keyboard affordance for lifting, moving, and dropping items — users with keyboard-only input cannot reorder the list via `data-nd-sortable` alone. The module does set `role="list"` / `role="listitem"` so the list is still announced correctly by screen readers, and `aria-grabbed` tracks the dragging state.
-
-Until keyboard reorder lands in v2, provide an accessible fallback such as up/down buttons that dispatch `nd:sortable:reorder` manually, or a separate "Reorder items" modal that uses native `<select>` / position inputs.
+```js
+document.querySelector('#task-list')
+  .addEventListener('nd:sortable:revert', (e) => {
+    console.warn('Reorder failed, reverted:', e.detail.item);
+  });
+```
 
 ---
 
@@ -1544,4 +1592,4 @@ Quick reference of every `data-nd-*` attribute:
 | `data-nd-confirm` | With `data-nd-action` | Confirmation prompt shown before the action fires |
 | `data-nd-on` | Any | Custom event binding: `event:handlerFunctionName` |
 | `data-nd-upload` | `<form>` | Upload endpoint: `METHOD /url`. Submits via XHR with live progress on child `<progress class="nd-upload-progress">` |
-| `data-nd-sortable` | Any container | Make direct children draggable. Optional `METHOD /url` value POSTs the new order to the server on every drop |
+| `data-nd-sortable` | Any container | Make direct children draggable and keyboard-accessible. Optional `METHOD /url` value POSTs the new order to the server on every drop; non-2xx responses revert the DOM automatically |

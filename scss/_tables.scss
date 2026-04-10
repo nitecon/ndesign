@@ -6,8 +6,7 @@
 // ---------------------------------------------------------------------------
 // Base Table — native <table> styled by default
 // ---------------------------------------------------------------------------
-table,
-.nd-table {
+table {
   width: 100%;
   border-collapse: collapse;
   border-spacing: 0;
@@ -110,7 +109,7 @@ table,
   border-radius: var(--nd-radius-md);
   box-shadow: var(--nd-shadow-xs);
 
-  .nd-table {
+  table {
     margin-bottom: 0;
 
     // Prevent double border with wrapper

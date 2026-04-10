@@ -1,19 +1,36 @@
 // ==========================================================================
-// Folds — edge-pinned callouts with inner-rounded, outer-straight corners
-// Creates a "fold on top of the page" effect by bleeding to the viewport edge.
-//
-// Usage:
-//   <aside class="fold">Right-pinned (default)</aside>
-//   <aside class="fold fold-left">Left-pinned</aside>
+// Asides — bare <aside> gets a simple callout treatment by default.
+// The .fold variant overrides this with an edge-pinned geometric effect.
 // ==========================================================================
 @use 'tokens' as *;
 
 // ---------------------------------------------------------------------------
-// Base Fold — pins to the right edge by default
+// Base aside — bare <aside> styled by default: simple bordered callout box
+// with a left accent strip. No classes required.
+// ---------------------------------------------------------------------------
+aside {
+  background: var(--nd-bg-surface);
+  border: 1px solid var(--nd-border);
+  border-left: 4px solid var(--nd-accent);
+  border-radius: $nd-radius-md;
+  padding: $nd-space-md $nd-space-lg;
+  margin-bottom: $nd-space-md;
+  color: var(--nd-text-primary);
+
+  > *:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Fold — edge-pinned callout variant. Overrides the base aside style.
+// Pins to the right edge by default.
 // ---------------------------------------------------------------------------
 .fold {
   background: var(--nd-bg-surface);
+  // Reset the base aside left-accent strip; fold has its own border geometry
   border: 1px solid var(--nd-border);
+  border-left: 1px solid var(--nd-border);
   border-right: none;
   box-shadow: var(--nd-shadow-md), 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: $nd-space-md $nd-space-lg;

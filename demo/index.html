@@ -242,8 +242,8 @@
           <p class="nd-mb-sm"><code class="nd-text-xs nd-text-muted">Side Nav</code></p>
           <div class="nd-well">
             <p><strong>Sidebar Navigation</strong></p>
-            <p class="nd-text-secondary">The sidebar (<code>&lt;nav class="sidebar"&gt;</code>) is a 16rem vertical column with section headers, border-left active indicators, and mobile slide-in behavior. Add <code>sidebar-fixed</code> for a fixed full-app sidebar. See <a href="app-shell.html" class="nd-link">app-shell.html</a> and <a href="complex-app.html" class="nd-link">complex-app.html</a> for examples.</p>
-            <p class="nd-text-secondary nd-mt-md">See <a href="app-shell.html" class="nd-link"><strong>demo/app-shell.html</strong></a> for a full sidebar layout demo.</p>
+            <p class="nd-text-secondary">The sidebar (<code>&lt;nav class="sidebar"&gt;</code>) is a 16rem vertical column with section headers, border-left active indicators, and mobile slide-in behavior. Add <code>sidebar-fixed</code> for a fixed full-app sidebar. See <a href="app-shell.html">app-shell.html</a> and <a href="complex-app.html">complex-app.html</a> for examples.</p>
+            <p class="nd-text-secondary nd-mt-md">See <a href="app-shell.html"><strong>demo/app-shell.html</strong></a> for a full sidebar layout demo.</p>
           </div>
         </div>
       </div>
@@ -321,7 +321,7 @@
           <h3>Default Modal</h3>
           <button class="nd-modal-close" aria-label="Close">&times;</button>
         </header>
-        <div class="nd-modal-body">
+        <div>
           <p>This is a standard modal dialog using the native <code>&lt;dialog&gt;</code> element. Focus trapping, backdrop, and Escape key handling are all built in by the browser.</p>
           <p class="nd-text-secondary">Click the backdrop or press Escape to close.</p>
         </div>
@@ -337,7 +337,7 @@
           <h3>Delete Item?</h3>
           <button class="nd-modal-close" aria-label="Close">&times;</button>
         </header>
-        <div class="nd-modal-body">
+        <div>
           <p>Are you sure you want to delete <strong>project-alpha</strong>? This action cannot be undone.</p>
         </div>
         <footer>
@@ -352,7 +352,7 @@
           <h3>Add New User</h3>
           <button class="nd-modal-close" aria-label="Close">&times;</button>
         </header>
-        <div class="nd-modal-body">
+        <div>
           <form>
             <div class="nd-row">
               <div class="nd-col-6">
@@ -409,11 +409,11 @@
         <button class="nd-btn-ghost" data-nd-toast="This stays until dismissed" data-nd-toast-type="info" data-nd-toast-duration="0">Persistent</button>
       </div>
 
-      <div class="nd-well nd-mt-md">
+      <aside class="nd-well nd-mt-md">
         <p class="nd-mb-sm"><code class="nd-text-xs nd-text-muted">API Usage</code></p>
         <code>NDesign.toast(message, type?, duration?)</code>
         <p class="nd-text-secondary nd-mt-sm">Types: <code>success</code>, <code>error</code>, <code>warning</code>, <code>info</code>. Duration defaults to 5000ms; pass <code>0</code> for persistent.</p>
-      </div>
+      </aside>
     </section>
 
     <!-- ================================================================== -->
@@ -555,7 +555,7 @@
             <div class="nd-card-body">
               <div class="nd-flex nd-gap-md nd-align-center nd-mb-md">
                 <div class="nd-skeleton nd-skeleton-avatar-lg"></div>
-                <div class="nd-skeleton-group" style="flex: 1">
+                <div class="nd-skeleton-group nd-flex-1">
                   <div class="nd-skeleton nd-skeleton-title"></div>
                   <div class="nd-skeleton nd-skeleton-text"></div>
                 </div>
@@ -995,10 +995,10 @@
           <aside class="fold fold-left">
             <div class="fold-title">Quick Links</div>
             <ul class="nd-text-small nd-pl-md">
-              <li><a href="#" class="nd-link">Grafana Dashboard</a></li>
-              <li><a href="#" class="nd-link">Incident Runbook</a></li>
-              <li><a href="#" class="nd-link">On-call Schedule</a></li>
-              <li><a href="#" class="nd-link">Architecture Docs</a></li>
+              <li><a href="#">Grafana Dashboard</a></li>
+              <li><a href="#">Incident Runbook</a></li>
+              <li><a href="#">On-call Schedule</a></li>
+              <li><a href="#">Architecture Docs</a></li>
             </ul>
           </aside>
         </div>

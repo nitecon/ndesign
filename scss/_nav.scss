@@ -8,8 +8,7 @@
 // ---------------------------------------------------------------------------
 // Base nav — native <nav> styled by default, top bar layout
 // ---------------------------------------------------------------------------
-nav,
-.nd-nav {
+nav {
   display: flex;
   align-items: center;
   gap: $nd-space-sm;
@@ -163,29 +162,31 @@ nav,
     }
   }
 
-  .nd-nav-section {
+  .nd-nav-section,
+  .sidebar-section {
     padding: $nd-space-sm $nd-space-lg;
     margin-top: $nd-space-md;
     font-size: $nd-font-sm;
+    // Raised background strips the section label off the surface gradient,
+    // mirroring the .nd-card-header / .nd-panel-header pattern.
+    background: var(--nd-bg-surface-raised);
+    border-top: 1px solid var(--nd-border);
+    border-bottom: 1px solid var(--nd-border);
+    // --nd-text-muted can wash out against --nd-bg-surface-raised in dark theme;
+    // secondary provides sufficient contrast on both raised surfaces.
+    color: var(--nd-text-secondary);
 
     &:first-child {
       margin-top: 0;
+      border-top: none;
     }
   }
 
-  // Sidebar sections and links (non nd-nav-menu pattern)
+  // Legacy alias — keep .sidebar-section attribute parity with .nd-nav-section
   .sidebar-section {
-    font-size: $nd-font-sm;
     font-weight: $nd-font-weight-semibold;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--nd-text-muted);
-    padding: $nd-space-sm $nd-space-lg;
-    margin-top: $nd-space-md;
-
-    &:first-child {
-      margin-top: 0;
-    }
   }
 
   .sidebar-menu {
@@ -260,13 +261,11 @@ nav,
 // Mobile collapse — top nav (below $nd-bp-lg)
 // ---------------------------------------------------------------------------
 @include nd-below(lg) {
-  nav:not(.sidebar) .nd-nav-menu,
-  .nd-nav:not(.sidebar) .nd-nav-menu {
+  nav:not(.sidebar) .nd-nav-menu {
     display: none;
   }
 
-  nav.nd-nav-open:not(.sidebar) .nd-nav-menu,
-  .nd-nav.nd-nav-open:not(.sidebar) .nd-nav-menu {
+  nav.nd-nav-open:not(.sidebar) .nd-nav-menu {
     display: flex;
     flex-direction: column;
     position: absolute;

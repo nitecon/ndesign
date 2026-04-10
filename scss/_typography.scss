@@ -153,29 +153,10 @@ kbd {
 }
 
 // ---------------------------------------------------------------------------
-// Links (enhanced)
+// Links
 // ---------------------------------------------------------------------------
-.nd-link {
-  color: var(--nd-accent);
-  text-decoration: none;
-  transition: color $nd-transition-fast;
-
-  &:hover {
-    color: var(--nd-accent-hover);
-    text-decoration: underline;
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--nd-focus-ring);
-    outline-offset: 2px;
-    border-radius: $nd-radius-sm;
-  }
-
-  &:active {
-    color: var(--nd-accent-active);
-  }
-}
-
+// Native <a> is styled in _reset.scss. .nd-link-muted is a legitimate
+// modifier for muted/secondary link variants.
 .nd-link-muted {
   color: var(--nd-text-muted);
   text-decoration: none;
@@ -272,4 +253,146 @@ abbr[title] {
   text-decoration: underline dotted;
   cursor: help;
   text-decoration-thickness: 1px;
+}
+
+// ---------------------------------------------------------------------------
+// Sample output — inline, consistent with code/kbd treatment
+// ---------------------------------------------------------------------------
+samp {
+  font-family: $nd-font-family-mono;
+  font-size: 0.875em;
+  padding: 0.125em 0.375em;
+  background-color: var(--nd-bg-code);
+  color: var(--nd-text-code);
+  border-radius: $nd-radius-sm;
+}
+
+// ---------------------------------------------------------------------------
+// Address — reset browser italic default; treat as normal block text
+// ---------------------------------------------------------------------------
+address {
+  font-style: normal;
+  margin-bottom: $nd-space-md;
+  line-height: $nd-line-height-loose;
+}
+
+// ---------------------------------------------------------------------------
+// Figure + Figcaption
+// ---------------------------------------------------------------------------
+figure {
+  margin: 0 0 $nd-space-md;
+}
+
+figcaption {
+  font-size: $nd-font-sm;
+  color: var(--nd-text-muted);
+  margin-top: $nd-space-xs;
+  line-height: $nd-line-height-normal;
+}
+
+// ---------------------------------------------------------------------------
+// Details + Summary — native disclosure widget
+// ---------------------------------------------------------------------------
+details {
+  border: 1px solid var(--nd-border);
+  border-radius: $nd-radius-md;
+  padding: $nd-space-sm $nd-space-md;
+  margin-bottom: $nd-space-md;
+  background: var(--nd-bg-surface);
+
+  > summary {
+    font-weight: $nd-font-weight-medium;
+    cursor: pointer;
+    user-select: none;
+    padding: $nd-space-xs 0;
+    color: var(--nd-text-primary);
+    transition: color $nd-transition-fast;
+    list-style: none; // hide default marker in Firefox
+
+    &::-webkit-details-marker {
+      display: none; // hide default arrow in WebKit
+    }
+
+    &::before {
+      content: '▶';
+      display: inline-block;
+      margin-right: $nd-space-xs;
+      font-size: 0.65em;
+      transition: transform $nd-transition-fast;
+      vertical-align: middle;
+      color: var(--nd-text-muted);
+    }
+
+    &:hover {
+      color: var(--nd-accent);
+    }
+  }
+
+  &[open] > summary::before {
+    transform: rotate(90deg);
+  }
+
+  // Content area below the summary
+  > :not(summary) {
+    margin-top: $nd-space-sm;
+    padding-top: $nd-space-sm;
+    border-top: 1px solid var(--nd-border);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Meter — native gauge element (optimum/suboptimum/pessimum states)
+// ---------------------------------------------------------------------------
+meter {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  width: 100%;
+  height: 0.5rem;
+  border: none;
+  border-radius: $nd-radius-pill;
+  background: var(--nd-bg-well);
+  overflow: hidden;
+}
+
+// WebKit/Blink — track
+meter::-webkit-meter-bar {
+  background: var(--nd-bg-well);
+  border-radius: $nd-radius-pill;
+  border: none;
+}
+
+// Optimum value (green)
+meter::-webkit-meter-optimum-value {
+  background: var(--nd-success);
+  border-radius: $nd-radius-pill;
+}
+
+// Suboptimum value (yellow/warning)
+meter::-webkit-meter-suboptimum-value {
+  background: var(--nd-warning);
+  border-radius: $nd-radius-pill;
+}
+
+// Pessimum / even-less-good value (red)
+meter::-webkit-meter-even-less-good-value {
+  background: var(--nd-danger);
+  border-radius: $nd-radius-pill;
+}
+
+// Firefox
+meter::-moz-meter-bar {
+  border-radius: $nd-radius-pill;
+}
+
+meter:-moz-meter-optimum::-moz-meter-bar {
+  background: var(--nd-success);
+}
+
+meter:-moz-meter-sub-optimum::-moz-meter-bar {
+  background: var(--nd-warning);
+}
+
+meter:-moz-meter-sub-sub-optimum::-moz-meter-bar {
+  background: var(--nd-danger);
 }

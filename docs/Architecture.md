@@ -54,7 +54,8 @@ No build step required. No npm. No bundler. Just `<link>` + `<script>` + `<meta>
 ### 3.1 Design Principles
 
 - **Desktop-first, mobile-responsive.** Breakpoints scale down, not up.
-- **No utility-class sprawl.** Semantic class names (`.nd-card`, `.nd-btn`) over atomic utilities.
+- **No utility-class sprawl.** Semantic class names (`.nd-card`) and modifier classes (`.nd-btn-primary`) over atomic utilities.
+- **Native-first.** Common HTML elements — `<table>`, `<button>`, `<nav>`, `<input>`, `<textarea>`, `<select>`, `<dialog>`, `<progress>` — receive full ndesign styling by default. No class is required to opt in. Use modifier or variant classes (`.nd-table-striped`, `.nd-btn-primary`) only when you need to change behaviour or appearance beyond the default.
 - **Components are CSS-only.** Cards, panels, wells, buttons — no JS behavior attached.
 - **Theme files are pure color definitions.** Core never contains a color value.
 
@@ -70,9 +71,9 @@ scss/
 ├── _cards.scss             # .nd-card, .nd-card-header, .nd-card-body, .nd-card-footer
 ├── _panels.scss            # .nd-panel — bordered content sections
 ├── _wells.scss             # .nd-well — inset/recessed background regions
-├── _buttons.scss           # .nd-btn, .nd-btn-primary/secondary/danger, sizes, .nd-switch
+├── _buttons.scss           # button (native), .nd-btn-primary/secondary/danger, sizes, .nd-switch
 ├── _forms.scss             # inputs, selects, textareas, checkboxes, radios, labels
-├── _tables.scss            # .nd-table, striped, hover, responsive wrapper
+├── _tables.scss            # table (native), striped, hover, responsive wrapper
 ├── _alerts.scss            # .nd-alert, .nd-alert-success/warning/error/info
 ├── _badges.scss            # .nd-badge, .nd-badge-primary/danger/success
 ├── _asides.scss            # .fold — edge-pinned callouts with semantic variants
@@ -239,19 +240,68 @@ $nd-bp-xs:   480px;   // phone
 
 ### 3.7 Native-First Styling
 
-ndesign styles native HTML elements directly — no base classes needed for common elements:
+ndesign styles native HTML elements directly — no base classes needed for common elements. This extends to the full HTML5 semantic vocabulary: use the most specific element that matches your content and ndesign styles it for you.
+
+**Sectioning elements**
+
+| Element | Styled natively | Notes |
+|---------|----------------|-------|
+| `<header>` | App header layout | Used inside `.app-layout` |
+| `<nav>` | Top bar layout (sticky, flex, shadow) | `.sidebar` for vertical side navigation |
+| `<main>` | Content area layout | Used inside `.app-layout` |
+| `<section>` | Thematic grouping | Margin and padding defaults |
+| `<article>` | Self-contained content card | Styled consistently with card patterns |
+| `<aside>` | **Not styled natively** | Requires `.fold` class (see Fold component) |
+| `<footer>` | App footer layout | Used inside `.app-layout` |
+
+**Content elements**
+
+| Element | Styled natively | Notes |
+|---------|----------------|-------|
+| `<figure>` | Margin reset | Browser default margin removed |
+| `<figcaption>` | Small muted text | Uses `--nd-text-muted`, reduced font size |
+| `<details>` | Bordered disclosure widget | Custom `▶` marker rotates on `[open]`; summary hover accent |
+| `<summary>` | Styled within `<details>` | Cursor pointer, accent hover color |
+| `<mark>` | Highlighted text | Uses `--nd-warning` tint background |
+| `<meter>` | Cross-browser gauge | WebKit + Firefox; optimum/suboptimum/pessimum state colors mirror `<progress>` |
+| `<progress>` | Themed progress bar | Consistent cross-browser fill color |
+| `<time>` | Inline timestamp | No special style — semantic meaning preserved for screen readers and parsers |
+| `<address>` | Contact info block | Resets browser italic; adds bottom margin |
+
+**Text-level elements**
+
+| Element | Styled natively | Notes |
+|---------|----------------|-------|
+| `<a>` | Accent color, hover underline | (none) |
+| `<abbr>` | Dotted underline, help cursor | (none) |
+| `<cite>` | Italic with muted color | (none) |
+| `<code>` | Mono font, inline code background | (none) |
+| `<kbd>` | Keyboard key appearance | Border, shadow, mono font |
+| `<samp>` | Mono font, code-style padding and background | Matches `<code>` appearance |
+| `<pre>` | Scrollable code block | Full padding, mono font, border |
+
+**Form elements**
 
 | Element | Styled natively | Class only needed for |
 |---------|----------------|----------------------|
 | `<button>` | Base button appearance | Modifiers: `.nd-btn-primary`, `.nd-btn-sm`, `.nd-switch` |
 | `<input>`, `<textarea>`, `<select>` | Full form input styling | Error/size modifiers |
 | `<input type="checkbox/radio">` | Custom appearance, large hit targets | (none) |
-| `<table>` | Full table styling with headers | `.nd-table-striped`, `.nd-table-hover` etc. |
-| `<nav>` | Top bar layout (sticky, flex, shadow) | `.sidebar` for vertical side navigation |
+| `<fieldset>` | Border and padding reset via `_reset.scss` | `.nd-fieldset` to opt in to designed border/padding/typography |
+| `<legend>` | Reset via `_reset.scss` | `.nd-fieldset-legend` to opt in to designed styling |
+| `<label>` in `.nd-form-group` | Form label appearance | (none) |
+
+**Interactive elements**
+
+| Element | Styled natively | Class only needed for |
+|---------|----------------|----------------------|
 | `<dialog>` | Modal styling with backdrop | `.nd-modal-sm`, `.nd-modal-lg`, `.nd-modal-full` |
-| `<label>` in `.nd-form-group` | Tab label appearance | (none) |
-| `<label>` in `.nd-form-check` | Check label appearance | (none) |
-| `<aside>` | **Not styled natively** | Requires `.fold` class (see Fold component) |
+
+**Table elements**
+
+| Element | Styled natively | Class only needed for |
+|---------|----------------|----------------------|
+| `<table>`, `<thead>`, `<tbody>`, `<tr>`, `<th>`, `<td>` | Full table styling with headers | `.nd-table-striped`, `.nd-table-hover`, `.nd-table-responsive` |
 
 ### 3.8 Component Class Reference
 
@@ -367,7 +417,7 @@ Binds an element (typically a button or form) to an API action.
 
 ```html
 <!-- Button action -->
-<button class="nd-btn nd-btn-danger"
+<button class="nd-btn-danger"
         data-nd-action="DELETE /api/users/42"
         data-nd-confirm="Are you sure?">
   Delete User
@@ -377,14 +427,14 @@ Binds an element (typically a button or form) to an API action.
 <form data-nd-action="POST /api/users" data-nd-feedback="user-feedback">
   <div class="nd-form-group">
     <label class="nd-form-label">Name</label>
-    <input class="nd-form-input" name="name" required>
+    <input name="name" required>
   </div>
   <div class="nd-form-group">
     <label class="nd-form-label">Email</label>
-    <input class="nd-form-input" name="email" type="email" required>
+    <input name="email" type="email" required>
   </div>
   <div id="user-feedback"></div>
-  <button class="nd-btn nd-btn-primary" type="submit">Create</button>
+  <button class="nd-btn-primary" type="submit">Create</button>
 </form>
 ```
 

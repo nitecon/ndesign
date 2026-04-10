@@ -7,8 +7,9 @@
  */
 
 import { handleSuccess, clearFormErrors, displayErrors } from './action.js';
+import { getCSRFToken } from './utils.js';
 
-/** @type {Map<HTMLFormElement, (e: SubmitEvent) => void>} submit handlers by form */
+/** @type {Map<HTMLFormElement, {handler: (e: SubmitEvent) => void, xhr: XMLHttpRequest|null, hideTimer: number|null}>} */
 const uploadHandlers = new Map();
 
 /**
@@ -91,6 +92,12 @@ function submitUpload(form) {
   const xhr = new XMLHttpRequest();
   xhr.open(method, url, true);
   xhr.setRequestHeader('X-Requested-With', 'NDesign');
+  const csrf = getCSRFToken();
+  if (csrf) xhr.setRequestHeader('X-CSRF-Token', csrf);
+
+  // Store the live XHR so destroyUploads can abort it if teardown happens mid-upload.
+  const entry = uploadHandlers.get(form);
+  if (entry) entry.xhr = xhr;
 
   // Upload progress
   xhr.upload.addEventListener('progress', (e) => {
@@ -107,12 +114,23 @@ function submitUpload(form) {
       submitBtn.disabled = false;
       submitBtn.classList.remove('nd-loading');
     }
+    // Clear any existing hide timer before scheduling a new one.
+    const entryForCleanup = uploadHandlers.get(form);
+    if (entryForCleanup && entryForCleanup.hideTimer) {
+      clearTimeout(entryForCleanup.hideTimer);
+      entryForCleanup.hideTimer = null;
+    }
     if (progressEl) {
-      setTimeout(() => {
+      const timerId = setTimeout(() => {
         progressEl.setAttribute('hidden', '');
         progressEl.value = 0;
+        const e = uploadHandlers.get(form);
+        if (e) e.hideTimer = null;
       }, 1000);
+      if (entryForCleanup) entryForCleanup.hideTimer = timerId;
     }
+    // XHR is done — clear the reference.
+    if (entryForCleanup) entryForCleanup.xhr = null;
   };
 
   xhr.addEventListener('load', () => {
@@ -177,7 +195,7 @@ export function initUploads() {
       submitUpload(form);
     };
     form.addEventListener('submit', handler);
-    uploadHandlers.set(form, handler);
+    uploadHandlers.set(form, { handler, xhr: null, hideTimer: null });
   }
 }
 
@@ -185,8 +203,10 @@ export function initUploads() {
  * Tear down all upload form handlers. Called on cleanup/re-init.
  */
 export function destroyUploads() {
-  for (const [form, handler] of uploadHandlers) {
+  for (const [form, { handler, xhr, hideTimer }] of uploadHandlers) {
     form.removeEventListener('submit', handler);
+    if (xhr) xhr.abort();
+    if (hideTimer) clearTimeout(hideTimer);
   }
   uploadHandlers.clear();
 }
