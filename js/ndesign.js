@@ -97,6 +97,17 @@ export function init() {
       return;
     }
 
+    // Toast trigger — data-nd-toast="message"
+    const toastBtn = e.target.closest('[data-nd-toast]');
+    if (toastBtn) {
+      e.preventDefault();
+      const message = toastBtn.getAttribute('data-nd-toast');
+      const type = toastBtn.getAttribute('data-nd-toast-type') || '';
+      const duration = parseInt(toastBtn.getAttribute('data-nd-toast-duration'), 10);
+      toast(message, type, isNaN(duration) ? 5000 : duration);
+      return;
+    }
+
     // Theme set — data-nd-theme="<name>"
     const themeBtn = e.target.closest('[data-nd-theme]');
     if (themeBtn) {
@@ -168,9 +179,14 @@ export function init() {
  * available themes with their href.
  *
  * HTML setup:
- *   <link rel="stylesheet" href="themes/dark.css" class="theme" title="dark">
+ *   <link rel="stylesheet" href="themes/light.css" class="theme" data-theme="light">
  *   <meta name="nd-theme" content="light" data-href="themes/light.css">
  *   <meta name="nd-theme" content="dark"  data-href="themes/dark.css">
+ *
+ * IMPORTANT: Do NOT use the `title` attribute on the theme link. Per HTML
+ * spec, `<link rel="stylesheet" title="...">` becomes an "alternate stylesheet"
+ * that browsers will not apply unless explicitly selected. Use `data-theme`
+ * instead to track the active theme name.
  *
  * @param {string} name — theme name matching a meta tag's content attribute
  */
@@ -183,11 +199,27 @@ export function setTheme(name) {
   const href = meta.getAttribute('data-href');
   if (!href) return;
 
-  const link = document.querySelector('link.theme');
-  if (link) {
-    link.href = href;
-    link.title = name;
-  }
+  const oldLink = document.querySelector('link.theme');
+  if (!oldLink) return;
+
+  // Skip if already active
+  if (oldLink.getAttribute('data-theme') === name) return;
+
+  // Create a fresh <link> element. Browsers don't always re-evaluate CSSOM
+  // when only the href is updated, so replacing the element is more reliable.
+  const newLink = document.createElement('link');
+  newLink.rel = 'stylesheet';
+  newLink.href = href;
+  newLink.className = 'theme';
+  newLink.setAttribute('data-theme', name);
+
+  // Wait for the new stylesheet to load before removing the old one —
+  // prevents a flash of unstyled content during the swap.
+  newLink.addEventListener('load', () => {
+    oldLink.remove();
+  }, { once: true });
+
+  oldLink.parentNode.insertBefore(newLink, oldLink.nextSibling);
 }
 
 /**
@@ -199,7 +231,7 @@ export function toggleTheme() {
   if (metas.length === 0) return;
 
   const link = document.querySelector('link.theme');
-  const currentName = link ? link.title : '';
+  const currentName = link ? link.getAttribute('data-theme') : '';
   const currentIndex = metas.findIndex(m => m.content === currentName);
   const nextIndex = (currentIndex + 1) % metas.length;
   setTheme(metas[nextIndex].content);
@@ -213,7 +245,7 @@ export function toggleTheme() {
  */
 export function getThemes() {
   const link = document.querySelector('link.theme');
-  const currentName = link ? link.title : '';
+  const currentName = link ? link.getAttribute('data-theme') : '';
   return Array.from(document.querySelectorAll('meta[name="nd-theme"]')).map(meta => ({
     name: meta.content,
     label: meta.content.charAt(0).toUpperCase() + meta.content.slice(1),

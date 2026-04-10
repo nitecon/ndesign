@@ -8,17 +8,52 @@
   display: flex;
   flex-direction: column;
   background: var(--nd-bg-surface);
-  border: 1px solid var(--nd-border);
+  border: 1px solid var(--nd-glass-border, var(--nd-border));
   border-radius: var(--nd-radius-md);
-  box-shadow: var(--nd-shadow-sm);
+  // Liquid glass effect: blur content behind, inner highlight on top edge,
+  // inner shadow on bottom edge, outer drop shadow for depth
+  box-shadow:
+    var(--nd-glass-highlight, none),
+    var(--nd-glass-edge, none),
+    var(--nd-shadow-sm);
+  backdrop-filter: blur(var(--nd-glass-blur, 0)) saturate(var(--nd-glass-saturate, 100%));
+  -webkit-backdrop-filter: blur(var(--nd-glass-blur, 0)) saturate(var(--nd-glass-saturate, 100%));
   // overflow: visible so absolutely-positioned children (select dropdowns)
   // are not clipped.  Border-radius clipping on images is handled by
   // explicit radii on .nd-card-img.
   overflow: visible;
   transition: box-shadow $nd-transition-normal, border-color $nd-transition-normal;
 
+  // Specular highlight — diagonal light streak catching the top-left corner,
+  // the signature "liquid glass" look.
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60%;
+    border-radius: var(--nd-radius-md) var(--nd-radius-md) 0 0;
+    background: linear-gradient(
+      135deg,
+      var(--nd-glass-specular, transparent) 0%,
+      transparent 45%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  // Ensure card content sits above the specular layer
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+
   &:hover {
-    box-shadow: var(--nd-shadow-md);
+    box-shadow:
+      var(--nd-glass-highlight, none),
+      var(--nd-glass-edge, none),
+      var(--nd-shadow-md);
   }
 }
 
@@ -31,6 +66,11 @@
   background: var(--nd-bg-surface-raised);
   font-weight: $nd-font-weight-semibold;
   font-size: $nd-font-base;
+
+  // Reset heading margins inside card headers
+  h1, h2, h3, h4, h5, h6 {
+    margin: 0;
+  }
 
   @include nd-below(sm) {
     padding: $nd-space-sm $nd-space-md;

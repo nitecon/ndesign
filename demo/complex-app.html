@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ndesign — Settings Page</title>
   <link rel="stylesheet" href="../dist/ndesign.css">
-  <link rel="stylesheet" href="../dist/themes/light.css" class="theme" title="light">
+  <link rel="stylesheet" href="../dist/themes/light.css" class="theme" data-theme="light">
   <meta name="nd-theme" content="light" data-href="../dist/themes/light.css">
   <meta name="nd-theme" content="dark" data-href="../dist/themes/dark.css">
   <style>/* You may not use custom styles under any circumstance on the demo pages */</style>
@@ -29,8 +29,8 @@
 
     <div class="nd-nav-end">
       <!-- Notifications -->
-      <button class="nd-btn-ghost nd-btn-sm" style="position: relative;">
-        Notifications <span class="nd-badge nd-badge-danger" style="margin-left: 0.25rem;">3</span>
+      <button class="nd-btn-ghost nd-btn-sm nd-relative">
+        Notifications <span class="nd-badge nd-badge-danger nd-ml-xs">3</span>
       </button>
 
       <!-- Theme dropdown -->
@@ -101,7 +101,7 @@
       <button class="hamburger nd-mb-md" data-nd-toggle="sidebar">&#9776; Settings Menu</button>
 
       <!-- Page header -->
-      <h2 style="margin-top: 0;">Profile Settings</h2>
+      <h2 class="nd-mt-0">Profile Settings</h2>
       <p class="nd-text-secondary nd-mb-lg">Manage your personal information, avatar, and notification preferences. Changes are saved per-account and apply across all workspaces.</p>
 
       <!-- ============================================================== -->
@@ -185,7 +185,7 @@
               </form>
             </div>
             <div class="nd-card-footer">
-              <button class="nd-btn-primary" onclick="NDesign.toast('Profile updated successfully', 'success')">Save Changes</button>
+              <button class="nd-btn-primary" data-nd-toast="Profile updated successfully" data-nd-toast-type="success">Save Changes</button>
               <button class="nd-btn-ghost">Cancel</button>
             </div>
           </div>
@@ -195,11 +195,11 @@
         <div class="nd-col-4">
           <div class="nd-card">
             <div class="nd-card-header">Profile Photo</div>
-            <div class="nd-card-body" style="text-align: center;">
-              <div class="nd-text-center nd-mb-md"><span class="avatar avatar-xl">WH</span></div>
-              <div style="display: flex; gap: 0.5rem; justify-content: center; align-items: center; flex-wrap: wrap;">
+            <div class="nd-card-body nd-text-center">
+              <div class="nd-mb-md"><span class="avatar avatar-xl">WH</span></div>
+              <div class="nd-flex nd-gap-sm nd-justify-center nd-align-center nd-flex-wrap">
                 <button class="nd-btn-secondary nd-btn-sm">Upload Photo</button>
-                <button class="nd-btn-ghost nd-btn-sm" style="color: var(--nd-danger);">Remove</button>
+                <button class="nd-btn-ghost nd-btn-sm nd-text-danger">Remove</button>
               </div>
               <p class="nd-text-small nd-text-muted nd-mt-md">Accepted formats: JPG, PNG, or GIF. Maximum file size: 2 MB. Square images work best.</p>
             </div>
@@ -263,7 +263,7 @@
           </div>
         </div>
         <div class="nd-card-footer">
-          <button class="nd-btn-primary" onclick="NDesign.toast('Notification preferences saved', 'success')">Save Preferences</button>
+          <button class="nd-btn-primary" data-nd-toast="Notification preferences saved" data-nd-toast-type="success">Save Preferences</button>
           <button class="nd-btn-ghost">Reset to Defaults</button>
         </div>
       </div>
@@ -274,7 +274,7 @@
       <div class="nd-card nd-card-danger nd-mb-lg">
         <div class="nd-card-header">Danger Zone</div>
         <div class="nd-card-body">
-          <h4 style="margin-top: 0;">Delete Account</h4>
+          <h4 class="nd-mt-0">Delete Account</h4>
           <p class="nd-text-secondary">Permanently delete your account and all associated data, including projects, API keys, and team memberships. This action is irreversible and cannot be undone.</p>
           <div class="nd-alert nd-alert-warning nd-mb-md">Once deleted, your username will be released and may be claimed by another user. Active subscriptions will be cancelled immediately with no refund.</div>
           <button class="nd-btn-danger" data-nd-modal="#modal-delete-account">Delete Account</button>
@@ -304,7 +304,7 @@
     </div>
     <footer>
       <button class="nd-btn-ghost" data-nd-dismiss>Cancel</button>
-      <button class="nd-btn-danger" data-nd-dismiss onclick="NDesign.toast('Account deletion requested', 'error')">Delete Account</button>
+      <button class="nd-btn-danger" data-nd-dismiss data-nd-toast="Account deletion requested" data-nd-toast-type="error">Delete Account</button>
     </footer>
   </dialog>
 

@@ -4,11 +4,42 @@
 @use 'tokens' as *;
 
 .nd-panel {
+  position: relative;
   padding: $nd-space-lg;
   background: var(--nd-bg-surface);
+  border: 1px solid var(--nd-glass-border, var(--nd-border));
   border-radius: var(--nd-radius-md);
-  box-shadow: var(--nd-shadow-xs);
+  // Liquid glass effect — matches cards
+  box-shadow:
+    var(--nd-glass-highlight, none),
+    var(--nd-glass-edge, none),
+    var(--nd-shadow-sm);
+  backdrop-filter: blur(var(--nd-glass-blur, 0)) saturate(var(--nd-glass-saturate, 100%));
+  -webkit-backdrop-filter: blur(var(--nd-glass-blur, 0)) saturate(var(--nd-glass-saturate, 100%));
   margin-bottom: $nd-space-md;
+
+  // Specular highlight — diagonal light streak catching the top-left corner
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60%;
+    border-radius: var(--nd-radius-md) var(--nd-radius-md) 0 0;
+    background: linear-gradient(
+      135deg,
+      var(--nd-glass-specular, transparent) 0%,
+      transparent 45%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
 
   @include nd-below(sm) {
     padding: $nd-space-md;

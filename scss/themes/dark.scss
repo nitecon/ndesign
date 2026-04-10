@@ -1,162 +1,194 @@
 // ==========================================================================
-// Dark Theme — Complete set of --nd-* custom properties
+// Dark Theme — "Slate Glass"
+// Deep slate with red accents, subtle gradients for depth.
 // ==========================================================================
 
 :root {
   // -----------------------------------------------------------------------
-  // Background
+  // Background — gradients with atmospheric glow
   // -----------------------------------------------------------------------
-  --nd-bg-body:             #0f1117;
-  --nd-bg-surface:          #1a1b26;
-  --nd-bg-surface-raised:   #21222e;
-  --nd-bg-surface-hover:    #292a38;
-  --nd-bg-surface-active:   #30313f;
-  --nd-bg-well:             #141520;
-  --nd-bg-code:             #1e1f2e;
-  --nd-bg-kbd:              #21222e;
+  // Body: clean slate at top (where content is busy), red glow rises from bottom
+  --nd-bg-body:
+    radial-gradient(ellipse 100% 50% at 50% 100%, rgba(220, 38, 38, 0.12), transparent 60%),
+    linear-gradient(180deg, #151b26 0%, #080b11 100%);
+
+  // Surface: semi-transparent slate gradient for liquid glass effect
+  --nd-bg-surface: linear-gradient(180deg, rgba(30, 38, 54, 0.85) 0%, rgba(18, 24, 36, 0.7) 100%);
+
+  // Glass effect properties — applied to cards, panels, wells for "liquid glass" feel
+  --nd-glass-blur:      14px;
+  --nd-glass-saturate:  160%;
+  --nd-glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  --nd-glass-edge:      inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  --nd-glass-border:    rgba(255, 255, 255, 0.08);
+  --nd-glass-specular:  rgba(255, 255, 255, 0.08);
+
+  // Raised surface (card headers, footers): lighter slate
+  --nd-bg-surface-raised: linear-gradient(180deg, #262f42 0%, #1a2130 100%);
+
+  --nd-bg-surface-hover:    #2a3344;
+  --nd-bg-surface-active:   #344058;
+
+  // Well: noticeably darker recessed gradient
+  --nd-bg-well: linear-gradient(180deg, #080b11 0%, #121824 100%);
+
+  // Inline solid backgrounds
+  --nd-bg-code:             #1a2130;
+  --nd-bg-kbd:              #212939;
   --nd-bg-mark:             #5c4813;
-  --nd-bg-table-stripe:     #1e1f2e;
-  --nd-bg-table-hover:      #252636;
-  --nd-bg-skeleton:         #21222e;
-  --nd-bg-skeleton-shimmer: #2a2b3a;
+  --nd-bg-table-stripe:     #181e2a;
+  --nd-bg-table-hover:      #222a3a;
+  --nd-bg-skeleton:         #212939;
+  --nd-bg-skeleton-shimmer: #2a3342;
 
   // -----------------------------------------------------------------------
-  // Text
+  // Text — light cool gray on slate
   // -----------------------------------------------------------------------
-  --nd-text-primary:   #e1e2e8;
-  --nd-text-secondary: #a9adb6;
-  --nd-text-muted:     #6c7086;
-  --nd-text-code:      #f78da7;
-  --nd-text-shadow:    0 1px 2px rgba(0, 0, 0, 0.5);
-  --nd-text-shadow-heading: 0 2px 4px rgba(0, 0, 0, 0.6);
+  --nd-text-primary:        #e6eaf2;
+  --nd-text-secondary:      #a0a9ba;
+  --nd-text-muted:          #6b7489;
+  --nd-text-code:           #f87171;
+  --nd-text-shadow:         0 1px 2px rgba(0, 0, 0, 0.6);
+  --nd-text-shadow-heading: 0 2px 4px rgba(0, 0, 0, 0.7);
 
   // -----------------------------------------------------------------------
-  // Border
+  // Border — subtle slate
   // -----------------------------------------------------------------------
-  --nd-border:       #2d2e3f;
-  --nd-border-hover: #40415a;
-  --nd-border-well:  #252636;
+  --nd-border:       #2a3342;
+  --nd-border-hover: #3e4a5f;
+  --nd-border-well:  #212939;
 
   // -----------------------------------------------------------------------
-  // Accent (Primary Action Color)
+  // Accent — vivid red (warning light aesthetic)
   // -----------------------------------------------------------------------
-  --nd-accent:        #4dabf7;
-  --nd-accent-hover:  #74c0fc;
-  --nd-accent-active: #339af0;
-  --nd-accent-text:   #0f1117;
+  --nd-accent:        #dc2626;
+  --nd-accent-hover:  #ef4444;
+  --nd-accent-active: #b91c1c;
+  --nd-accent-text:   #ffffff;
 
   // -----------------------------------------------------------------------
   // Focus Ring
   // -----------------------------------------------------------------------
-  --nd-focus-ring: rgba(77, 171, 247, 0.4);
+  --nd-focus-ring: rgba(220, 38, 38, 0.45);
 
   // -----------------------------------------------------------------------
   // Selection
   // -----------------------------------------------------------------------
-  --nd-selection-bg:   rgba(77, 171, 247, 0.3);
-  --nd-selection-text: #e1e2e8;
+  --nd-selection-bg:   rgba(220, 38, 38, 0.35);
+  --nd-selection-text: #e6eaf2;
 
   // -----------------------------------------------------------------------
-  // Danger
+  // Danger (matches accent in dark theme since red IS the accent)
   // -----------------------------------------------------------------------
-  --nd-danger:        #ff6b6b;
-  --nd-danger-hover:  #fa5252;
-  --nd-danger-active: #f03e3e;
-  --nd-danger-text:   #0f1117;
-  --nd-danger-ring:   rgba(255, 107, 107, 0.4);
+  --nd-danger:        #dc2626;
+  --nd-danger-hover:  #ef4444;
+  --nd-danger-active: #b91c1c;
+  --nd-danger-text:   #ffffff;
+  --nd-danger-ring:   rgba(220, 38, 38, 0.45);
 
   // -----------------------------------------------------------------------
   // Success
   // -----------------------------------------------------------------------
-  --nd-success:      #51cf66;
-  --nd-success-ring: rgba(81, 207, 102, 0.4);
+  --nd-success:      #10b981;
+  --nd-success-ring: rgba(16, 185, 129, 0.4);
 
   // -----------------------------------------------------------------------
   // Warning
   // -----------------------------------------------------------------------
-  --nd-warning: #fcc419;
+  --nd-warning: #f59e0b;
 
   // -----------------------------------------------------------------------
   // Info
   // -----------------------------------------------------------------------
-  --nd-info: #22b8cf;
+  --nd-info: #06b6d4;
 
   // -----------------------------------------------------------------------
-  // Shadows (darker/more opaque for dark backgrounds)
+  // Shadows — multi-layer for realistic physical depth in dark slate
   // -----------------------------------------------------------------------
-  --nd-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.03);
-  --nd-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --nd-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.35);
-  --nd-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.45);
+  --nd-shadow-xs:
+    0 1px 3px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
+  --nd-shadow-sm:
+    0 3px 10px rgba(0, 0, 0, 0.55),
+    0 2px 4px rgba(0, 0, 0, 0.4),
+    0 1px 2px rgba(0, 0, 0, 0.3);
+  --nd-shadow-md:
+    0 10px 28px rgba(0, 0, 0, 0.65),
+    0 5px 12px rgba(0, 0, 0, 0.5),
+    0 2px 4px rgba(0, 0, 0, 0.4);
+  --nd-shadow-lg:
+    0 24px 56px rgba(0, 0, 0, 0.75),
+    0 12px 24px rgba(0, 0, 0, 0.55),
+    0 4px 8px rgba(0, 0, 0, 0.4);
 
   // -----------------------------------------------------------------------
-  // Border Radius (theme-overridable)
+  // Border Radius
   // -----------------------------------------------------------------------
   --nd-radius-md: 0.5rem;
 
   // -----------------------------------------------------------------------
   // Form Inputs
   // -----------------------------------------------------------------------
-  --nd-input-bg:           #1a1b26;
-  --nd-input-border:       #2d2e3f;
-  --nd-input-border-hover: #40415a;
-  --nd-input-bg-disabled:  #141520;
-  --nd-label-bg:           #21222e;
-  --nd-label-bg-hover:     #292a38;
+  --nd-input-bg:           #141a24;
+  --nd-input-border:       #2a3342;
+  --nd-input-border-hover: #3e4a5f;
+  --nd-input-bg-disabled:  #0f141d;
+  --nd-label-bg:           linear-gradient(180deg, #212939 0%, #1a2130 100%);
+  --nd-label-bg-hover:     #242d3e;
 
   // -----------------------------------------------------------------------
   // Checkbox / Radio / Switch
   // -----------------------------------------------------------------------
-  --nd-check-border:       #40415a;
-  --nd-check-border-hover: #4dabf7;
-  --nd-switch-bg-off:      #40415a;
-  --nd-switch-bg-off-hover:#555672;
-  --nd-switch-bg-on:       #4dabf7;
-  --nd-switch-knob:        #ffffff;
+  --nd-check-border:       #3e4a5f;
+  --nd-check-border-hover: #dc2626;
+  --nd-switch-bg-off:      #2a3342;
+  --nd-switch-bg-off-hover:#3e4a5f;
+  --nd-switch-bg-on:       #dc2626;
+  --nd-switch-knob:        #e6eaf2;
 
   // -----------------------------------------------------------------------
   // Button Defaults (base .nd-btn without modifier)
   // -----------------------------------------------------------------------
-  --nd-btn-bg:           #21222e;
-  --nd-btn-bg-hover:     #292a38;
-  --nd-btn-bg-active:    #30313f;
-  --nd-btn-text:         #e1e2e8;
-  --nd-btn-text-hover:   #e1e2e8;
-  --nd-btn-border:       #2d2e3f;
-  --nd-btn-border-hover: #40415a;
+  --nd-btn-bg:           linear-gradient(180deg, #212939 0%, #1a2130 100%);
+  --nd-btn-bg-hover:     linear-gradient(180deg, #2a3342 0%, #212939 100%);
+  --nd-btn-bg-active:    #0f141d;
+  --nd-btn-text:         #e6eaf2;
+  --nd-btn-text-hover:   #ffffff;
+  --nd-btn-border:       #2a3342;
+  --nd-btn-border-hover: #3e4a5f;
 
   // -----------------------------------------------------------------------
-  // Alert Defaults (base .nd-alert without modifier)
+  // Alert Defaults
   // -----------------------------------------------------------------------
-  --nd-alert-bg:     #21222e;
-  --nd-alert-border: #2d2e3f;
-  --nd-alert-text:   #a9adb6;
+  --nd-alert-bg:     linear-gradient(180deg, #212939 0%, #1a2130 100%);
+  --nd-alert-border: #2a3342;
+  --nd-alert-text:   #a0a9ba;
 
   // -----------------------------------------------------------------------
   // Alert — Success
   // -----------------------------------------------------------------------
-  --nd-success-bg:     #1a3a2a;
-  --nd-success-border: #2d6a40;
-  --nd-success-text:   #69db7c;
+  --nd-success-bg:     linear-gradient(180deg, #064e3b 0%, #022c22 100%);
+  --nd-success-border: #059669;
+  --nd-success-text:   #6ee7b7;
 
   // -----------------------------------------------------------------------
   // Alert — Warning
   // -----------------------------------------------------------------------
-  --nd-warning-bg:     #3a3015;
-  --nd-warning-border: #6a5a20;
-  --nd-warning-text:   #ffd43b;
+  --nd-warning-bg:     linear-gradient(180deg, #451a03 0%, #2a0f01 100%);
+  --nd-warning-border: #b45309;
+  --nd-warning-text:   #fcd34d;
 
   // -----------------------------------------------------------------------
   // Alert — Error
   // -----------------------------------------------------------------------
-  --nd-error-bg:     #3a1a1a;
-  --nd-error-border: #6a2d2d;
-  --nd-error-text:   #ff8787;
+  --nd-error-bg:     linear-gradient(180deg, #450a0a 0%, #2a0606 100%);
+  --nd-error-border: #b91c1c;
+  --nd-error-text:   #fca5a5;
 
   // -----------------------------------------------------------------------
   // Alert — Info
   // -----------------------------------------------------------------------
-  --nd-info-bg:     #152e3a;
-  --nd-info-border: #20556a;
-  --nd-info-text:   #66d9ef;
+  --nd-info-bg:     linear-gradient(180deg, #0c4a6e 0%, #082f49 100%);
+  --nd-info-border: #0284c7;
+  --nd-info-text:   #7dd3fc;
 }

@@ -52,6 +52,16 @@ $nd-padding-dirs: (
   }
 }
 
+// Negative margin utilities (for pull-up overlap)
+@each $size, $value in $nd-spacers {
+  @if $value != 0 {
+    .nd-mt-n#{$size} { margin-top: -$value; }
+    .nd-mb-n#{$size} { margin-bottom: -$value; }
+    .nd-ml-n#{$size} { margin-left: -$value; }
+    .nd-mr-n#{$size} { margin-right: -$value; }
+  }
+}
+
 // Auto margins
 .nd-mx-auto {
   margin-left: auto;
@@ -174,6 +184,7 @@ $nd-padding-dirs: (
 // ---------------------------------------------------------------------------
 .nd-w-full  { width: 100%; }
 .nd-w-auto  { width: auto; }
+.nd-w-action { width: 5rem; } // fixed action column width (tables)
 .nd-h-full  { height: 100%; }
 .nd-h-auto  { height: auto; }
 .nd-h-screen { height: 100vh; }
@@ -196,6 +207,27 @@ $nd-padding-dirs: (
 .nd-border-b   { border-bottom: 1px solid var(--nd-border); }
 .nd-border-l   { border-left: 1px solid var(--nd-border); }
 .nd-border-0   { border: 0; }
+
+// Text color utilities
+.nd-text-accent  { color: var(--nd-accent); }
+.nd-text-success { color: var(--nd-success); }
+.nd-text-warning { color: var(--nd-warning); }
+.nd-text-danger  { color: var(--nd-danger); }
+.nd-text-info    { color: var(--nd-info); }
+
+// Background color utilities
+.nd-bg-accent  { background: var(--nd-accent); color: var(--nd-accent-text); }
+.nd-bg-success { background: var(--nd-success); color: #fff; }
+.nd-bg-warning { background: var(--nd-warning); color: #fff; }
+.nd-bg-danger  { background: var(--nd-danger); color: #fff; }
+.nd-bg-info    { background: var(--nd-info); color: #fff; }
+
+// Colored left border accents (for stat cards, alerts, etc.)
+.nd-border-l-accent    { border-left: 4px solid var(--nd-accent); }
+.nd-border-l-success   { border-left: 4px solid var(--nd-success); }
+.nd-border-l-warning   { border-left: 4px solid var(--nd-warning); }
+.nd-border-l-danger    { border-left: 4px solid var(--nd-danger); }
+.nd-border-l-info      { border-left: 4px solid var(--nd-info); }
 
 // Border radius
 .nd-rounded-sm { border-radius: $nd-radius-sm; }

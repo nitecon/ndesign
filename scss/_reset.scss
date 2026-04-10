@@ -36,7 +36,8 @@ body {
   font-size: $nd-font-base;
   line-height: $nd-line-height-normal;
   color: var(--nd-text-primary);
-  background-color: var(--nd-bg-body);
+  background: var(--nd-bg-body);
+  background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;

@@ -8,7 +8,12 @@
   background: var(--nd-bg-well);
   border: 1px solid var(--nd-border-well);
   border-radius: var(--nd-radius-md);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
+  // Inverse glass effect — recessed feel with inner shadows at top (simulates
+  // content sitting inside a carved-out area). No specular highlight (wells
+  // don't catch light, they absorb it).
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.08),
+    inset 0 1px 2px rgba(0, 0, 0, 0.06);
   color: var(--nd-text-primary);
   margin-bottom: $nd-space-md;
 

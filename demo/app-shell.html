@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ndesign — App Shell</title>
   <link rel="stylesheet" href="../dist/ndesign.css">
-  <link rel="stylesheet" href="../dist/themes/light.css" class="theme" title="light">
+  <link rel="stylesheet" href="../dist/themes/light.css" class="theme" data-theme="light">
   <meta name="nd-theme" content="light" data-href="../dist/themes/light.css">
   <meta name="nd-theme" content="dark" data-href="../dist/themes/dark.css">
   <style>/* You may not use custom styles under any circumstance on the demo pages */</style>
@@ -57,9 +57,9 @@
   <div class="app-main">
 
     <!-- Top bar -->
-    <nav style="position: relative; margin-bottom: 1.25rem;">
+    <nav class="nd-relative nd-mb-lg">
       <button class="nd-nav-toggle" aria-label="Toggle sidebar" data-nd-toggle="sidebar">&#9776;</button>
-      <span class="nd-nav-brand" style="font-size: 1.125rem;">Dashboard</span>
+      <span class="nd-nav-brand">Dashboard</span>
 
       <div class="nd-nav-end">
         <!-- Theme toggle dropdown -->
@@ -74,7 +74,7 @@
         <!-- User dropdown -->
         <div class="nd-dropdown nd-dropdown-right">
           <button class="nd-btn-ghost nd-btn-sm">
-            <span style="display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 50%; background: var(--nd-accent); color: var(--nd-accent-text); font-size: 0.75rem; font-weight: 600; margin-right: 0.25rem;">WH</span>
+            <span class="avatar avatar-sm nd-mr-xs">WH</span>
             Will &#9662;
           </button>
           <ul class="nd-dropdown-menu" role="menu">
@@ -94,8 +94,8 @@
       <div class="nd-col-4">
         <div class="nd-card">
           <div class="nd-card-body">
-            <p class="nd-text-secondary" style="margin-bottom: 0.25rem;">Total Users</p>
-            <h2 style="margin: 0;">12,847</h2>
+            <p class="nd-text-secondary nd-mb-xs">Total Users</p>
+            <h2 class="nd-mb-0">12,847</h2>
             <p class="nd-text-small nd-mt-xs"><span class="nd-badge nd-badge-success">+4.3%</span> from last month</p>
           </div>
         </div>
@@ -103,8 +103,8 @@
       <div class="nd-col-4">
         <div class="nd-card">
           <div class="nd-card-body">
-            <p class="nd-text-secondary" style="margin-bottom: 0.25rem;">Active Projects</p>
-            <h2 style="margin: 0;">342</h2>
+            <p class="nd-text-secondary nd-mb-xs">Active Projects</p>
+            <h2 class="nd-mb-0">342</h2>
             <p class="nd-text-small nd-mt-xs"><span class="nd-badge nd-badge-warning">-1.2%</span> from last month</p>
           </div>
         </div>
@@ -112,8 +112,8 @@
       <div class="nd-col-4">
         <div class="nd-card">
           <div class="nd-card-body">
-            <p class="nd-text-secondary" style="margin-bottom: 0.25rem;">API Requests (24h)</p>
-            <h2 style="margin: 0;">1.4M</h2>
+            <p class="nd-text-secondary nd-mb-xs">API Requests (24h)</p>
+            <h2 class="nd-mb-0">1.4M</h2>
             <p class="nd-text-small nd-mt-xs"><span class="nd-badge nd-badge-success">+12.7%</span> from yesterday</p>
           </div>
         </div>
@@ -125,9 +125,9 @@
     <!-- ================================================================== -->
     <div class="nd-card nd-mb-lg">
       <div class="nd-card-header">
-        <h3 style="margin: 0;">Recent Projects</h3>
+        <h3>Recent Projects</h3>
       </div>
-      <div class="nd-card-body" style="padding: 0;">
+      <div class="nd-card-body nd-p-0">
         <div class="nd-table-responsive">
           <table class="nd-table-striped nd-table-hover">
             <thead>
@@ -136,7 +136,7 @@
                 <th>Owner</th>
                 <th>Status</th>
                 <th>Last Updated</th>
-                <th style="width: 5rem;"></th>
+                <th class="nd-w-action"></th>
               </tr>
             </thead>
             <tbody>
@@ -152,7 +152,7 @@
                       <li><a href="#" role="menuitem">Edit</a></li>
                       <li><a href="#" role="menuitem">Duplicate</a></li>
                       <li class="nd-dropdown-divider"></li>
-                      <li><a href="#" role="menuitem" style="color: var(--nd-danger)">Delete</a></li>
+                      <li><a href="#" role="menuitem" class="nd-text-danger">Delete</a></li>
                     </ul>
                   </div>
                 </td>
@@ -169,7 +169,7 @@
                       <li><a href="#" role="menuitem">Edit</a></li>
                       <li><a href="#" role="menuitem">Duplicate</a></li>
                       <li class="nd-dropdown-divider"></li>
-                      <li><a href="#" role="menuitem" style="color: var(--nd-danger)">Delete</a></li>
+                      <li><a href="#" role="menuitem" class="nd-text-danger">Delete</a></li>
                     </ul>
                   </div>
                 </td>
@@ -186,7 +186,7 @@
                       <li><a href="#" role="menuitem">Edit</a></li>
                       <li><a href="#" role="menuitem">Duplicate</a></li>
                       <li class="nd-dropdown-divider"></li>
-                      <li><a href="#" role="menuitem" style="color: var(--nd-danger)">Delete</a></li>
+                      <li><a href="#" role="menuitem" class="nd-text-danger">Delete</a></li>
                     </ul>
                   </div>
                 </td>
@@ -203,7 +203,7 @@
                       <li><a href="#" role="menuitem">Edit</a></li>
                       <li><a href="#" role="menuitem">Duplicate</a></li>
                       <li class="nd-dropdown-divider"></li>
-                      <li><a href="#" role="menuitem" style="color: var(--nd-danger)">Delete</a></li>
+                      <li><a href="#" role="menuitem" class="nd-text-danger">Delete</a></li>
                     </ul>
                   </div>
                 </td>
@@ -220,7 +220,7 @@
                       <li><a href="#" role="menuitem">Edit</a></li>
                       <li><a href="#" role="menuitem">Duplicate</a></li>
                       <li class="nd-dropdown-divider"></li>
-                      <li><a href="#" role="menuitem" style="color: var(--nd-danger)">Delete</a></li>
+                      <li><a href="#" role="menuitem" class="nd-text-danger">Delete</a></li>
                     </ul>
                   </div>
                 </td>
@@ -236,7 +236,7 @@
     <!-- ================================================================== -->
     <div class="nd-card nd-mb-lg">
       <div class="nd-card-header">
-        <h3 style="margin: 0;">Add Project</h3>
+        <h3>Add Project</h3>
       </div>
       <div class="nd-card-body">
         <form>
@@ -274,10 +274,10 @@
     <div class="nd-row nd-mb-lg">
       <div class="nd-col-6">
         <div class="nd-card">
-          <div class="nd-card-header"><h3 style="margin: 0;">Modal Demos</h3></div>
+          <div class="nd-card-header"><h3>Modal Demos</h3></div>
           <div class="nd-card-body">
             <p class="nd-text-secondary nd-mb-md">Open native &lt;dialog&gt; modals for common actions.</p>
-            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <div class="nd-flex nd-gap-sm nd-flex-wrap">
               <button class="nd-btn-danger" data-nd-modal="#app-modal-delete">Confirm Delete</button>
               <button class="nd-btn-primary" data-nd-modal="#app-modal-user">Add New User</button>
             </div>
@@ -288,14 +288,14 @@
       <!-- Toast Trigger Buttons -->
       <div class="nd-col-6">
         <div class="nd-card">
-          <div class="nd-card-header"><h3 style="margin: 0;">Toast Demos</h3></div>
+          <div class="nd-card-header"><h3>Toast Demos</h3></div>
           <div class="nd-card-body">
             <p class="nd-text-secondary nd-mb-md">Trigger notification toasts via the JS API.</p>
-            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-              <button class="nd-btn-primary" onclick="NDesign.toast('Project created successfully', 'success')">Success</button>
-              <button class="nd-btn-danger" onclick="NDesign.toast('Failed to delete project', 'error')">Error</button>
-              <button class="nd-btn-secondary" onclick="NDesign.toast('Storage quota at 85%', 'warning')">Warning</button>
-              <button class="nd-btn-secondary" onclick="NDesign.toast('Deployment pipeline started', 'info')">Info</button>
+            <div class="nd-flex nd-gap-sm nd-flex-wrap">
+              <button class="nd-btn-primary" data-nd-toast="Project created successfully" data-nd-toast-type="success">Success</button>
+              <button class="nd-btn-danger" data-nd-toast="Failed to delete project" data-nd-toast-type="error">Error</button>
+              <button class="nd-btn-secondary" data-nd-toast="Storage quota at 85%" data-nd-toast-type="warning">Warning</button>
+              <button class="nd-btn-secondary" data-nd-toast="Deployment pipeline started" data-nd-toast-type="info">Info</button>
             </div>
           </div>
         </div>

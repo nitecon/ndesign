@@ -699,7 +699,7 @@ input[type='radio'],
   font-size: $nd-font-base;
   font-weight: $nd-font-weight-normal;
   color: var(--nd-text-secondary);
-  background-color: var(--nd-bg-well);
+  background: var(--nd-bg-well);
   border: 1px solid var(--nd-input-border);
   white-space: nowrap;
 

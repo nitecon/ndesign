@@ -9,10 +9,17 @@
 // Base dialog
 // ---------------------------------------------------------------------------
 dialog {
-  border: none;
+  position: relative;
+  border: 1px solid var(--nd-glass-border, var(--nd-border));
   border-radius: $nd-radius-lg;
   background: var(--nd-bg-surface);
-  box-shadow: var(--nd-shadow-lg);
+  // Liquid glass with dramatic lift — modals float over everything
+  box-shadow:
+    var(--nd-glass-highlight, none),
+    var(--nd-glass-edge, none),
+    var(--nd-shadow-lg);
+  backdrop-filter: blur(calc(var(--nd-glass-blur, 0) * 1.5)) saturate(var(--nd-glass-saturate, 100%));
+  -webkit-backdrop-filter: blur(calc(var(--nd-glass-blur, 0) * 1.5)) saturate(var(--nd-glass-saturate, 100%));
   color: var(--nd-text-primary);
   padding: 0;
   max-width: 36rem;
@@ -24,6 +31,29 @@ dialog {
   opacity: 0;
   transform: scale(0.95);
   transition: opacity $nd-transition-fast, transform $nd-transition-fast;
+
+  // Specular highlight — diagonal gleam on the top-left corner
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    border-radius: $nd-radius-lg $nd-radius-lg 0 0;
+    background: linear-gradient(
+      135deg,
+      var(--nd-glass-specular, transparent) 0%,
+      transparent 50%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
 }
 
 dialog[open] {

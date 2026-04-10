@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ndesign Component Showcase</title>
   <link rel="stylesheet" href="../dist/ndesign.css">
-  <link rel="stylesheet" href="../dist/themes/light.css" class="theme" title="light">
+  <link rel="stylesheet" href="../dist/themes/light.css" class="theme" data-theme="light">
   <meta name="nd-theme" content="light" data-href="../dist/themes/light.css">
   <meta name="nd-theme" content="dark" data-href="../dist/themes/dark.css">
   <style>/* You may not use custom styles under any circumstance on the demo pages */</style>
@@ -275,7 +275,7 @@
             <li><a href="#" role="menuitem">Rename</a></li>
             <li><a href="#" role="menuitem">Move to folder</a></li>
             <li class="nd-dropdown-divider"></li>
-            <li><a href="#" role="menuitem" style="color: var(--nd-danger)">Delete permanently</a></li>
+            <li><a href="#" role="menuitem" class="nd-text-danger">Delete permanently</a></li>
           </ul>
         </div>
 
@@ -402,11 +402,11 @@
       <p class="nd-text-secondary nd-mb-lg">Notification popups triggered via JavaScript API.</p>
 
       <div class="nd-flex nd-flex-wrap nd-align-center nd-gap-sm nd-mb-md">
-        <button class="nd-btn-primary" onclick="NDesign.toast('User created successfully', 'success')">Success</button>
-        <button class="nd-btn-danger" onclick="NDesign.toast('Failed to save changes', 'error')">Error</button>
-        <button class="nd-btn-secondary" onclick="NDesign.toast('API rate limit approaching', 'warning')">Warning</button>
-        <button class="nd-btn-secondary" onclick="NDesign.toast('New deployment started', 'info')">Info</button>
-        <button class="nd-btn-ghost" onclick="NDesign.toast('This stays until dismissed', 'info', 0)">Persistent</button>
+        <button class="nd-btn-primary" data-nd-toast="User created successfully" data-nd-toast-type="success">Success</button>
+        <button class="nd-btn-danger" data-nd-toast="Failed to save changes" data-nd-toast-type="error">Error</button>
+        <button class="nd-btn-secondary" data-nd-toast="API rate limit approaching" data-nd-toast-type="warning">Warning</button>
+        <button class="nd-btn-secondary" data-nd-toast="New deployment started" data-nd-toast-type="info">Info</button>
+        <button class="nd-btn-ghost" data-nd-toast="This stays until dismissed" data-nd-toast-type="info" data-nd-toast-duration="0">Persistent</button>
       </div>
 
       <div class="nd-well nd-mt-md">
@@ -759,7 +759,7 @@
           </aside>
           <aside class="fold fold-left">
             <div class="fold-title">Quick Links</div>
-            <ul class="nd-text-small" style="padding-left: 1.25rem;">
+            <ul class="nd-text-small nd-pl-md">
               <li><a href="#" class="nd-link">Grafana Dashboard</a></li>
               <li><a href="#" class="nd-link">Incident Runbook</a></li>
               <li><a href="#" class="nd-link">On-call Schedule</a></li>
@@ -935,7 +935,7 @@
                   <label for="att-username">Username</label>
                   <input type="text" id="att-username" name="username" value="jd">
                 </div>
-                <span class="nd-form-error" style="margin-top: -0.75rem; display: block; margin-bottom: 1rem;">Username must be at least 3 characters.</span>
+                <span class="nd-form-error nd-block nd-mt-nsm nd-mb-md">Username must be at least 3 characters.</span>
 
                 <div class="nd-form-group nd-form-group-attached">
                   <label for="att-role">Role</label>
@@ -1220,16 +1220,16 @@
       <h3>Spacing</h3>
       <p class="nd-mb-sm"><code class="nd-text-xs nd-text-muted">Margin &amp; padding helpers: .nd-m-{size}, .nd-p-{size}, .nd-mt-{size}, etc.</code></p>
       <div class="nd-well nd-well-sm">
-        <div style="background: var(--nd-accent); color: #fff; padding: 0.5rem; border-radius: 4px;" class="nd-mb-sm">
+        <div class="nd-bg-accent nd-p-sm nd-rounded-sm nd-mb-sm">
           .nd-mb-sm (margin-bottom: 8px)
         </div>
-        <div style="background: var(--nd-accent); color: #fff; padding: 0.5rem; border-radius: 4px;" class="nd-mb-md">
+        <div class="nd-bg-accent nd-p-sm nd-rounded-sm nd-mb-md">
           .nd-mb-md (margin-bottom: 16px)
         </div>
-        <div style="background: var(--nd-accent); color: #fff; padding: 0.5rem; border-radius: 4px;" class="nd-mb-lg">
+        <div class="nd-bg-accent nd-p-sm nd-rounded-sm nd-mb-lg">
           .nd-mb-lg (margin-bottom: 24px)
         </div>
-        <div style="background: var(--nd-accent); color: #fff; padding: 0.5rem; border-radius: 4px;">
+        <div class="nd-bg-accent nd-p-sm nd-rounded-sm">
           Last item (no margin)
         </div>
       </div>
