@@ -9,7 +9,7 @@
 // Base dialog
 // ---------------------------------------------------------------------------
 dialog {
-  position: relative;
+  position: fixed;
   border: 1px solid var(--nd-glass-border, var(--nd-border));
   border-radius: $nd-radius-lg;
   background: var(--nd-bg-surface);

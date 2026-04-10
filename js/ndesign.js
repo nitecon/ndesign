@@ -146,6 +146,7 @@ export function init() {
     // Sidebar toggle — data-nd-toggle="sidebar"
     const sidebarToggle = e.target.closest('[data-nd-toggle="sidebar"]');
     if (sidebarToggle) {
+      e.preventDefault();
       const sidebar = document.querySelector('.sidebar');
       const overlay = document.querySelector('.overlay, .nd-nav-overlay');
       if (sidebar) sidebar.classList.toggle('nd-nav-open');

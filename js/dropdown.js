@@ -38,7 +38,7 @@ function closeAll() {
  * @returns {HTMLAnchorElement[]}
  */
 function getItems(wrapper) {
-  return Array.from(wrapper.querySelectorAll('li a[role="menuitem"]'));
+  return Array.from(wrapper.querySelectorAll('li [role="menuitem"]'));
 }
 
 /**
@@ -93,7 +93,7 @@ function applyAria(wrapper) {
     menu.setAttribute('role', 'menu');
   }
 
-  const items = wrapper.querySelectorAll('li a');
+  const items = wrapper.querySelectorAll('li a, li button');
   for (const item of items) {
     item.setAttribute('role', 'menuitem');
   }
