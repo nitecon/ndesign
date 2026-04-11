@@ -26,6 +26,7 @@
 
 import { toast } from './toast.js';
 import { buildHeaders } from './utils.js';
+import { resolveVars } from './store.js';
 
 /** @type {Array<{container: HTMLElement, handlers: Object, observer: MutationObserver|null}>} */
 let instances = [];
@@ -142,11 +143,12 @@ function restoreOrder(container, snapshot) {
 async function submitReorder(container, action, order, snapshot, item) {
   const parts = action.trim().split(/\s+/);
   let method = 'POST';
-  let url = parts[0];
+  let rawUrl = parts[0];
   if (parts.length >= 2) {
     method = parts[0].toUpperCase();
-    url = parts[1];
+    rawUrl = parts[1];
   }
+  const url = resolveVars(rawUrl);
   try {
     const response = await fetch(url, {
       method,

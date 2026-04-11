@@ -82,3 +82,26 @@ export function buildHeaders(configHeaders = {}) {
   }
   return headers;
 }
+
+/**
+ * Fetch a URL with an AbortController-based timeout.
+ * On timeout the controller aborts and fetch rejects with an AbortError.
+ * Callers identify timeout vs. network failure by checking
+ * `err.name === 'AbortError'` (timeout) vs. `err instanceof TypeError`
+ * (network / CORS / DNS).
+ *
+ * @param {string} url                 — request URL
+ * @param {RequestInit} [options={}]   — fetch init (method, headers, body…)
+ * @param {number} [timeoutMs=15000]   — ms before the request is aborted
+ * @returns {Promise<Response>}        — the fetch Response
+ * @throws {DOMException} AbortError when the timeout fires before a response
+ */
+export async function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(new Error('timeout')), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}

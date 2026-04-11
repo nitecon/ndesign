@@ -7,6 +7,7 @@
 
 import { getByPath } from './utils.js';
 import { render } from './template.js';
+import { resolveVars } from './store.js';
 
 /**
  * @typedef {Object} SSEConnection
@@ -91,7 +92,7 @@ function dispatchToElements(conn, eventType, event, config) {
 /**
  * Get the last observed SSE event id for a given URL.
  * Useful for debugging or manual resume scenarios.
- * @param {string} url — the full SSE URL (including baseURL if applicable)
+ * @param {string} url — the SSE URL (from data-nd-sse attribute)
  * @returns {string|null} the last event id, or null if not tracked
  */
 export function getLastEventId(url) {
@@ -113,28 +114,28 @@ export function initSSE(config) {
   const grouped = new Map();
 
   for (const el of elements) {
-    const url = el.getAttribute('data-nd-sse');
-    if (!url) continue;
+    const rawUrl = el.getAttribute('data-nd-sse');
+    if (!rawUrl) continue;
+    const url = resolveVars(rawUrl);
 
-    const fullURL = (config.baseURL || '') + url;
-    if (!grouped.has(fullURL)) {
-      grouped.set(fullURL, new Set());
+    if (!grouped.has(url)) {
+      grouped.set(url, new Set());
     }
-    grouped.get(fullURL).add(el);
+    grouped.get(url).add(el);
   }
 
   // Create one EventSource per unique URL
-  for (const [fullURL, elSet] of grouped) {
-    if (connections.has(fullURL)) {
+  for (const [url, elSet] of grouped) {
+    if (connections.has(url)) {
       // Connection already exists — merge elements
-      const conn = connections.get(fullURL);
+      const conn = connections.get(url);
       for (const el of elSet) {
         conn.elements.add(el);
       }
       continue;
     }
 
-    const source = new EventSource(fullURL);
+    const source = new EventSource(url);
     const conn = { source, elements: elSet, lastEventId: null };
 
     // Collect all distinct event types needed by bound elements
@@ -165,13 +166,13 @@ export function initSSE(config) {
     }
 
     source.addEventListener('error', (err) => {
-      console.error(`[ndesign] SSE error for ${fullURL}:`, err);
+      console.error(`[ndesign] SSE error for ${url}:`, err);
       if (typeof config.onError === 'function') {
-        config.onError(fullURL, err);
+        config.onError(url, err);
       }
     });
 
-    connections.set(fullURL, conn);
+    connections.set(url, conn);
   }
 }
 

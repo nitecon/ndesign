@@ -898,7 +898,6 @@ Call `NDesign.configure()` before the script initializes (or at any time to upda
 <script src="/static/ndesign.min.js"></script>
 <script>
 NDesign.configure({
-    baseURL: '/api',
     headers: {
         'X-API-Key': 'abc123',
         'Authorization': 'Bearer eyJ...',
@@ -922,9 +921,17 @@ NDesign.configure({
 </script>
 ```
 
+> **URLs live on the element.** Every `data-nd-bind`, `data-nd-action`,
+> `data-nd-sse`, `data-nd-ws`, and `data-nd-upload` attribute carries its
+> own URL — there is no `baseURL` config. If the API is same-origin, use
+> a relative path (`/api/stats`) and the browser resolves it against the
+> current page. If the API is on a different origin, put the full URL in
+> the attribute (`https://api.example.com/api/stats`). This keeps the
+> bundle CDN-friendly: the same `ndesign.min.js` serves every consumer
+> without per-site configuration.
+
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `baseURL` | `string` | `""` | Prefix for all relative URLs in `data-nd-bind`, `data-nd-sse`, and `data-nd-action` |
 | `headers` | `object` | `{'X-Requested-With': 'NDesign'}` | Extra headers sent with every `fetch` request (merged, not replaced) |
 | `onRequest` | `function` | `null` | Called before every fetch with `(url, fetchOptions)` |
 | `onResponse` | `function` | `null` | Called after every fetch with `(url, response)` |
@@ -934,6 +941,320 @@ NDesign.configure({
 | `wsTokenProvider` | `function` | `null` | Called on every WebSocket connect; its return value is appended as `?token=<value>`. Use when load balancers strip sub-protocols. |
 
 CSRF tokens are handled automatically. If your page includes `<meta name="csrf-token" content="...">`, ndesign adds an `X-CSRF-Token` header to every request.
+
+---
+
+## State & Interpolation
+
+### Philosophy
+
+URLs live on the element — ndesign has no global `baseURL`. But writing `https://api.example.com` in twelve `data-nd-*` attributes violates DRY. The solution is `<meta>` tags as the server-authoritative source of truth, combined with a tiny client-side store and `${var}` interpolation.
+
+Key principles:
+
+- The **server** renders `<meta>` tags on each page load. The browser is just a renderer.
+- **No reactivity.** Setting a var does NOT auto-update bound elements. Reads are lazy — resolved at the moment of fetch or submit.
+- The store is minimum viable: a `Map` of top-level vars and a `Map` of URL bases. No signals, no proxies, no re-render triggers.
+- If you need a bound element to reflect a store change, dispatch `nd:refresh` on it explicitly (or use `data-nd-success="refresh:#selector"` after an action).
+
+### Declaring URL bases with `<meta name="endpoint:NAME">`
+
+Put URL base fragments in `<head>` as `endpoint:` prefixed meta tags. ndesign reads them on `DOMContentLoaded` before any binding resolves.
+
+```html
+<meta name="endpoint:api" content="https://api.example.com">
+<meta name="endpoint:cdn" content="https://cdn.example.com">
+```
+
+Then use `${api}` in any `data-nd-*` URL attribute:
+
+```html
+<div data-nd-bind="${api}/api/users" data-nd-template="user-row"></div>
+<form data-nd-action="POST ${api}/api/users" ...></form>
+<div data-nd-sse="${api}/events/stream" ...></div>
+```
+
+### Declaring initial var values with `<meta name="var:NAME">`
+
+Initial values for any var (string, number, counter, user info, etc.) are declared via `var:` prefixed meta tags. All values start as strings — numeric coercion happens at consumption time inside arithmetic expressions or `type="number"` inputs.
+
+```html
+<meta name="var:order_count" content="10">
+<meta name="var:current_user_id" content="42">
+```
+
+### `${var}` interpolation
+
+The braced `${...}` form is the only supported syntax. Lookup order: vars first, then endpoints. An unknown token produces an empty string and a `console.warn`.
+
+**Allowed in:**
+- All `data-nd-*` URL attributes (`data-nd-bind`, `data-nd-action`, `data-nd-sse`, `data-nd-ws`, `data-nd-upload`, `data-nd-sortable`)
+- `data-nd-body` (JSON body template for button actions)
+- The RHS of `data-nd-set` expressions
+
+**Token grammar:** `${[a-zA-Z_][\w.-]*}` — name starts with a letter or underscore; subsequent characters can be letters, digits, `_`, `.`, or `-`.
+
+```html
+<!-- URL base from meta tag -->
+<div data-nd-bind="${api}/api/users/2" data-nd-template="user-card-tmpl"></div>
+
+<!-- Nested dot path — resolves user.name from the vars Map -->
+<span data-nd-bind="${api}/api/users/${current_user_id}"></span>
+```
+
+### `NDesign.store` — the public API
+
+The store object exposes the vars Map at runtime:
+
+```js
+NDesign.store.get('user')          // read top-level var
+NDesign.store.set('count', 5)      // write top-level var
+NDesign.store.delete('token')      // remove
+NDesign.store.has('user')          // boolean test
+NDesign.store.clear()              // wipe all vars (not endpoints)
+
+NDesign.endpoint('api')            // read a URL base
+NDesign.resolveVars('${api}/path') // interpolate a template string
+```
+
+> **No reactivity.** `NDesign.store.set(...)` does not trigger re-renders. To update a bound element after a store write, dispatch `nd:refresh` on it:
+>
+> ```js
+> NDesign.store.set('user', null);
+> document.getElementById('user-nav').dispatchEvent(new CustomEvent('nd:refresh'));
+> ```
+
+---
+
+### `data-nd-set` — writing to the store
+
+`data-nd-set` can appear on any element. It writes one or more values to the store. Two forms:
+
+#### Response form (bind elements)
+
+On a `data-nd-bind` element, a bare name without `=` writes the full fetch response to that var:
+
+```html
+<div data-nd-bind="${api}/api/me"
+     data-nd-set="user"
+     data-nd-template="user-card-tmpl">
+  ...
+</div>
+```
+
+After the fetch resolves, `NDesign.store.get('user')` returns the full parsed JSON object.
+
+#### Explicit form
+
+Any element can have `data-nd-set` with an `=` to write an explicit value:
+
+```html
+<!-- Write null -->
+<button data-nd-set="user=null">Sign out</button>
+
+<!-- Write a string literal -->
+<button data-nd-set="status='active'">Activate</button>
+
+<!-- Arithmetic on existing var -->
+<button data-nd-set="order_count=${order_count}+1">+</button>
+<button data-nd-set="order_count=${order_count}-1">−</button>
+
+<!-- Write var from another var -->
+<button data-nd-set="draft=${current_doc}">Copy to draft</button>
+
+<!-- Multiple writes — comma-separated (commas inside strings are safe) -->
+<button data-nd-set="msg='hi, there', count=5">Set both</button>
+```
+
+**Explicit form RHS grammar:**
+
+| Form | Example | Description |
+|------|---------|-------------|
+| `null` / `true` / `false` | `user=null` | Boolean / null literal |
+| number | `count=42`, `ratio=-1.5` | Integer or float |
+| `'string'` | `status='active'` | Single-quoted string; `\'` and `\\` escapes |
+| `${ref}` | `draft=${current_doc}` | Read another var |
+| `${ref}+N` | `count=${count}+1` | Arithmetic (`+`, `-`, `*`, `/`) |
+| `$response` | `last_save=$response` | Substitute the server response (on action/bind success) |
+
+**LHS dot-notation:** you can write nested paths:
+
+```html
+<button data-nd-set="user.display_name='Will'">Set display name</button>
+```
+
+#### Standalone set triggers
+
+`data-nd-set` elements that are **not** also `data-nd-bind`, `data-nd-action`, `data-nd-upload`, or `data-nd-sortable` become click triggers that fire the set and dispatch an `nd:set` event (bubbles, observable, not listened to internally by ndesign).
+
+#### data-nd-set with actions (response chaining)
+
+On `data-nd-action` forms and buttons, `data-nd-set` runs **after** `handleSuccess`. The `$response` sentinel substitutes the server response body:
+
+```html
+<form data-nd-action="POST ${api}/api/login"
+      data-nd-set="session=$response"
+      data-nd-success="redirect:/dashboard">
+  ...
+</form>
+```
+
+---
+
+### `data-nd-model` — two-way input binding
+
+Sync a form input with the store. On init, the input's value is set from the store (if the var exists). On `input` or `change` events the store is updated.
+
+```html
+<meta name="var:qty" content="1">
+
+<input type="number" data-nd-model="qty" min="1">
+```
+
+Coercions:
+- `type="number"` or `type="range"` → `Number` (empty string → `null`)
+- `type="checkbox"` → `boolean` (from `el.checked`)
+- `<select multiple>` → `Array` of selected values
+- All others → `string`
+
+`nd:model` events are dispatched on each write (bubbles, detail: `{name, value}`).
+
+---
+
+### `data-nd-body` — JSON body for button actions
+
+For button actions that need a request body, provide a JSON template. After `${var}` interpolation the string is `JSON.parse`'d and submitted as `application/json`.
+
+```html
+<button data-nd-action="POST ${api}/api/push"
+        data-nd-body='{"channel":"orders","symbol":"AAPL","qty":${order_count}}'
+        data-nd-feedback="order-feedback">
+  Market buy AAPL
+</button>
+```
+
+If the interpolated string is not valid JSON, ndesign surfaces a unified error envelope (`data-nd-body: invalid JSON after interpolation`) in the feedback element without throwing.
+
+---
+
+### `data-nd-defer` — skip initial fetch
+
+By default every `data-nd-bind` element fetches immediately on init. Adding `data-nd-defer` skips that — the element only loads when it receives an `nd:refresh` event:
+
+```html
+<div id="heavy-report"
+     data-nd-bind="${api}/api/report/annual"
+     data-nd-defer
+     data-nd-template="report-tmpl">
+  <template data-nd-empty>(click Load to fetch)</template>
+</div>
+
+<button onclick="document.getElementById('heavy-report').dispatchEvent(new CustomEvent('nd:refresh'))">
+  Load report
+</button>
+```
+
+---
+
+### No reactivity — by design
+
+Setting a store var does NOT automatically re-render any bound element. This is intentional — it keeps the library small and the data flow visible.
+
+> **Callout: No magic re-rendering.** Writing `NDesign.store.set('user', data)` has no side effects on the DOM. To see the new value in a bound element, fire `nd:refresh` on it explicitly. This makes every update traceable without a reactive runtime.
+
+The `nd:set` and `nd:model` events are fired for **observability only**. ndesign itself does not listen to them.
+
+Recommended patterns:
+
+```html
+<!-- After a form action succeeds, refresh the user nav and reset the form -->
+<form data-nd-action="POST ${api}/api/login"
+      data-nd-set="user=$response"
+      data-nd-success="refresh:#user-nav,reset">
+  ...
+</form>
+```
+
+```js
+// In application code — explicit refresh after a store write
+NDesign.store.set('user', null);
+document.getElementById('user-nav').dispatchEvent(new CustomEvent('nd:refresh'));
+```
+
+---
+
+### Canonical example: order-entry workflow
+
+**Meta tags in `<head>`:**
+
+```html
+<meta name="endpoint:api" content="https://api.example.com">
+<meta name="var:order_count" content="1">
+```
+
+**HTML:**
+
+```html
+<div class="nd-input-group">
+  <button data-nd-set="order_count=${order_count}-1">−</button>
+  <input type="number" min="1" data-nd-model="order_count">
+  <button data-nd-set="order_count=${order_count}+1">+</button>
+</div>
+
+<button data-nd-action="POST ${api}/api/orders"
+        data-nd-body='{"symbol":"AAPL","side":"buy","qty":${order_count}}'
+        data-nd-feedback="order-feedback">
+  Market buy AAPL
+</button>
+<div id="order-feedback" class="nd-alert" style="display:none"></div>
+```
+
+**What happens:**
+
+1. On page load, `order_count` is seeded to `"1"` from the meta tag. The input syncs its value to `1` via `data-nd-model`.
+2. Clicking `+` fires `applySetDirective` which evaluates `${order_count}+1` (coercing the string to Number, adding 1, writing back). The input syncs on the next interaction.
+3. Clicking "Market buy AAPL" interpolates `${api}` and `${order_count}` in both the URL and the body template, then POSTs `{"symbol":"AAPL","side":"buy","qty":N}`.
+4. The server returns `{message:"Order placed"}` — shown in `#order-feedback`.
+
+> **Note on the `data-nd-model` ↔ `data-nd-set` interaction:** `data-nd-model` wires the input's `input` event to update the store. `data-nd-set` on the +/− buttons updates the store directly. Neither automatically updates the input. To see the new count in the input after a button click, initialize the store value first via meta tag (so `data-nd-model` syncs on page load) and rely on the user editing the number field directly for keyboard input. For a fully synced counter, dispatch `nd:model` or re-query the input to set `el.value` from the store after each button click — or use a server round-trip (the POST confirms the actual qty).
+
+---
+
+### Real-world login/logout pattern
+
+The demo uses `/api/users/2` as a proxy for `/api/me` because the public test server has no session-aware `/api/me` endpoint. In production:
+
+```html
+<!-- Login: POST /api/login → set $user from response, redirect -->
+<form data-nd-action="POST /api/login"
+      data-nd-set="user=$response"
+      data-nd-success="redirect:/dashboard"
+      data-nd-feedback="login-feedback">
+  <input name="username" type="text">
+  <input name="password" type="password">
+  <button type="submit">Sign in</button>
+  <div id="login-feedback"></div>
+</form>
+
+<!-- User nav: fetch on load, populate $user, re-fetch on refresh -->
+<div id="user-nav"
+     data-nd-bind="/api/me"
+     data-nd-set="user"
+     data-nd-template="user-card-tmpl">
+  <template id="user-card-tmpl">
+    <span>{{name}}</span>
+  </template>
+  <template data-nd-empty>
+    <a href="/login">Sign in</a>
+  </template>
+</div>
+
+<!-- Sign out: POST /api/logout → clear $user client-side, reload page -->
+<form data-nd-action="POST /api/logout"
+      data-nd-success="reload">
+  <button type="submit">Sign out</button>
+</form>
+```
 
 ---
 

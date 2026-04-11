@@ -5,9 +5,8 @@
   "description": "Lightweight, framework-free frontend design system and binding runtime",
   "type": "module",
   "scripts": {
-    "test": "npm run test:js && npm run test:go && npm run test:browser",
+    "test": "npm run test:js && npm run test:browser",
     "test:js": "node --test js/*.test.js",
-    "test:go": "cd testserver && go test ./...",
     "test:browser": "bash scripts/integration-test.sh",
     "build:js": "esbuild js/ndesign.js --bundle --minify --outfile=dist/ndesign.min.js --format=iife --global-name=NDesign",
     "build:js:dev": "esbuild js/ndesign.js --bundle --outfile=dist/ndesign.js --format=iife --global-name=NDesign --sourcemap",

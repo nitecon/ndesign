@@ -8,6 +8,7 @@
 
 import { handleSuccess, clearFormErrors, displayErrors } from './action.js';
 import { getCSRFToken } from './utils.js';
+import { resolveVars } from './store.js';
 
 /** @type {Map<HTMLFormElement, {handler: (e: SubmitEvent) => void, xhr: XMLHttpRequest|null, hideTimer: number|null}>} */
 const uploadHandlers = new Map();
@@ -52,7 +53,9 @@ function submitUpload(form) {
   const uploadStr = form.getAttribute('data-nd-upload');
   if (!uploadStr) return;
 
-  const { method, url } = parseUpload(uploadStr);
+  const parsed = parseUpload(uploadStr);
+  const method = parsed.method;
+  const url = resolveVars(parsed.url);
   const feedbackId = form.getAttribute('data-nd-feedback') || null;
 
   const confirmMsg = form.getAttribute('data-nd-confirm');

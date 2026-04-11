@@ -103,6 +103,69 @@ export function initModals() {
 }
 
 /**
+ * Open a <dialog> as a confirm prompt and return a Promise<boolean>.
+ *
+ * Resolution rules:
+ *   - Click on [data-nd-confirm-accept] inside the dialog → true, closed.
+ *   - Click on [data-nd-dismiss], .nd-modal-close, or backdrop → false.
+ *   - Native <dialog> close event (Escape, programmatic) → false.
+ *
+ * Dispatches `nd:modal:confirm` on accept and `nd:modal:cancel` on dismiss
+ * for observability. Uses a local AbortController scoped to the single
+ * confirm session — listeners are removed automatically on resolution.
+ *
+ * @param {string} selector — CSS selector for the <dialog>
+ * @returns {Promise<boolean>} true if confirmed, false if cancelled
+ */
+export function confirmDialog(selector) {
+  return new Promise((resolve) => {
+    const dialog = document.querySelector(selector);
+    if (!dialog || typeof dialog.showModal !== 'function') {
+      console.warn(`[ndesign] confirmDialog: no <dialog> found for "${selector}"`);
+      resolve(false);
+      return;
+    }
+
+    const ac = new AbortController();
+    const { signal } = ac;
+
+    const cleanup = () => {
+      ac.abort();
+      if (dialog.open) dialog.close();
+    };
+    const accept = () => {
+      dialog.dispatchEvent(new CustomEvent('nd:modal:confirm', { bubbles: true }));
+      cleanup();
+      resolve(true);
+    };
+    const cancel = () => {
+      dialog.dispatchEvent(new CustomEvent('nd:modal:cancel', { bubbles: true }));
+      cleanup();
+      resolve(false);
+    };
+
+    for (const btn of dialog.querySelectorAll('[data-nd-confirm-accept]')) {
+      btn.addEventListener('click', accept, { signal });
+    }
+    for (const btn of dialog.querySelectorAll('[data-nd-dismiss], .nd-modal-close')) {
+      btn.addEventListener('click', cancel, { signal });
+    }
+    dialog.addEventListener('click', (e) => {
+      if (e.target !== dialog) return;
+      const rect = dialog.getBoundingClientRect();
+      const outside =
+        e.clientX < rect.left || e.clientX > rect.right ||
+        e.clientY < rect.top || e.clientY > rect.bottom;
+      if (outside) cancel();
+    }, { signal });
+    dialog.addEventListener('close', cancel, { signal, once: true });
+
+    dialog.showModal();
+    dialog.dispatchEvent(new CustomEvent('nd:modal:open', { bubbles: true }));
+  });
+}
+
+/**
  * Tear down all modal event listeners set up by initModals().
  */
 export function destroyModals() {

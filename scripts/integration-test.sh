@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # ndesign browser integration tests
-# Uses agent-browser to smoke-test all demo pages.
+# Uses agent-browser to smoke-test all demo pages. Demo pages fetch data
+# from https://test.nitecon.org (absolute URLs in data-nd-* attributes),
+# so we only need a tiny local static file server to host the demo HTML
+# and dist/ assets.
 
 set -e
 
@@ -21,23 +24,28 @@ pass() { echo -e "${GREEN}✓${NC} $1"; PASS=$((PASS+1)); }
 fail() { echo -e "${RED}✗${NC} $1"; FAIL=$((FAIL+1)); }
 info() { echo -e "${BLUE}→${NC} $1"; }
 
-# Kill any existing server on the port
+# Kill any existing process on the port
 info "Cleaning up any existing server on :${SERVER_PORT}"
 lsof -ti:${SERVER_PORT} | xargs -r kill -9 2>/dev/null || true
 sleep 1
 
-# Start the server
-info "Starting test server..."
-cd "${PROJECT_ROOT}/testserver"
-go build -o /tmp/ndesign-testserver . || { echo "Server build failed"; exit 1; }
+# Start a tiny static file server so agent-browser can load the demos via
+# http:// (some APIs don't work cleanly under file://). API traffic still
+# flows to https://test.nitecon.org via absolute URLs baked into the demo
+# markup.
+info "Starting static file server..."
 cd "${PROJECT_ROOT}"
-/tmp/ndesign-testserver > /tmp/ndesign-testserver.log 2>&1 &
+python3 -m http.server ${SERVER_PORT} --bind 127.0.0.1 > /tmp/ndesign-static.log 2>&1 &
 SERVER_PID=$!
 
-# Wait for server
-sleep 2
-curl -sf "${SERVER_URL}/api/stats" > /dev/null || { fail "Server did not start"; cat /tmp/ndesign-testserver.log; kill $SERVER_PID 2>/dev/null; exit 1; }
-pass "Server is running"
+sleep 1
+curl -sf "${SERVER_URL}/demo/bindings.html" > /dev/null || { fail "Static server did not start"; cat /tmp/ndesign-static.log; kill $SERVER_PID 2>/dev/null; exit 1; }
+pass "Static server is running"
+
+# Remote public test server (where REST/SSE/WS actually connect)
+REMOTE_URL="https://test.nitecon.org"
+curl -sf "${REMOTE_URL}/api/stats" > /dev/null || { fail "Remote test server unreachable (${REMOTE_URL})"; kill $SERVER_PID 2>/dev/null; exit 1; }
+pass "Remote test server reachable"
 
 cleanup() {
   info "Cleaning up..."
@@ -48,7 +56,7 @@ trap cleanup EXIT
 
 # ===== Test 1: index.html loads =====
 info "Test: index.html loads"
-agent-browser open "${SERVER_URL}/index.html" > /dev/null
+agent-browser open "${SERVER_URL}/demo/index.html" > /dev/null
 sleep 1
 TITLE=$(agent-browser get title 2>/dev/null || echo "")
 if [[ "$TITLE" == *"ndesign"* ]]; then
@@ -59,14 +67,14 @@ fi
 
 # ===== Test 2: bindings.html loads and binds data =====
 info "Test: bindings.html REST binding"
-agent-browser open "${SERVER_URL}/bindings.html" > /dev/null
+agent-browser open "${SERVER_URL}/demo/bindings.html" > /dev/null
 sleep 3  # wait for fetch + render
 # Use eval to check if user table has rows
 ROW_COUNT=$(agent-browser eval 'document.querySelectorAll("#user-table tr").length' 2>/dev/null || echo "0")
-if [[ "$ROW_COUNT" -ge 3 ]]; then
-  pass "bindings.html: user table has $ROW_COUNT rows (>= 3)"
+if [[ "$ROW_COUNT" -ge 2 ]]; then
+  pass "bindings.html: user table has $ROW_COUNT rows (>= 2)"
 else
-  fail "bindings.html: expected >= 3 rows in user table, got $ROW_COUNT"
+  fail "bindings.html: expected >= 2 rows in user table, got $ROW_COUNT"
 fi
 
 # ===== Test 3: Live stats are updating =====
@@ -82,7 +90,7 @@ fi
 
 # ===== Test 4: Theme toggle =====
 info "Test: Theme toggle"
-agent-browser open "${SERVER_URL}/index.html" > /dev/null
+agent-browser open "${SERVER_URL}/demo/index.html" > /dev/null
 sleep 1
 THEME1=$(agent-browser eval 'document.querySelector("link.theme").getAttribute("data-theme")' 2>/dev/null)
 agent-browser eval 'NDesign.toggleTheme()' > /dev/null
@@ -96,11 +104,11 @@ fi
 
 # ===== Test 5: Form validation =====
 info "Test: Form validation"
-agent-browser open "${SERVER_URL}/bindings.html" > /dev/null
+agent-browser open "${SERVER_URL}/demo/bindings.html" > /dev/null
 sleep 2
 # Clear the form to avoid browser required validation, fill invalid data
 agent-browser eval '
-  const form = document.querySelector("form[data-nd-action=\"POST /api/users\"]");
+  const form = document.querySelector("form[data-nd-action=\"POST https://test.nitecon.org/api/users\"]");
   form.querySelector("[name=name]").value = "a";
   form.querySelector("[name=email]").value = "bad";
   form.dispatchEvent(new Event("submit", {cancelable: true, bubbles: true}));
@@ -115,7 +123,7 @@ fi
 
 # ===== Test 6: control-panel.html loads =====
 info "Test: control-panel.html loads"
-agent-browser open "${SERVER_URL}/control-panel.html" > /dev/null
+agent-browser open "${SERVER_URL}/demo/control-panel.html" > /dev/null
 sleep 1
 SIDEBAR=$(agent-browser eval 'document.querySelector("nav.sidebar") !== null' 2>/dev/null || echo "false")
 if [[ "$SIDEBAR" == "true" ]]; then

@@ -4,10 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ndesign Data Bindings</title>
-  <link rel="stylesheet" href="/dist/ndesign.css">
-  <link rel="stylesheet" href="/dist/themes/light.css" class="theme" data-theme="light">
-  <meta name="nd-theme" content="light" data-href="/dist/themes/light.css">
-  <meta name="nd-theme" content="dark" data-href="/dist/themes/dark.css">
+  <link rel="stylesheet" href="../dist/ndesign.css">
+  <link rel="stylesheet" href="../dist/themes/dark.css" class="theme" data-theme="light">
+  <meta name="nd-theme" content="light" data-href="../dist/themes/light.css">
+  <meta name="nd-theme" content="dark" data-href="../dist/themes/dark.css">
+  <!-- Store: URL base for all test-server calls -->
+  <meta name="endpoint:api" content="https://test.nitecon.org">
+  <!-- Store: initial var values -->
+  <meta name="var:order_count" content="10">
+  <meta name="var:user_id" content="2">
   <style>/* You may not use custom styles under any circumstance on the demo pages */</style>
 </head>
 <body class="app-page">
@@ -42,9 +47,9 @@
         <div class="nd-card nd-mb-md">
           <div class="nd-card-header">Server Info (Scalar Binding)</div>
           <div class="nd-card-body">
-            <p>Version: <strong data-nd-bind="/api/stats" data-nd-field="version"></strong></p>
-            <p>Uptime: <strong data-nd-bind="/api/stats" data-nd-field="uptime"></strong></p>
-            <p>CPU: <strong data-nd-bind="/api/stats" data-nd-field="cpu_usage"></strong>%</p>
+            <p>Version: <strong data-nd-bind="https://test.nitecon.org/api/stats" data-nd-field="version"></strong></p>
+            <p>Uptime: <strong data-nd-bind="https://test.nitecon.org/api/stats" data-nd-field="uptime"></strong></p>
+            <p>CPU: <strong data-nd-bind="https://test.nitecon.org/api/stats" data-nd-field="cpu_usage"></strong>%</p>
           </div>
         </div>
 
@@ -62,7 +67,7 @@
                     <th>Status</th>
                   </tr>
                 </thead>
-                <tbody id="user-table" data-nd-bind="/api/users" data-nd-template="user-row">
+                <tbody id="user-table" data-nd-bind="https://test.nitecon.org/api/users" data-nd-template="user-row">
                   <template id="user-row">
                     <tr>
                       <td>{{name}}</td>
@@ -84,15 +89,15 @@
             <div class="nd-row">
               <div class="nd-col-4">
                 <p class="nd-text-secondary">CPU Usage</p>
-                <h2 data-nd-bind="/api/stats/live" data-nd-field="cpu_usage" data-nd-refresh="2000"></h2>
+                <h2 data-nd-bind="https://test.nitecon.org/api/stats/live" data-nd-field="cpu_usage" data-nd-refresh="2000"></h2>
               </div>
               <div class="nd-col-4">
                 <p class="nd-text-secondary">Active Sessions</p>
-                <h2 data-nd-bind="/api/stats/live" data-nd-field="active_sessions" data-nd-refresh="2000"></h2>
+                <h2 data-nd-bind="https://test.nitecon.org/api/stats/live" data-nd-field="active_sessions" data-nd-refresh="2000"></h2>
               </div>
               <div class="nd-col-4">
                 <p class="nd-text-secondary">Memory (GB)</p>
-                <h2 data-nd-bind="/api/stats/live" data-nd-field="memory_used" data-nd-refresh="2000"></h2>
+                <h2 data-nd-bind="https://test.nitecon.org/api/stats/live" data-nd-field="memory_used" data-nd-refresh="2000"></h2>
               </div>
             </div>
           </div>
@@ -107,7 +112,7 @@
         <div class="nd-card nd-mb-md">
           <div class="nd-card-header">Create User (Form Action)</div>
           <div class="nd-card-body">
-            <form data-nd-action="POST /api/users" data-nd-success="refresh:#user-table,reset" data-nd-feedback="user-feedback">
+            <form data-nd-action="POST https://test.nitecon.org/api/users" data-nd-success="refresh:#user-table,reset" data-nd-feedback="user-feedback">
               <div class="nd-row">
                 <div class="nd-col-6">
                   <div class="nd-form-group">
@@ -144,7 +149,7 @@
         <div class="nd-card nd-mb-md">
           <div class="nd-card-header">Login (Global Error Test)</div>
           <div class="nd-card-body">
-            <form data-nd-action="POST /api/login" data-nd-success="redirect:/" data-nd-feedback="login-feedback">
+            <form data-nd-action="POST https://test.nitecon.org/api/login" data-nd-success="redirect:/" data-nd-feedback="login-feedback">
               <div class="nd-form-group">
                 <label for="login-user">Username</label>
                 <input type="text" id="login-user" name="username" placeholder="admin">
@@ -165,7 +170,7 @@
           <div class="nd-card-header">Button Action (DELETE)</div>
           <div class="nd-card-body">
             <p class="nd-mb-sm">Demonstrates a standalone button with confirmation dialog:</p>
-            <button data-nd-action="DELETE /api/users/3" data-nd-confirm="Delete user James Miller?" class="nd-btn-danger">
+            <button data-nd-action="DELETE https://test.nitecon.org/api/users/3" data-nd-confirm="Delete user James Miller?" class="nd-btn-danger">
               Delete User #3
             </button>
           </div>
@@ -201,7 +206,7 @@
                   </tr>
                 </thead>
                 <tbody id="paginated-users"
-                       data-nd-bind="/api/users/paginated"
+                       data-nd-bind="https://test.nitecon.org/api/users/paginated"
                        data-nd-select="data"
                        data-nd-params="page=1&per_page=5"
                        data-nd-template="pu-row">
@@ -247,7 +252,7 @@
               of the list rather than replacing it.
             </p>
             <div id="feed-list"
-                 data-nd-bind="/api/feed"
+                 data-nd-bind="https://test.nitecon.org/api/feed"
                  data-nd-params="offset=0&limit=10"
                  data-nd-template="feed-item"
                  data-nd-mode="append"
@@ -284,7 +289,7 @@
         <div class="nd-card">
           <div class="nd-card-header">
             Live Trade Feed (WebSocket)
-            <span class="nd-badge nd-badge-sm" data-nd-ws="ws://localhost:28080/ws/feed" data-nd-field="type">connecting...</span>
+            <span class="nd-badge nd-badge-sm" data-nd-ws="wss://test.nitecon.org/ws/feed" data-nd-field="type">connecting...</span>
           </div>
           <div class="nd-card-body">
             <div class="nd-table-responsive">
@@ -297,7 +302,7 @@
                     <th>Volume</th>
                   </tr>
                 </thead>
-                <tbody data-nd-ws="ws://localhost:28080/ws/feed" data-nd-ws-filter="type:trade" data-nd-template="trade-row" data-nd-mode="prepend" data-nd-max="20">
+                <tbody data-nd-ws="wss://test.nitecon.org/ws/feed" data-nd-ws-filter="type:trade" data-nd-template="trade-row" data-nd-mode="prepend" data-nd-max="20">
                   <template id="trade-row">
                     <tr>
                       <td>{{time}}</td>
@@ -323,7 +328,7 @@
       <div class="nd-col-6">
         <div class="nd-card">
           <div class="nd-card-header">Deployment Events (SSE)</div>
-          <div class="nd-card-body" data-nd-sse="/events/stream" data-nd-sse-event="deployment" data-nd-template="deploy-event" data-nd-mode="prepend" data-nd-max="10">
+          <div class="nd-card-body" data-nd-sse="https://test.nitecon.org/events/stream" data-nd-sse-event="deployment" data-nd-template="deploy-event" data-nd-mode="prepend" data-nd-max="10">
             <template id="deploy-event">
               <div class="nd-alert nd-alert-info nd-mb-sm">
                 Deploy <strong>{{version}}</strong> to <strong>{{environment}}</strong>: <span class="nd-badge">{{status}}</span>
@@ -342,15 +347,15 @@
             <div class="nd-row">
               <div class="nd-col-4">
                 <p class="nd-text-secondary">CPU</p>
-                <h3 data-nd-sse="/events/stream" data-nd-sse-event="metric" data-nd-field="cpu">--</h3>
+                <h3 data-nd-sse="https://test.nitecon.org/events/stream" data-nd-sse-event="metric" data-nd-field="cpu">--</h3>
               </div>
               <div class="nd-col-4">
                 <p class="nd-text-secondary">Memory</p>
-                <h3 data-nd-sse="/events/stream" data-nd-sse-event="metric" data-nd-field="memory">--</h3>
+                <h3 data-nd-sse="https://test.nitecon.org/events/stream" data-nd-sse-event="metric" data-nd-field="memory">--</h3>
               </div>
               <div class="nd-col-4">
                 <p class="nd-text-secondary">Disk</p>
-                <h3 data-nd-sse="/events/stream" data-nd-sse-event="metric" data-nd-field="disk">--</h3>
+                <h3 data-nd-sse="https://test.nitecon.org/events/stream" data-nd-sse-event="metric" data-nd-field="disk">--</h3>
               </div>
             </div>
           </div>
@@ -365,12 +370,14 @@
     <aside class="fold fold-info nd-mb-lg">
       <h4>Testing Push Connections</h4>
       <p class="nd-mb-sm">
-        The WebSocket feed and SSE streams above connect to the Go test server
-        at <code>http://localhost:28080</code>. Ensure the server is running before
-        loading this page.
+        All REST, SSE, and WebSocket bindings on this page point directly at
+        the public test server at <code>https://test.nitecon.org</code> via
+        absolute URLs in each <code>data-nd-*</code> attribute. On a real
+        deployment you would use relative paths (e.g. <code>/api/stats</code>)
+        when the API is same-origin, or full absolute URLs when it isn't.
       </p>
       <p class="nd-mb-sm"><strong>WebSocket</strong> &mdash; connects to
-        <code>ws://localhost:28080/ws/feed</code>. The server should push JSON
+        <code>wss://test.nitecon.org/ws/feed</code>. The server pushes JSON
         messages with fields: <code>time</code>, <code>symbol</code>,
         <code>price</code>, <code>volume</code>, <code>type</code>.
       </p>
@@ -406,7 +413,7 @@
       <div class="nd-card">
         <div class="nd-card-header">Upload Files</div>
         <div class="nd-card-body">
-          <form data-nd-upload="POST /api/upload" data-nd-feedback="upload-feedback" data-nd-success="refresh:#uploaded-table">
+          <form data-nd-upload="POST https://test.nitecon.org/api/upload" data-nd-feedback="upload-feedback" data-nd-success="refresh:#uploaded-table">
             <div class="nd-form-group">
               <label for="upload-file">Select file(s)</label>
               <input type="file" id="upload-file" name="files" multiple>
@@ -426,7 +433,7 @@
               <thead>
                 <tr><th>Filename</th><th>Size</th><th>Type</th><th>Uploaded</th></tr>
               </thead>
-              <tbody id="uploaded-table" data-nd-bind="/api/uploaded-files" data-nd-template="uploaded-row">
+              <tbody id="uploaded-table" data-nd-bind="https://test.nitecon.org/api/uploaded-files" data-nd-template="uploaded-row">
                 <template data-nd-empty>
                   <tr><td colspan="4" class="nd-text-center nd-text-muted">No files uploaded yet</td></tr>
                 </template>
@@ -470,7 +477,7 @@
             <div class="nd-card-header">Reorder (with server sync)</div>
             <div class="nd-card-body">
               <p class="nd-text-secondary nd-mb-md">Drag to reorder (or use keyboard: Space to grab, Arrows to move, Escape to cancel) &mdash; each change POSTs to <code>/api/reorder</code>.</p>
-              <ul class="nd-sortable" data-nd-sortable="POST /api/reorder">
+              <ul class="nd-sortable" data-nd-sortable="POST https://test.nitecon.org/api/reorder">
                 <li data-id="task-1" class="nd-well nd-well-sm nd-mb-xs">Write documentation</li>
                 <li data-id="task-2" class="nd-well nd-well-sm nd-mb-xs">Fix bug #432</li>
                 <li data-id="task-3" class="nd-well nd-well-sm nd-mb-xs">Review PR #128</li>
@@ -490,7 +497,7 @@
               <p class="nd-text-secondary nd-mb-md">
                 Drag or use keyboard (Space to grab, Arrows to move, Escape to cancel) to reorder &mdash; the POST always returns HTTP&nbsp;500, so the list snaps back, a shake plays, and a toast shows the server error message.
               </p>
-              <ul class="nd-sortable" data-nd-sortable="POST /api/reorder?fail=1" aria-label="Reorder failure demo">
+              <ul class="nd-sortable" data-nd-sortable="POST https://test.nitecon.org/api/reorder?fail=1" aria-label="Reorder failure demo">
                 <li data-id="step-1" class="nd-well nd-well-sm nd-mb-xs">Step 1 — always reverts</li>
                 <li data-id="step-2" class="nd-well nd-well-sm nd-mb-xs">Step 2 — always reverts</li>
                 <li data-id="step-3" class="nd-well nd-well-sm nd-mb-xs">Step 3 — always reverts</li>
@@ -502,8 +509,137 @@
       </div>
     </section>
 
+    <!-- ============================================================== -->
+    <!-- Row 7: State & Workflow — meta vars, interpolation, and store  -->
+    <!-- ============================================================== -->
+    <section class="nd-mt-lg">
+      <h3>State &amp; Workflow — meta vars, interpolation, and the store</h3>
+      <p class="nd-text-secondary nd-mb-md">
+        URL bases and initial values are declared as <code>&lt;meta&gt;</code> tags in
+        <code>&lt;head&gt;</code>. The <code>${...}</code> syntax interpolates them into
+        <code>data-nd-*</code> attributes at the moment of fetch or submit. Setting a var
+        does <strong>not</strong> auto-refresh bound elements — call <code>nd:refresh</code>
+        explicitly. See <code>NDesign.store</code> and <code>NDesign.resolveVars</code> in
+        the browser console for the public API.
+      </p>
+
+      <div class="nd-row">
+
+        <!-- Card 1: Current user (data-nd-bind + data-nd-set response form) -->
+        <div class="nd-col-4">
+          <div class="nd-card">
+            <div class="nd-card-header">Current user</div>
+            <div class="nd-card-body"
+                 id="user-nav"
+                 data-nd-bind="${api}/api/users/${user_id}"
+                 data-nd-set="user"
+                 data-nd-template="user-card-tmpl">
+              <template id="user-card-tmpl">
+                <article>
+                  <strong>{{name}}</strong>
+                  <span class="nd-badge nd-badge-sm">{{role}}</span>
+                  <div class="nd-text-secondary">{{email}}</div>
+                </article>
+              </template>
+              <template data-nd-empty>
+                <em class="nd-text-secondary">No user loaded</em>
+              </template>
+              <template data-nd-loading>
+                <div class="nd-skeleton nd-skeleton-text"></div>
+                <div class="nd-skeleton nd-skeleton-text nd-mt-sm"></div>
+              </template>
+            </div>
+            <div class="nd-card-footer">
+              <p class="nd-text-secondary nd-text-sm nd-mb-sm">
+                Load a different user — each button sets
+                <code>${user_id}</code> in the store and then dispatches
+                <code>nd:refresh</code> on the card, which re-fetches
+                <code>${api}/api/users/${user_id}</code>.
+              </p>
+              <div class="nd-row nd-gap-xs">
+                <button class="nd-btn-ghost nd-btn-sm"
+                        data-nd-set="user_id=2"
+                        data-nd-success="refresh:#user-nav">User 2</button>
+                <button class="nd-btn-ghost nd-btn-sm"
+                        data-nd-set="user_id=3"
+                        data-nd-success="refresh:#user-nav">User 3</button>
+                <button class="nd-btn-ghost nd-btn-sm"
+                        data-nd-set="user_id=4"
+                        data-nd-success="refresh:#user-nav">User 4</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: Order entry (data-nd-model + data-nd-set arith + data-nd-body) -->
+        <div class="nd-col-4">
+          <div class="nd-card">
+            <div class="nd-card-header">Order entry</div>
+            <div class="nd-card-body">
+              <div class="nd-form-group">
+                <label>Quantity</label>
+                <div class="nd-input-group">
+                  <button class="nd-btn-ghost" data-nd-set="order_count=${order_count}-1"
+                          aria-label="Decrease quantity">&#8722;</button>
+                  <input type="number" min="1" data-nd-model="order_count" aria-label="Quantity">
+                  <button class="nd-btn-ghost" data-nd-set="order_count=${order_count}+1"
+                          aria-label="Increase quantity">+</button>
+                </div>
+                <p class="nd-text-secondary nd-text-sm nd-mt-sm">
+                  Current qty stored in <code>NDesign.store.get('order_count')</code>.
+                  The input two-way-syncs with the store via <code>data-nd-model</code>.
+                </p>
+              </div>
+              <button class="nd-btn-primary"
+                      data-nd-action="POST ${api}/api/push"
+                      data-nd-body='{"channel":"orders","symbol":"AAPL","side":"buy","qty":${order_count}}'
+                      data-nd-feedback="order-feedback">
+                Market buy AAPL
+              </button>
+              <div id="order-feedback" class="nd-alert" style="display:none"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Deferred binding (data-nd-defer) -->
+        <div class="nd-col-4">
+          <div class="nd-card">
+            <div class="nd-card-header">Deferred binding</div>
+            <div class="nd-card-body">
+              <p class="nd-text-secondary nd-mb-sm">
+                Normally <code>data-nd-bind</code> fetches on init. Adding
+                <code>data-nd-defer</code> skips that — the element only loads
+                when it receives an <code>nd:refresh</code> event.
+              </p>
+              <button class="nd-btn-ghost nd-btn-sm"
+                      onclick="document.getElementById('deferred-stats').dispatchEvent(new CustomEvent('nd:refresh'))">
+                Load now
+              </button>
+              <div id="deferred-stats"
+                   data-nd-bind="${api}/api/stats"
+                   data-nd-defer
+                   data-nd-template="deferred-tmpl"
+                   class="nd-mt-sm">
+                <template id="deferred-tmpl">
+                  <ul>
+                    <li>Version: {{version}}</li>
+                    <li>Uptime: {{uptime}}</li>
+                    <li>CPU: {{cpu_usage}}%</li>
+                  </ul>
+                </template>
+                <template data-nd-empty>
+                  <p class="nd-text-secondary">(click Load now)</p>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
   </main>
 
-  <script src="/dist/ndesign.min.js"></script>
+  <script src="../dist/ndesign.min.js"></script>
 </body>
 </html>

@@ -8,32 +8,62 @@
  */
 
 import { initBindings, destroyBindings } from './bind.js';
-import { initActions } from './action.js';
+import { initActions, resolveConfirm } from './action.js';
 import { initUploads, destroyUploads } from './upload.js';
 import { initWebSockets, destroyWebSockets } from './ws.js';
 import { initSSE, destroySSE } from './sse.js';
 import { initSelects, destroySelects } from './select.js';
 import { initNav, destroyNav } from './nav.js';
 import { initDropdowns, destroyDropdowns } from './dropdown.js';
-import { initModals, destroyModals, openModal, closeModal } from './modal.js';
+import { initModals, destroyModals, openModal, closeModal, confirmDialog } from './modal.js';
 import { initToasts, destroyToasts, toast } from './toast.js';
 import { initTabs, destroyTabs } from './tabs.js';
 import { initTooltips, destroyTooltips } from './tooltip.js';
 import { initSortable, destroySortable } from './sortable.js';
 import { render, renderOne, interpolate } from './template.js';
 import { escapeHTML, getByPath, setByPath, getCSRFToken } from './utils.js';
+import {
+  initStoreFromMeta,
+  initSetTriggers,
+  initModel,
+  destroyStore,
+  getVar,
+  setVar,
+  getEndpoint,
+  resolveVars,
+  vars,
+  endpoints,
+} from './store.js';
 
 /**
  * Runtime configuration. Merged via configure().
  * @type {Object}
  */
 const config = {
-  baseURL: '',
   headers: { 'X-Requested-With': 'NDesign' },
   onRequest: null,
   onResponse: null,
-  onError: null,
+  /**
+   * Default error handler — shows a toast with the unified envelope's
+   * global message. Apps can override via NDesign.configure({onError: ...})
+   * or pass `onError: null` to disable.
+   *
+   * Envelope shape:
+   *   { errors: { error: "...", ...fieldErrors } }
+   *
+   * @param {string} url                 — URL that failed
+   * @param {{errors: Object}} envelope  — unified error envelope
+   * @param {Error|null} err             — original thrown error (may be null)
+   */
+  onError: function defaultOnError(url, envelope, err) {
+    const msg =
+      (envelope && envelope.errors && (envelope.errors.error || envelope.errors._form)) ||
+      'Something went wrong';
+    toast(msg, 'error');
+  },
   onRender: null,
+  /** Milliseconds before a fetch is aborted with a timeout error. */
+  timeout: 15000,
   wsProtocols: [],
   wsTokenProvider: null,
 };
@@ -47,7 +77,6 @@ let initialized = false;
  * or call at any time to update.
  *
  * @param {Object} userConfig — partial config to merge
- * @param {string} [userConfig.baseURL]           — prefix for all relative URLs
  * @param {Object} [userConfig.headers]            — extra headers for fetch requests
  * @param {Function} [userConfig.onRequest]        — callback before every fetch
  * @param {Function} [userConfig.onResponse]       — callback after every fetch
@@ -78,6 +107,7 @@ export function configure(userConfig) {
 export function init() {
   if (initialized) {
     // Tear down existing bindings before re-init
+    destroyStore();
     destroyBindings();
     destroyWebSockets();
     destroySSE();
@@ -92,6 +122,9 @@ export function init() {
     destroySortable();
   }
 
+  // Store must be initialised before any directive resolves a URL.
+  initStoreFromMeta();
+
   initBindings(config);
   initActions(config);
   initWebSockets(config);
@@ -105,6 +138,8 @@ export function init() {
   initTooltips();
   initUploads();
   initSortable();
+  initSetTriggers(config);
+  initModel(config);
 
   // ── Auto-wiring: single delegated click handler ──────────────────────
   document.addEventListener('click', (e) => {
@@ -324,7 +359,48 @@ export function getThemes() {
 }
 
 // Re-export utilities for advanced usage
-export { render, renderOne, interpolate, escapeHTML, getByPath, setByPath, getCSRFToken, openModal, closeModal, toast };
+export { render, renderOne, interpolate, escapeHTML, getByPath, setByPath, getCSRFToken, openModal, closeModal, confirmDialog, resolveConfirm, toast };
+
+// Store public API
+export { resolveVars, getVar as storeGet, setVar as storeSet, getEndpoint as endpoint };
+
+/**
+ * Public store object — thin façade over the store module. Writes go
+ * through setVar() so they fire nd:var-change events and reactive
+ * data-nd-model inputs stay in sync. Supports dot-notation paths on
+ * get/set/delete (e.g. 'user.email').
+ *
+ * NDesign.store.get('user'), NDesign.store.set('count', 5), etc.
+ * @type {{ get: function, set: function, delete: function, has: function, clear: function }}
+ */
+export const store = {
+  /** @param {string} path — dot-notation path @returns {*} */
+  get(path) { return getVar(path); },
+  /** @param {string} path @param {*} value */
+  set(path, value) { setVar(path, value); },
+  /** @param {string} path — only top-level keys are supported for delete */
+  delete(path) {
+    vars.delete(path);
+    if (typeof document !== 'undefined') {
+      document.dispatchEvent(new CustomEvent('nd:var-change', {
+        detail: { path, topKey: path, value: undefined },
+      }));
+    }
+  },
+  /** @param {string} path @returns {boolean} */
+  has(path) { return getVar(path) !== undefined; },
+  clear() {
+    const keys = [...vars.keys()];
+    vars.clear();
+    if (typeof document !== 'undefined') {
+      for (const path of keys) {
+        document.dispatchEvent(new CustomEvent('nd:var-change', {
+          detail: { path, topKey: path, value: undefined },
+        }));
+      }
+    }
+  },
+};
 
 // Auto-initialize on DOMContentLoaded
 if (typeof document !== 'undefined') {

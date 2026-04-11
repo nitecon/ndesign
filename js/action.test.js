@@ -17,7 +17,12 @@ test('action.js: exports expected public surface', () => {
     'displayErrors',
     'handleSuccess',
     'initActions',
+    'resolveConfirm',
   ]);
+});
+
+test('action.js: resolveConfirm is an async function', () => {
+  assert.equal(typeof action.resolveConfirm, 'function');
 });
 
 test('action.js: handleSuccess/clearFormErrors/displayErrors are functions', () => {

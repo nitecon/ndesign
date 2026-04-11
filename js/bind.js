@@ -2,11 +2,19 @@
  * ndesign — REST data binding handler.
  * Handles elements with data-nd-bind, fetching data from REST endpoints
  * and rendering via templates or scalar field binding.
+ *
+ * data-nd-defer: when present, skips the initial automatic fetch. The
+ * element still responds to nd:refresh events fired externally.
+ *
+ * data-nd-set on a bind element: after a successful fetch the response
+ * data is passed to applySetDirective(), enabling chained store writes.
+ *
  * @module bind
  */
 
 import { getByPath, buildHeaders } from './utils.js';
 import { render } from './template.js';
+import { resolveVars, applySetDirective } from './store.js';
 
 /** @type {Map<string, Promise<any>>} in-flight request dedup cache */
 const pendingRequests = new Map();
@@ -18,14 +26,15 @@ const pollingIntervals = new Map();
 let pollingObserver = null;
 
 /**
- * Build the fetch URL for a bound element, appending any
- * query parameters declared via data-nd-params.
+ * Build the fetch URL for a bound element, applying ${var} interpolation
+ * and appending any query parameters declared via data-nd-params.
  * @param {HTMLElement} el — element with data-nd-bind attribute
  * @returns {string} URL with query string appended, or the raw
  *                   data-nd-bind value if no params are present
  */
 function buildFetchURL(el) {
-  const url = el.getAttribute('data-nd-bind') || '';
+  const rawUrl = el.getAttribute('data-nd-bind') || '';
+  const url = resolveVars(rawUrl);
   const params = el.getAttribute('data-nd-params');
   if (!params) return url;
   const sep = url.includes('?') ? '&' : '?';
@@ -41,10 +50,8 @@ function buildFetchURL(el) {
  * @returns {Promise<any>} parsed JSON response
  */
 async function fetchJSON(url, config) {
-  const fullURL = (config.baseURL || '') + url;
-
-  if (pendingRequests.has(fullURL)) {
-    return pendingRequests.get(fullURL);
+  if (pendingRequests.has(url)) {
+    return pendingRequests.get(url);
   }
 
   const headers = buildHeaders(config.headers);
@@ -54,13 +61,13 @@ async function fetchJSON(url, config) {
   const options = { method: 'GET', headers };
 
   if (typeof config.onRequest === 'function') {
-    config.onRequest(fullURL, options);
+    config.onRequest(url, options);
   }
 
-  const promise = fetch(fullURL, options)
+  const promise = fetch(url, options)
     .then(async (response) => {
       if (typeof config.onResponse === 'function') {
-        config.onResponse(fullURL, response);
+        config.onResponse(url, response);
       }
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -68,10 +75,10 @@ async function fetchJSON(url, config) {
       return response.json();
     })
     .finally(() => {
-      pendingRequests.delete(fullURL);
+      pendingRequests.delete(url);
     });
 
-  pendingRequests.set(fullURL, promise);
+  pendingRequests.set(url, promise);
   return promise;
 }
 
@@ -154,6 +161,11 @@ async function processBind(el, config) {
     if (typeof config.onRender === 'function') {
       config.onRender(el, data);
     }
+
+    // data-nd-set on a bind element: write response (or explicit RHS) to store
+    if (el.hasAttribute('data-nd-set')) {
+      applySetDirective(el, data);
+    }
   } catch (err) {
     el.classList.remove('nd-loading');
     // Remove loading placeholder on error too
@@ -161,8 +173,28 @@ async function processBind(el, config) {
     if (loadingEl) loadingEl.remove();
     el.classList.add('nd-error');
     console.error(`[ndesign] Bind error for ${url}:`, err);
-    if (typeof config.onError === 'function') {
-      config.onError(url, err);
+
+    // Synthesize a unified error envelope (same shape as action.js)
+    let envelope;
+    if (err.name === 'AbortError') {
+      envelope = { errors: { error: 'Request timed out' } };
+    } else if (err instanceof TypeError) {
+      envelope = { errors: { error: "Couldn't reach server" } };
+    } else {
+      envelope = { errors: { error: err.message || 'Unexpected error' } };
+    }
+
+    // Render <template data-nd-error> if present; otherwise fall through to onError
+    const errorTpl = el.querySelector('template[data-nd-error]');
+    if (errorTpl) {
+      const fragment = errorTpl.content.cloneNode(true);
+      // Clear non-template children
+      Array.from(el.childNodes).forEach(child => {
+        if (child.nodeName !== 'TEMPLATE') el.removeChild(child);
+      });
+      el.appendChild(fragment);
+    } else if (typeof config.onError === 'function') {
+      config.onError(url, envelope, err);
     }
   }
 }
@@ -178,6 +210,10 @@ export function initBindings(config) {
   for (const el of elements) {
     // Listen for nd:refresh custom event to allow external re-triggers
     el.addEventListener('nd:refresh', () => processBind(el, config));
+
+    // data-nd-defer: skip the initial automatic fetch.
+    // The element will still respond to nd:refresh events fired externally.
+    if (el.hasAttribute('data-nd-defer')) continue;
 
     // Initial fetch
     processBind(el, config);

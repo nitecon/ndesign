@@ -604,7 +604,6 @@ ndesign maps each key to the matching `name` input and displays the error in the
 
 ```js
 NDesign.configure({
-  baseURL: '',                          // prefix for all relative URLs
   headers: { 'X-Requested-With': 'NDesign' },
   onRequest: (url, options) => {},      // before every fetch
   onResponse: (url, response) => {},    // after every fetch

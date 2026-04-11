@@ -8,6 +8,7 @@
 
 import { getByPath } from './utils.js';
 import { render } from './template.js';
+import { resolveVars } from './store.js';
 
 /**
  * @typedef {Object} WSConnection
@@ -188,8 +189,9 @@ export function initWebSockets(config) {
   const elements = document.querySelectorAll('[data-nd-ws]');
 
   for (const el of elements) {
-    const url = el.getAttribute('data-nd-ws');
-    if (!url) continue;
+    const rawUrl = el.getAttribute('data-nd-ws');
+    if (!rawUrl) continue;
+    const url = resolveVars(rawUrl);
 
     if (connections.has(url)) {
       // Shared connection — just add this element

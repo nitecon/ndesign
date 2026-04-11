@@ -154,3 +154,14 @@
   height: 1.25rem;
   margin-top: 0.125rem; // align with first line of text
 }
+
+// ---------------------------------------------------------------------------
+// Auto-created feedback slot for forms/buttons without data-nd-feedback.
+// Inserted next to the submit button on first error so the global error
+// message is visible regardless of scroll position. See js/action.js
+// _ensureFeedbackEl() for the runtime that creates these.
+// ---------------------------------------------------------------------------
+.nd-form-feedback-auto {
+  margin-top: $nd-space-sm;
+  margin-bottom: 0;
+}

@@ -2,10 +2,25 @@
  * ndesign — Form and button action handler.
  * Intercepts forms with data-nd-action, serializes to JSON, submits via
  * fetch, and handles server responses (success and error mapping).
+ *
+ * data-nd-body (buttons only): a JSON template string that, after ${var}
+ * interpolation, is JSON-parsed and used as the request body instead of an
+ * empty body. Invalid JSON after interpolation routes through the unified
+ * error envelope path.
+ *
+ * data-nd-set on action elements: called on success with the response data,
+ * enabling chained store writes (explicit or response forms).
+ *
  * @module action
  */
 
-import { setByPath, buildHeaders } from './utils.js';
+import { setByPath, buildHeaders, fetchWithTimeout } from './utils.js';
+import { resolveVars, applySetDirective } from './store.js';
+import { confirmDialog } from './modal.js';
+
+// Monotonic UID for auto-generated feedback element IDs
+let _uidCounter = 0;
+function _uid() { return ++_uidCounter; }
 
 /**
  * Parse a data-nd-action attribute value into method and URL.
@@ -78,9 +93,240 @@ function serializeForm(form) {
   return data;
 }
 
+// ---------------------------------------------------------------------------
+// Feedback element helpers (auto-slot for forms/buttons without data-nd-feedback)
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolve the feedback element for a form or button.
+ *
+ * For forms: if `data-nd-feedback` is declared, return that element; otherwise
+ * auto-create a slot placed immediately before the submit button (or its
+ * nearest ancestor that is a direct child of the form). Reuses any existing
+ * auto-element stored on `form._ndAutoFeedbackEl`.
+ *
+ * For buttons: auto-create a slot inserted as the next sibling after the
+ * button. Reuses `btn._ndAutoFeedbackEl`.
+ *
+ * @param {HTMLElement} el — form or button element
+ * @returns {HTMLElement|null}
+ */
+function _ensureFeedbackEl(el) {
+  if (el.tagName === 'FORM') {
+    const declaredId = el.getAttribute('data-nd-feedback');
+    if (declaredId) {
+      return document.getElementById(declaredId);
+    }
+    if (el._ndAutoFeedbackEl && el._ndAutoFeedbackEl.isConnected) {
+      return el._ndAutoFeedbackEl;
+    }
+    const autoEl = document.createElement('div');
+    autoEl.id = `nd-auto-feedback-${_uid()}`;
+    autoEl.className = 'nd-alert nd-form-feedback-auto';
+    autoEl.style.display = 'none';
+    autoEl.setAttribute('aria-live', 'assertive');
+    autoEl.setAttribute('aria-atomic', 'true');
+
+    // Place immediately before the submit button (or nearest ancestor
+    // that is a direct child of the form).
+    const submitBtn = el.querySelector('[type="submit"]');
+    let insertBefore = submitBtn;
+    if (submitBtn) {
+      let cursor = submitBtn.parentElement;
+      while (cursor && cursor !== el) {
+        if (cursor.parentElement === el) {
+          insertBefore = cursor;
+          break;
+        }
+        cursor = cursor.parentElement;
+      }
+    }
+    if (insertBefore && insertBefore.parentElement) {
+      insertBefore.parentElement.insertBefore(autoEl, insertBefore);
+    } else {
+      el.appendChild(autoEl);
+    }
+    el._ndAutoFeedbackEl = autoEl;
+    return autoEl;
+  } else {
+    if (el._ndAutoFeedbackEl && el._ndAutoFeedbackEl.isConnected) {
+      return el._ndAutoFeedbackEl;
+    }
+    const autoEl = document.createElement('div');
+    autoEl.id = `nd-auto-feedback-${_uid()}`;
+    autoEl.className = 'nd-alert nd-form-feedback-auto';
+    autoEl.style.display = 'none';
+    autoEl.setAttribute('aria-live', 'assertive');
+    autoEl.setAttribute('aria-atomic', 'true');
+    if (el.parentElement) {
+      el.parentElement.insertBefore(autoEl, el.nextSibling);
+    }
+    el._ndAutoFeedbackEl = autoEl;
+    return autoEl;
+  }
+}
+
+/**
+ * Write a message to a feedback element with the appropriate severity class.
+ * @param {HTMLElement|null} feedbackEl
+ * @param {string} message
+ * @param {'error'|'success'|'warning'|'info'} type
+ */
+function _showFeedbackEl(feedbackEl, message, type) {
+  if (!feedbackEl) return;
+  feedbackEl.textContent = message;
+  const isAuto = feedbackEl.classList.contains('nd-form-feedback-auto');
+  feedbackEl.className = `nd-alert nd-alert-${type}${isAuto ? ' nd-form-feedback-auto' : ''}`;
+  feedbackEl.style.display = '';
+}
+
+/**
+ * Clear and hide a feedback element (auto or declared).
+ * @param {HTMLElement|null} feedbackEl
+ */
+function _hideFeedbackEl(feedbackEl) {
+  if (!feedbackEl) return;
+  feedbackEl.textContent = '';
+  feedbackEl.style.display = 'none';
+}
+
+/**
+ * Synthesize a global error message from a field-errors map.
+ *
+ * Priority:
+ *   1. errors.error (canonical) or errors._form (legacy alias) — verbatim.
+ *   2. 1 field error → "Please correct the highlighted field: <label|name>"
+ *   3. N field errors → "Please correct the N highlighted fields below."
+ *   4. Fallback → "Submit failed. Please try again."
+ *
+ * @param {HTMLElement|null} form — form element (used to look up labels)
+ * @param {Object} errors
+ * @returns {string}
+ */
+function _synthesizeGlobalMessage(form, errors) {
+  if (!errors) return 'Submit failed. Please try again.';
+  const globalMsg = errors.error || errors._form;
+  if (globalMsg) return globalMsg;
+  const fieldKeys = Object.keys(errors).filter(k => k !== 'error' && k !== '_form');
+  if (fieldKeys.length === 0) return 'Submit failed. Please try again.';
+  if (fieldKeys.length === 1) {
+    const name = fieldKeys[0];
+    let label = name;
+    if (form) {
+      const input = form.querySelector(`[name="${name}"]`);
+      if (input && input.id) {
+        const labelEl = form.querySelector(`label[for="${input.id}"]`);
+        if (labelEl) label = labelEl.textContent.trim();
+      }
+    }
+    return `Please correct the highlighted field: ${label}`;
+  }
+  return `Please correct the ${fieldKeys.length} highlighted fields below.`;
+}
+
+/**
+ * Synthesize a unified error envelope from a thrown error.
+ *   AbortError           → "Request timed out"
+ *   TypeError (network)  → "Couldn't reach server"
+ *   other                → err.message
+ * @param {Error} err
+ * @returns {{errors: Object}}
+ */
+function synthesizeEnvelope(err) {
+  if (err.name === 'AbortError') {
+    return { errors: { error: 'Request timed out' } };
+  }
+  if (err instanceof TypeError) {
+    return { errors: { error: "Couldn't reach server" } };
+  }
+  return { errors: { error: err.message || 'Unexpected error' } };
+}
+
+/**
+ * Uniform error handler for both form and button actions.
+ *
+ * Guarantees a visible global error message adjacent to the triggering
+ * element. For forms: field-level errors are also highlighted inline.
+ * Toast (via config.onError) fires IN ADDITION as belt-and-suspenders.
+ *
+ * @param {HTMLElement} el                — form or button
+ * @param {{errors: Object}} envelope
+ * @param {Object} config                 — NDesign config
+ * @param {string|null} feedbackId        — declared feedback id (forms only)
+ * @param {string} url
+ * @param {Error|null} [err=null]
+ */
+function handleActionError(el, envelope, config, feedbackId, url, err = null) {
+  el.classList.add('nd-error');
+  if (el.tagName === 'FORM') {
+    if (envelope.errors) {
+      displayErrors(el, envelope.errors, feedbackId);
+    }
+    const feedbackEl = _ensureFeedbackEl(el);
+    const globalMsg = _synthesizeGlobalMessage(el, envelope.errors);
+    _showFeedbackEl(feedbackEl, globalMsg, 'error');
+    // If declared feedback exists and displayErrors didn't populate it
+    // (no error/_form key), write the synthesized message there too.
+    if (feedbackId && !el._ndAutoFeedbackEl) {
+      const declaredEl = document.getElementById(feedbackId);
+      if (declaredEl && !declaredEl.textContent) {
+        _showFeedbackEl(declaredEl, globalMsg, 'error');
+      }
+    }
+  } else {
+    const feedbackEl = _ensureFeedbackEl(el);
+    const globalMsg = _synthesizeGlobalMessage(null, envelope.errors);
+    _showFeedbackEl(feedbackEl, globalMsg, 'error');
+  }
+  // Reinforce via toast (secondary signal). Takes the NEW 3-arg signature.
+  if (typeof config.onError === 'function') {
+    config.onError(url, envelope, err);
+  }
+}
+
+/**
+ * Show success feedback near the triggering element. Uses the declared
+ * feedback element if present; otherwise writes to the auto-slot if one
+ * already exists (auto-hides after 3 s). Does NOT auto-create a slot
+ * just to show success — success is lower urgency than error.
+ * @param {HTMLElement} el
+ * @param {string|null} feedbackId
+ * @param {string} message
+ */
+function _showSuccessFeedback(el, feedbackId, message) {
+  if (feedbackId) {
+    const declaredEl = document.getElementById(feedbackId);
+    if (declaredEl) {
+      _showFeedbackEl(declaredEl, message, 'success');
+      return;
+    }
+  }
+  const autoEl = el._ndAutoFeedbackEl;
+  if (autoEl && autoEl.isConnected) {
+    _showFeedbackEl(autoEl, message, 'success');
+    setTimeout(() => _hideFeedbackEl(autoEl), 3000);
+  }
+}
+
+/**
+ * Resolve a confirm prompt for an element.
+ * If the attribute starts with '#', opens the referenced <dialog> via
+ * confirmDialog(). Otherwise falls back to native window.confirm().
+ * @param {HTMLElement} el
+ * @returns {Promise<boolean>}
+ */
+export async function resolveConfirm(el) {
+  const confirmAttr = el.getAttribute('data-nd-confirm');
+  if (!confirmAttr) return true;
+  if (confirmAttr.startsWith('#')) {
+    return confirmDialog(confirmAttr);
+  }
+  return window.confirm(confirmAttr);
+}
+
 /**
  * Clear all form error messages (elements with class .nd-form-error)
- * within a form.
+ * within a form. Also clears and hides the auto-feedback element if present.
  * @param {HTMLFormElement} form — the form element
  */
 export function clearFormErrors(form) {
@@ -89,10 +335,12 @@ export function clearFormErrors(form) {
     el.textContent = '';
     el.style.display = 'none';
   }
-  // Also remove error state from inputs
   const inputs = form.querySelectorAll('.nd-error');
   for (const el of inputs) {
     el.classList.remove('nd-error');
+  }
+  if (form._ndAutoFeedbackEl) {
+    _hideFeedbackEl(form._ndAutoFeedbackEl);
   }
 }
 
@@ -106,8 +354,9 @@ export function clearFormErrors(form) {
  */
 export function displayErrors(form, errors, feedbackId) {
   for (const [field, message] of Object.entries(errors)) {
-    if (field === '_form') {
-      // Global form error goes to the feedback element
+    if (field === '_form' || field === 'error') {
+      // Global form error goes to the feedback element.
+      // Both `error` (canonical) and `_form` (legacy alias) route here.
       if (feedbackId) {
         const feedbackEl = document.getElementById(feedbackId);
         if (feedbackEl) {
@@ -183,6 +432,22 @@ export function handleSuccess(el, responseData) {
       );
       continue;
     }
+
+    if (action === 'close-modal') {
+      _autoCloseDialog(el);
+      continue;
+    }
+  }
+}
+
+/**
+ * Close the nearest ancestor <dialog> of el, if any.
+ * @param {HTMLElement} el
+ */
+function _autoCloseDialog(el) {
+  const dialog = el.closest && el.closest('dialog');
+  if (dialog && typeof dialog.close === 'function') {
+    dialog.close();
   }
 }
 
@@ -195,19 +460,18 @@ async function submitForm(form, config) {
   const actionStr = form.getAttribute('data-nd-action');
   if (!actionStr) return;
 
-  const { method, url } = parseAction(actionStr);
-  const fullURL = (config.baseURL || '') + url;
+  const parsed = parseAction(actionStr);
+  const method = parsed.method;
+  const url = resolveVars(parsed.url);
   const feedbackId = form.getAttribute('data-nd-feedback') || null;
 
-  // Check for confirmation prompt
-  const confirmMsg = form.getAttribute('data-nd-confirm');
-  if (confirmMsg && !window.confirm(confirmMsg)) {
-    return;
-  }
+  // Confirmation prompt — supports both native string and #dialog selector
+  if (!(await resolveConfirm(form))) return;
 
   clearFormErrors(form);
+  form.classList.remove('nd-error');
 
-  // Clear feedback area
+  // Clear declared feedback area
   if (feedbackId) {
     const feedbackEl = document.getElementById(feedbackId);
     if (feedbackEl) {
@@ -218,14 +482,10 @@ async function submitForm(form, config) {
 
   const data = serializeForm(form);
   const headers = buildHeaders(config.headers);
-  const options = {
-    method,
-    headers,
-    body: JSON.stringify(data),
-  };
+  const options = { method, headers, body: JSON.stringify(data) };
 
   if (typeof config.onRequest === 'function') {
-    config.onRequest(fullURL, options);
+    config.onRequest(url, options);
   }
 
   // Disable submit button during request
@@ -235,11 +495,15 @@ async function submitForm(form, config) {
     submitBtn.classList.add('nd-loading');
   }
 
+  // Resolve timeout: data-nd-timeout overrides config.timeout (default 15s)
+  const timeoutMs =
+    parseInt(form.getAttribute('data-nd-timeout'), 10) || config.timeout || 15000;
+
   try {
-    const response = await fetch(fullURL, options);
+    const response = await fetchWithTimeout(url, options, timeoutMs);
 
     if (typeof config.onResponse === 'function') {
-      config.onResponse(fullURL, response);
+      config.onResponse(url, response);
     }
 
     let responseData = null;
@@ -249,50 +513,36 @@ async function submitForm(form, config) {
     }
 
     if (!response.ok) {
-      // Map server errors to form fields
+      // Server-returned error envelope
       if (responseData && responseData.errors) {
-        displayErrors(form, responseData.errors, feedbackId);
+        handleActionError(form, responseData, config, feedbackId, url, null);
       } else {
-        // Generic error
-        if (feedbackId) {
-          const feedbackEl = document.getElementById(feedbackId);
-          if (feedbackEl) {
-            feedbackEl.textContent =
-              (responseData && responseData.message) ||
-              `Error: ${response.statusText}`;
-            feedbackEl.className = 'nd-alert nd-alert-error';
-            feedbackEl.style.display = '';
-          }
-        }
+        // Generic error — synthesize envelope from statusText/message
+        const envelope = {
+          errors: {
+            error: (responseData && responseData.message) || `Error: ${response.statusText}`,
+          },
+        };
+        handleActionError(form, envelope, config, feedbackId, url, null);
       }
       return;
     }
 
-    // Show success feedback
-    if (feedbackId) {
-      const feedbackEl = document.getElementById(feedbackId);
-      if (feedbackEl) {
-        feedbackEl.textContent =
-          (responseData && responseData.message) || 'Success';
-        feedbackEl.className = 'nd-alert nd-alert-success';
-        feedbackEl.style.display = '';
-      }
-    }
+    // Success
+    _showSuccessFeedback(form, feedbackId, (responseData && responseData.message) || 'Success');
 
     handleSuccess(form, responseData);
+
+    // data-nd-set on form: write response to store after success
+    if (form.hasAttribute('data-nd-set')) {
+      applySetDirective(form, responseData);
+    }
   } catch (err) {
-    console.error(`[ndesign] Action error for ${fullURL}:`, err);
-    if (feedbackId) {
-      const feedbackEl = document.getElementById(feedbackId);
-      if (feedbackEl) {
-        feedbackEl.textContent = 'Network error. Please try again.';
-        feedbackEl.className = 'nd-alert nd-alert-error';
-        feedbackEl.style.display = '';
-      }
-    }
-    if (typeof config.onError === 'function') {
-      config.onError(fullURL, err);
-    }
+    console.error(`[ndesign] Action error for ${url}:`, err);
+    // Synthesize a unified envelope from the thrown error and route it
+    // through the same handler as server-returned errors.
+    const envelope = synthesizeEnvelope(err);
+    handleActionError(form, envelope, config, feedbackId, url, err);
   } finally {
     if (submitBtn) {
       submitBtn.disabled = false;
@@ -310,30 +560,58 @@ async function submitButton(el, config) {
   const actionStr = el.getAttribute('data-nd-action');
   if (!actionStr) return;
 
-  const { method, url } = parseAction(actionStr);
-  const fullURL = (config.baseURL || '') + url;
+  const parsed = parseAction(actionStr);
+  const method = parsed.method;
+  const url = resolveVars(parsed.url);
+  const feedbackId = el.getAttribute('data-nd-feedback') || null;
 
-  const confirmMsg = el.getAttribute('data-nd-confirm');
-  if (confirmMsg && !window.confirm(confirmMsg)) {
-    return;
-  }
+  if (!(await resolveConfirm(el))) return;
 
   el.disabled = true;
   el.classList.add('nd-loading');
+  el.classList.remove('nd-error');
 
-  const headers = buildHeaders(config.headers);
-  // No body for GET/DELETE button actions unless method needs it
-  const options = { method, headers };
-
-  if (typeof config.onRequest === 'function') {
-    config.onRequest(fullURL, options);
+  // Clear any previous auto-feedback on the button
+  if (el._ndAutoFeedbackEl) {
+    _hideFeedbackEl(el._ndAutoFeedbackEl);
   }
 
+  const headers = buildHeaders(config.headers);
+  const options = { method, headers };
+
+  // data-nd-body: JSON template for button actions. Interpolate ${vars},
+  // then JSON.parse. Invalid JSON surfaces as a unified error envelope
+  // via handleActionError.
+  const bodyTemplate = el.getAttribute('data-nd-body');
+  if (bodyTemplate) {
+    const interpolated = resolveVars(bodyTemplate);
+    try {
+      const bodyObj = JSON.parse(interpolated);
+      options.body = JSON.stringify(bodyObj);
+      options.headers['Content-Type'] = 'application/json';
+    } catch (_) {
+      const errMsg = 'data-nd-body: invalid JSON after interpolation';
+      console.error(`[ndesign] ${errMsg}:`, interpolated);
+      handleActionError(el, { errors: { error: errMsg } }, config, feedbackId, url, null);
+      el.disabled = false;
+      el.classList.remove('nd-loading');
+      return;
+    }
+  }
+
+  if (typeof config.onRequest === 'function') {
+    config.onRequest(url, options);
+  }
+
+  // Resolve timeout: data-nd-timeout overrides config.timeout (default 15s)
+  const timeoutMs =
+    parseInt(el.getAttribute('data-nd-timeout'), 10) || config.timeout || 15000;
+
   try {
-    const response = await fetch(fullURL, options);
+    const response = await fetchWithTimeout(url, options, timeoutMs);
 
     if (typeof config.onResponse === 'function') {
-      config.onResponse(fullURL, response);
+      config.onResponse(url, response);
     }
 
     let responseData = null;
@@ -343,24 +621,27 @@ async function submitButton(el, config) {
     }
 
     if (!response.ok) {
-      console.error(
-        `[ndesign] Action error: ${response.status} ${response.statusText}`
-      );
-      el.classList.add('nd-error');
-      if (typeof config.onError === 'function') {
-        config.onError(fullURL, new Error(`HTTP ${response.status}`));
-      }
+      console.error(`[ndesign] Action error: ${response.status} ${response.statusText}`);
+      const envelope = (responseData && responseData.errors)
+        ? responseData
+        : { errors: { error: (responseData && responseData.message) || `Error: ${response.statusText}` } };
+      handleActionError(el, envelope, config, feedbackId, url, null);
       return;
     }
 
     el.classList.remove('nd-error');
+    _showSuccessFeedback(el, feedbackId, (responseData && responseData.message) || 'Done');
+
     handleSuccess(el, responseData);
-  } catch (err) {
-    console.error(`[ndesign] Action error for ${fullURL}:`, err);
-    el.classList.add('nd-error');
-    if (typeof config.onError === 'function') {
-      config.onError(fullURL, err);
+
+    // data-nd-set on button: write response to store after success
+    if (el.hasAttribute('data-nd-set')) {
+      applySetDirective(el, responseData);
     }
+  } catch (err) {
+    console.error(`[ndesign] Action error for ${url}:`, err);
+    const envelope = synthesizeEnvelope(err);
+    handleActionError(el, envelope, config, feedbackId, url, err);
   } finally {
     el.disabled = false;
     el.classList.remove('nd-loading');
