@@ -171,8 +171,37 @@ entire JS bundle is never forked.
 
 ## 2. Installation
 
-The runtime ships as two files: `dist/ndesign.min.css` and `dist/ndesign.min.js`.
-Themes ship separately under `dist/themes/`. A minimal page is:
+The runtime ships as two files: `ndesign.min.css` and `ndesign.min.js`, with
+two optional theme stylesheets. They are distributed via a public GCS bucket
+at `https://storage.googleapis.com/ndesign-cdn/`. Agents building an ndesign
+application SHOULD load the bundle directly from the CDN — no build step, no
+package manager, no vendoring required.
+
+### 2.1. CDN URLs
+
+Two prefix conventions exist in the bucket:
+
+| Prefix                  | Mutability              | Cache        | Use when                                |
+|-------------------------|-------------------------|--------------|-----------------------------------------|
+| `ndesign/latest/`       | mutable, evolves        | 5 min        | active development, demos, prototypes   |
+| `ndesign/v<semver>/`    | immutable once uploaded | 1 year       | production, reproducible agent handoffs |
+
+The files under each prefix are:
+
+```
+ndesign/<prefix>/ndesign.min.js       # runtime bundle (IIFE, exposes window.NDesign)
+ndesign/<prefix>/ndesign.min.css      # base stylesheet
+ndesign/<prefix>/themes/light.min.css # optional light theme
+ndesign/<prefix>/themes/dark.min.css  # optional dark theme
+ndesign/<prefix>/SPEC.md              # this document
+```
+
+**Pinned SPEC URL for agent handoffs**: point any coding agent at
+`https://storage.googleapis.com/ndesign-cdn/ndesign/v<semver>/SPEC.md` —
+that URL is immutable. An agent reading the pinned spec is guaranteed to
+build against the same runtime forever.
+
+### 2.2. Minimal page
 
 ```html
 <!doctype html>
@@ -182,15 +211,19 @@ Themes ship separately under `dist/themes/`. A minimal page is:
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>My App</title>
 
-    <!-- Core stylesheet -->
-    <link rel="stylesheet" href="/dist/ndesign.min.css">
+    <!-- Core stylesheet (pinned version — swap v0.1.0 for your target) -->
+    <link rel="stylesheet"
+          href="https://storage.googleapis.com/ndesign-cdn/ndesign/v0.1.0/ndesign.min.css">
 
-    <!-- Optional theme. The class="theme" attribute is REQUIRED so the
-         theme-switcher can find and swap the link element. -->
-    <link rel="stylesheet" href="/dist/themes/light.min.css"
+    <!-- Optional theme. class="theme" is REQUIRED so the theme switcher
+         can find and swap the link element. -->
+    <link rel="stylesheet"
+          href="https://storage.googleapis.com/ndesign-cdn/ndesign/v0.1.0/themes/light.min.css"
           class="theme" data-theme="light">
-    <meta name="nd-theme" content="light" data-href="/dist/themes/light.min.css">
-    <meta name="nd-theme" content="dark"  data-href="/dist/themes/dark.min.css">
+    <meta name="nd-theme" content="light"
+          data-href="https://storage.googleapis.com/ndesign-cdn/ndesign/v0.1.0/themes/light.min.css">
+    <meta name="nd-theme" content="dark"
+          data-href="https://storage.googleapis.com/ndesign-cdn/ndesign/v0.1.0/themes/dark.min.css">
 
     <!-- Store configuration via meta tags. Agents SHOULD prefer this over
          NDesign.configure() because it keeps URLs declarative. -->
@@ -205,19 +238,32 @@ Themes ship separately under `dist/themes/`. A minimal page is:
 
     <!-- Runtime bundle. Loads synchronously and auto-initializes on
          DOMContentLoaded (or immediately if the DOM is already parsed). -->
-    <script src="/dist/ndesign.min.js"></script>
+    <script src="https://storage.googleapis.com/ndesign-cdn/ndesign/v0.1.0/ndesign.min.js"></script>
   </body>
 </html>
 ```
 
-Notes:
+For active development, substitute `latest` for `v0.1.0` in every URL above.
+For a production deployment, always pin to a specific `v<semver>` so your
+app does not silently upgrade when the CDN's `latest/` pointer moves.
+
+### 2.3. Self-hosting
+
+If CDN delivery is not acceptable (air-gapped environments, CSP constraints,
+or policy), download the four files and host them under any same-origin or
+cross-origin path of your choice. The same `<link>` and `<script>` tags
+apply — just swap the URLs. No other configuration changes are required.
+
+### 2.4. Notes
 
 - The CSS MUST be in `<head>` to avoid FOUC.
 - The JS SHOULD be at the end of `<body>`. It is an IIFE that exposes
   `window.NDesign`.
 - `NDesign.configure(...)` MAY be called before or after init — see section 4.
-- `dist/` contains: `ndesign.min.css`, `ndesign.min.js`, and
-  `themes/light.min.css` + `themes/dark.min.css`.
+- The CDN sets `Cache-Control: public, max-age=31536000, immutable` on
+  versioned assets and `public, max-age=300, must-revalidate` on the
+  `latest/` prefix, so browsers will not re-fetch pinned bundles across
+  reloads.
 
 ---
 
