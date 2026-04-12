@@ -167,6 +167,77 @@ A successful ndesign app is one where every dynamic element has its URL,
 render template, and success chain visible directly in the HTML, and the
 entire JS bundle is never forked.
 
+### 1.1. Layout philosophy — full-width by default
+
+ndesign is designed for **full-width application layouts**. The `<body>`
+occupies the entire viewport width out of the box, and components (cards,
+tables, grids, sidebars) are expected to fill the available space. This is
+the correct default for dashboards, admin panels, control panels, data-heavy
+apps, and virtually all application UIs.
+
+The framework provides an **opt-in** narrow container (`.nd-container`,
+max-width 900 px) and a prose wrapper (`.nd-prose`) for long-form reading
+content. These exist exclusively for pages whose primary content is text:
+blog posts, articles, documentation, marketing copy, and similar editorial
+layouts.
+
+**Do NOT wrap application markup in `.nd-container` by default.** This is the
+single most common misuse of the framework — agents and developers familiar
+with other CSS frameworks reflexively add a centered narrow column to every
+page, which wastes horizontal space, breaks sidebar + content patterns, and
+defeats the grid system. If the page is not a blog or article, do not use
+`.nd-container`.
+
+| Layout type           | Correct approach                                                    |
+|-----------------------|---------------------------------------------------------------------|
+| Dashboard / admin     | Place content directly in `<body>` or `<main>` — no container.      |
+| Sidebar + content     | Use `app-layout` / `app-content` classes (see demo/control-panel).  |
+| Data tables, forms    | Full-width inside their parent; constrain with the grid if needed.  |
+| Blog post / article   | Wrap in `<main class="nd-container">` with `.nd-prose` for text.    |
+| Centered landing page | `.nd-container` is acceptable for a narrow hero + CTA layout.       |
+
+Rule of thumb: if the page has a sidebar, a data table, a card grid, or any
+kind of multi-column application layout, it should be full-width. Reserve
+`.nd-container` for pages where the user is primarily **reading**.
+
+### 1.2. No custom CSS or JavaScript
+
+ndesign is an **HTML-only** framework from the consumer's perspective. The
+two bundled files (`ndesign.min.css` + `ndesign.min.js`) provide all styling,
+interactivity, data binding, and server communication a page needs. Consumer
+pages should contain **zero** `<style>` blocks, zero inline `style="…"`
+attributes, and zero `<script>` blocks beyond the one `<script>` tag that
+loads the runtime.
+
+This is a deliberate design constraint, not an oversight:
+
+- **If a visual treatment requires custom CSS**, the framework is missing a
+  component or utility class. The correct response is to file an issue or
+  extend the framework — not to patch around it with one-off styles.
+- **If an interaction requires custom JavaScript**, the framework is missing
+  a `data-nd-*` attribute, a success-chain action, or a store operation. The
+  correct response is to extend the runtime — not to add ad-hoc `<script>`
+  handlers.
+
+Before writing any custom CSS or JS, verify with the framework maintainer
+(or this spec) that no existing attribute, class, or configuration already
+solves the problem. Agents generating ndesign pages MUST NOT introduce
+custom styles or scripts without explicit user approval.
+
+**Acceptable exceptions** — third-party libraries that provide capabilities
+outside the framework's scope:
+
+| Exception                | Examples                                           |
+|--------------------------|----------------------------------------------------|
+| Charting / visualization | Chart.js, D3, ECharts, Plotly                      |
+| Animation / motion       | GSAP, Lottie, anime.js                             |
+| Rich text editing        | TipTap, ProseMirror, CodeMirror                    |
+| Maps                     | Leaflet, Mapbox GL                                 |
+
+Even when using these libraries, the surrounding layout, typography, cards,
+forms, and controls should still come from ndesign — only the specialized
+rendering surface itself should be third-party.
+
 ---
 
 ## 2. Installation
@@ -1671,6 +1742,7 @@ names follow predictable suffixes; agents do not need to memorize every class.
 
 | Family          | Example                              | Notes                                   |
 |-----------------|--------------------------------------|-----------------------------------------|
+| Container       | `.nd-container`                      | Narrow (900 px) centered column — **prose/blog only**, not for app layouts. See 1.1. |
 | Grid            | `.nd-row`, `.nd-col-6`, `.nd-col-12` | 12-col grid.                             |
 | Flex            | `.nd-flex`, `.nd-flex-between`, `.nd-flex-center` | Flex layout helpers.           |
 | Gap             | `.nd-gap-sm`, `.nd-gap-md`, `.nd-gap-lg`          | Flex/grid gap.                  |
@@ -1739,7 +1811,7 @@ custom stylesheet loaded AFTER the theme link.
 All recipes target `https://test.nitecon.org`. They assume the standard page
 skeleton from section 2 (with `<meta name="endpoint:api" content="https://test.nitecon.org">`).
 
-### 20.1. Minimal page skeleton
+### 20.1. Minimal page skeleton (full-width — the default)
 
 ```html
 <!doctype html>
@@ -1751,8 +1823,33 @@ skeleton from section 2 (with `<meta name="endpoint:api" content="https://test.n
     <meta name="endpoint:api" content="https://test.nitecon.org">
   </head>
   <body>
+    <h1>Hello</h1>
+    <!-- App content lives directly in <body>. Do NOT add nd-container
+         unless the page is primarily long-form reading content. -->
+    <script src="/dist/ndesign.min.js"></script>
+  </body>
+</html>
+```
+
+### 20.1b. Prose / blog page skeleton
+
+Use `.nd-container` and `.nd-prose` only when the page is editorial content
+meant to be read in a narrow column:
+
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Blog post</title>
+    <link rel="stylesheet" href="/dist/ndesign.min.css">
+  </head>
+  <body>
     <main class="nd-container">
-      <h1>Hello</h1>
+      <article class="nd-prose">
+        <h1>Article title</h1>
+        <p>Long-form text content goes here…</p>
+      </article>
     </main>
     <script src="/dist/ndesign.min.js"></script>
   </body>
@@ -2175,6 +2272,18 @@ global message placement.
   — upload success only processes `data-nd-success` and the feedback message.
 - **DO NOT** embed HTML in toast messages expecting it to render. Toast text
   is HTML-escaped via `textContent`.
+- **DO NOT** wrap application layouts in `.nd-container`. The framework is
+  full-width by default. `.nd-container` is a narrow (900 px) centered
+  column intended only for prose-heavy pages such as blog posts and articles.
+  Using it on dashboards, control panels, or any multi-column app layout
+  wastes screen space and breaks the grid. See section 1.1.
+- **DO NOT** add custom `<style>` blocks, inline `style="…"` attributes, or
+  `<script>` blocks to ndesign pages. The framework is designed to be
+  HTML-only — every visual treatment and interaction is handled by the
+  bundled CSS and JS. If something appears to require custom code, it means
+  a framework capability is missing and should be added to the framework,
+  not patched around. The only exceptions are third-party libraries for
+  charting, animation, rich-text editing, or maps. See section 1.2.
 
 ---
 
