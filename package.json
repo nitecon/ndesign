@@ -20,7 +20,7 @@
     "watch:css": "sass --watch scss:dist",
     "watch:js": "esbuild js/ndesign.js --bundle --outfile=dist/ndesign.js --format=iife --global-name=NDesign --sourcemap --watch",
     "deploy:cdn": "bash scripts/deploy-cdn.sh",
-    "preversion": "npm run test:js",
+    "preversion": "npm test",
     "postversion": "npm run deploy:cdn && git push --follow-tags"
   },
   "devDependencies": {
