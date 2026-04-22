@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ndesign — Blog Post</title>
+  <link rel="stylesheet" href="../dist/ndesign.css">
+  <link rel="stylesheet" href="../dist/themes/light.css" class="theme" data-theme="light">
+  <meta name="nd-theme" content="light" data-href="../dist/themes/light.css">
+  <meta name="nd-theme" content="dark" data-href="../dist/themes/dark.css">
+  <style>/* You may not use custom styles under any circumstance on the demo pages */</style>
+</head>
+<body class="app-page">
+
+  <!-- ====================================================================== -->
+  <!-- Top Navigation                                                         -->
+  <!-- ====================================================================== -->
+  <nav>
+    <a href="index.html" class="nd-nav-brand">ndesign <span class="nd-nav-brand-sub">Journal</span></a>
+
+    <button class="nd-nav-toggle" aria-label="Toggle navigation" data-nd-toggle="nav">&#9776;</button>
+
+    <ul class="nd-nav-menu">
+      <li><a href="#">Home</a></li>
+      <li><a href="#" class="nd-active">Engineering</a></li>
+      <li><a href="#">Design</a></li>
+      <li><a href="#">Archive</a></li>
+    </ul>
+
+    <div class="nd-nav-end">
+      <button class="nd-btn-secondary nd-btn-sm" data-nd-theme-toggle aria-label="Toggle theme">
+        Toggle Theme
+      </button>
+      <button class="nd-btn-primary nd-btn-sm">Subscribe</button>
+    </div>
+  </nav>
+
+  <!-- ====================================================================== -->
+  <!-- Prose / Blog page — .nd-container (900px) + article.nd-prose (65ch)    -->
+  <!-- ====================================================================== -->
+  <main class="nd-container nd-mt-lg nd-mb-2xl">
+
+    <!-- ------------------------------------------------------------------ -->
+    <!-- Article panel — the floating "paper" holding the prose             -->
+    <!-- ------------------------------------------------------------------ -->
+    <div class="nd-panel nd-shadow-lg">
+
+      <!-- Breadcrumb -->
+      <nav class="nd-breadcrumb nd-breadcrumb-slash nd-mb-md" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="#">Journal</a></li>
+          <li><a href="#">Engineering</a></li>
+          <li aria-current="page">The Backend Is Always Authoritative</li>
+        </ol>
+      </nav>
+
+      <!-- Article -->
+      <article class="nd-prose nd-mx-auto">
+
+      <!-- Post meta row: category badge + time + read length -->
+      <p class="nd-mb-sm">
+        <span class="nd-badge nd-badge-primary">Engineering</span>
+        <span class="nd-badge nd-badge-secondary">Architecture</span>
+        <span class="nd-text-small nd-text-muted nd-ml-sm">
+          <time datetime="2026-04-18">April 18, 2026</time>
+          &middot; 9 min read
+        </span>
+      </p>
+
+      <!-- Title + lead -->
+      <h1>The backend is always authoritative</h1>
+
+      <p class="nd-text-lead">
+        Thin clients. Dumb templates. Server-owned truth. A year into rebuilding our
+        admin surfaces on top of a hypermedia-first stack, here is what actually
+        changed &mdash; and what broke on the way there.
+      </p>
+
+      <!-- Author byline -->
+      <div class="nd-flex nd-align-center nd-gap-sm nd-mb-lg">
+        <span class="avatar">WH</span>
+        <div>
+          <p class="nd-mb-0"><strong>Will Hattingh</strong></p>
+          <p class="nd-mb-0 nd-text-small nd-text-muted">Staff engineer &middot; Platform</p>
+        </div>
+      </div>
+
+      <!-- Featured figure — inline SVG so the demo has no external dependencies -->
+      <figure>
+        <svg viewBox="0 0 800 360" xmlns="http://www.w3.org/2000/svg" role="img"
+             aria-label="Diagram: thin browser client bound to a stateful backend">
+          <rect width="800" height="360" fill="var(--nd-bg-surface)"/>
+          <rect x="40"  y="80"  width="220" height="200" rx="12"
+                fill="var(--nd-bg-well)"    stroke="var(--nd-border)" stroke-width="2"/>
+          <rect x="540" y="80"  width="220" height="200" rx="12"
+                fill="var(--nd-bg-well)"    stroke="var(--nd-border)" stroke-width="2"/>
+          <rect x="290" y="130" width="220" height="100" rx="12"
+                fill="var(--nd-accent)"     opacity="0.15"
+                stroke="var(--nd-accent)"   stroke-width="2"/>
+          <text x="150" y="190" text-anchor="middle"
+                font-family="Inter, sans-serif" font-size="20"
+                fill="var(--nd-text-primary)">Browser</text>
+          <text x="150" y="215" text-anchor="middle"
+                font-family="JetBrains Mono, monospace" font-size="13"
+                fill="var(--nd-text-muted)">thin client</text>
+          <text x="400" y="185" text-anchor="middle"
+                font-family="Inter, sans-serif" font-size="18"
+                fill="var(--nd-text-primary)">hypermedia</text>
+          <text x="650" y="190" text-anchor="middle"
+                font-family="Inter, sans-serif" font-size="20"
+                fill="var(--nd-text-primary)">Backend</text>
+          <text x="650" y="215" text-anchor="middle"
+                font-family="JetBrains Mono, monospace" font-size="13"
+                fill="var(--nd-text-muted)">source of truth</text>
+          <line x1="260" y1="180" x2="290" y2="180"
+                stroke="var(--nd-accent)" stroke-width="3"/>
+          <line x1="510" y1="180" x2="540" y2="180"
+                stroke="var(--nd-accent)" stroke-width="3"/>
+        </svg>
+        <figcaption>
+          A thin client sends intent; the backend sends back rendered truth.
+        </figcaption>
+      </figure>
+
+      <!-- ---------------- Section 1 ---------------- -->
+      <h2>Why we stopped shipping state to the client</h2>
+
+      <p>
+        For years our admin surfaces shipped a client-side state machine that
+        mirrored half the domain model. Every new feature started with a
+        question nobody wanted to answer: <em>where does this piece of data
+        live &mdash; on the server, in the store, or in the component?</em>
+        The answer was usually <mark>all three</mark>, and the bugs followed.
+      </p>
+
+      <p>
+        The shift was narrative, not technical. Once we agreed that the
+        backend would be <strong>the only source of truth</strong>, the
+        client&rsquo;s job collapsed to three things: render markup the
+        server sends, bind inputs to endpoints, and surface feedback. No
+        reducers. No derived state. No cache invalidation dance. Just
+        <a href="#">HTTP and a template</a>.
+      </p>
+
+      <aside>
+        <p class="nd-mb-0">
+          <strong>Heuristic:</strong> if the frontend is answering a question
+          the backend could answer, you have duplicated state and it will
+          drift.
+        </p>
+      </aside>
+
+      <!-- ---------------- Section 2 ---------------- -->
+      <h2>What the client is still responsible for</h2>
+
+      <p>
+        A thin client is not an empty one. It still owns presentation and
+        ergonomics &mdash; just nothing that requires knowing the domain.
+        In our stack that distils to:
+      </p>
+
+      <ul>
+        <li>Binding DOM elements to endpoints with small, declarative attributes.</li>
+        <li>Rendering <code>&lt;template&gt;</code> fragments from JSON responses.</li>
+        <li>Surfacing loading, empty, and error states the backend already labeled.</li>
+        <li>Keyboard, focus, and motion &mdash; the things a server literally cannot do.</li>
+      </ul>
+
+      <p>
+        Everything else is a <abbr title="Remote Procedure Call">RPC</abbr>
+        round-trip. The tradeoff is obvious and we made it deliberately: a
+        little latency, a lot less complexity.
+      </p>
+
+      <!-- ---------------- Section 3 ---------------- -->
+      <h2>The migration, in three passes</h2>
+
+      <ol>
+        <li>
+          <strong>Inventory.</strong> Audit every client-side store, context,
+          and module-level cache. Most of them exist to dodge a request the
+          team was afraid to make.
+        </li>
+        <li>
+          <strong>Invert.</strong> Replace each store with a binding to the
+          endpoint that already answers its question. Delete the store.
+        </li>
+        <li>
+          <strong>Harden.</strong> Cache at the edge, not in the client.
+          Stream where it helps. Add feedback affordances so the user never
+          wonders whether a click registered.
+        </li>
+      </ol>
+
+      <blockquote>
+        &ldquo;The backend is always authoritative. The frontend is a thin
+        presentation and binding layer delivered via CDN.&rdquo;
+        <br>&mdash; ndesign Architecture Spec
+      </blockquote>
+
+      <!-- ---------------- Section 4 ---------------- -->
+      <h2>What a binding looks like</h2>
+
+      <p>
+        The binding pattern is almost embarrassingly small. A card that
+        renders whatever <code>/api/users/2</code> returns is one element
+        and one template:
+      </p>
+
+      <pre><code>&lt;div class="nd-card"
+     data-nd-bind="${api}/api/users/2"
+     data-nd-template="user-tpl"&gt;
+  &lt;template id="user-tpl"&gt;
+    &lt;div class="nd-card-header"&gt;&lt;h3&gt;{{name}}&lt;/h3&gt;&lt;/div&gt;
+    &lt;div class="nd-card-body"&gt;&lt;p&gt;{{email}}&lt;/p&gt;&lt;/div&gt;
+  &lt;/template&gt;
+&lt;/div&gt;</code></pre>
+
+      <p>
+        No JavaScript. No framework. No build step. The same file runs in
+        production, in a static preview, and in the offline docs you are
+        reading right now. That&rsquo;s the point.
+      </p>
+
+      <!-- ---------------- Section 5 ---------------- -->
+      <h2>What we measured afterward</h2>
+
+      <p>
+        We tracked four numbers across the six months before and after the
+        cutover. The client-side numbers are the ones that surprised us &mdash;
+        not because they got better, but because they got simpler.
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Before</th>
+            <th>After</th>
+            <th>Delta</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>JS shipped (gzipped)</td>
+            <td>312 KB</td>
+            <td>41 KB</td>
+            <td><span class="nd-badge nd-badge-success">&minus;87%</span></td>
+          </tr>
+          <tr>
+            <td>Time-to-interactive (p75)</td>
+            <td>2.8 s</td>
+            <td>0.9 s</td>
+            <td><span class="nd-badge nd-badge-success">&minus;68%</span></td>
+          </tr>
+          <tr>
+            <td>State-sync bugs / quarter</td>
+            <td>23</td>
+            <td>2</td>
+            <td><span class="nd-badge nd-badge-success">&minus;91%</span></td>
+          </tr>
+          <tr>
+            <td>Median PR review time</td>
+            <td>18 h</td>
+            <td>19 h</td>
+            <td><span class="nd-badge nd-badge-secondary">flat</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        The flat review time is the honest one: moving complexity to the
+        server does not make the codebase smaller overall, it makes it
+        <em>legible</em>. Our backend PRs got longer; our frontend PRs
+        got shorter; the overall throughput was unchanged. What moved was
+        our ability to reason about a failure after it shipped.
+      </p>
+
+      <!-- ---------------- Section 6 ---------------- -->
+      <h2>Things we still got wrong</h2>
+
+      <h3>Optimistic updates</h3>
+      <p>
+        For a month we tried to keep optimistic updates on the client.
+        They are the one thing users notice when you remove them. We ended
+        up moving the optimism server-side too &mdash; <code>202 Accepted</code>
+        plus a pending badge &mdash; and eating a slightly worse perceived
+        latency for a much smaller surface area.
+      </p>
+
+      <h3>Keyboard shortcuts</h3>
+      <p>
+        Power users expected <kbd>Cmd</kbd> + <kbd>K</kbd> command palettes
+        and <kbd>G</kbd> <kbd>D</kbd> style chord navigation. Those belong
+        fully on the client. We should have built them first instead of
+        last.
+      </p>
+
+      <!-- ---------------- FAQ using details/summary ---------------- -->
+      <h2>Questions we get asked a lot</h2>
+
+      <details>
+        <summary>Isn&rsquo;t this just server-side rendering?</summary>
+        <p>
+          Not exactly. SSR ships the initial HTML from the server, then
+          hydrates a client-side app that owns state. We never hydrate.
+          Subsequent interactions hit the same endpoints that rendered
+          the page, and we swap fragments back in. Closer to
+          <em>hypermedia</em> than SSR.
+        </p>
+      </details>
+
+      <details>
+        <summary>What about offline?</summary>
+        <p>
+          We accept that offline is a different product. For admin tools,
+          nobody edits a user table on a plane. If you need offline-first,
+          you need a sync engine, and that is a larger architectural
+          commitment than a CSS framework can meaningfully help with.
+        </p>
+      </details>
+
+      <details>
+        <summary>Does this scale to public-facing apps?</summary>
+        <p>
+          It scales to any app where latency is tolerable and features
+          are mostly CRUD. The further you get from CRUD &mdash; games,
+          editors, real-time collaboration &mdash; the more you need a
+          thick client. Pick the right tool per surface; don&rsquo;t
+          pick one religion for the whole org.
+        </p>
+      </details>
+
+      <hr>
+
+      <!-- ---------------- Closing ---------------- -->
+      <h2>The part worth stealing</h2>
+
+      <p>
+        You do not need our framework to get most of this. The thing worth
+        stealing is the rule, not the code: <strong>one source of truth,
+        and it lives on the server.</strong> Every decision downstream of
+        that rule gets easier. Every decision upstream of it is a cache
+        invalidation problem in disguise.
+      </p>
+
+      <p>
+        If you try it, start with a single surface. A settings page is a
+        good candidate &mdash; low traffic, high form-density, forgiving
+        UX expectations. Inventory the state, invert the bindings, delete
+        the store. Measure the diff. Decide from there.
+      </p>
+
+      </article>
+
+      <!-- Tags (still inside the article panel, as an end-of-article footer) -->
+      <section class="nd-mt-xl nd-pt-lg nd-border-t">
+        <p class="nd-text-small nd-text-muted nd-mb-sm">Filed under</p>
+        <div class="nd-flex nd-flex-wrap nd-gap-xs">
+          <span class="nd-badge nd-badge-secondary">architecture</span>
+          <span class="nd-badge nd-badge-secondary">hypermedia</span>
+          <span class="nd-badge nd-badge-secondary">frontend</span>
+          <span class="nd-badge nd-badge-secondary">rest</span>
+          <span class="nd-badge nd-badge-secondary">postmortem</span>
+        </div>
+      </section>
+
+    </div><!-- /.nd-panel -->
+
+    <!-- ------------------------------------------------------------------ -->
+    <!-- Author bio card                                                    -->
+    <!-- ------------------------------------------------------------------ -->
+    <article class="nd-card nd-mt-xl">
+      <div class="nd-card-body">
+        <div class="nd-flex nd-gap-md nd-align-start">
+          <span class="avatar avatar-lg">WH</span>
+          <div>
+            <h4 class="nd-mb-xs">Will Hattingh</h4>
+            <p class="nd-text-small nd-text-muted nd-mb-sm">
+              Staff engineer working on platform tooling. Writes occasionally
+              about building fewer abstractions and shipping more boring
+              software.
+            </p>
+            <div class="nd-flex nd-gap-sm">
+              <a href="#" class="nd-btn-ghost nd-btn-sm">Follow</a>
+              <a href="#" class="nd-btn-ghost nd-btn-sm">All posts</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ------------------------------------------------------------------ -->
+    <!-- Prev / Next post navigation                                        -->
+    <!-- ------------------------------------------------------------------ -->
+    <nav class="nd-mt-xl" aria-label="Post navigation">
+      <div class="nd-row">
+        <div class="nd-col-6">
+          <a href="#" class="nd-card nd-block">
+            <div class="nd-card-body">
+              <p class="nd-text-xs nd-text-muted nd-mb-xs">&larr; Previous post</p>
+              <p class="nd-mb-0"><strong>Why our style guide bans custom CSS</strong></p>
+            </div>
+          </a>
+        </div>
+        <div class="nd-col-6">
+          <a href="#" class="nd-card nd-block">
+            <div class="nd-card-body nd-text-right">
+              <p class="nd-text-xs nd-text-muted nd-mb-xs">Next post &rarr;</p>
+              <p class="nd-mb-0"><strong>A framework-agnostic pattern for feedback</strong></p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ------------------------------------------------------------------ -->
+    <!-- Pagination (archive-style)                                         -->
+    <!-- ------------------------------------------------------------------ -->
+    <nav class="nd-pagination nd-pagination-center nd-mt-xl" aria-label="Archive pagination">
+      <ul>
+        <li><a href="#" aria-label="Previous page">&larr; Older</a></li>
+        <li><a href="#">1</a></li>
+        <li><a href="#" aria-current="page">2</a></li>
+        <li><a href="#">3</a></li>
+        <li><a href="#">4</a></li>
+        <li><a href="#" aria-label="Next page">Newer &rarr;</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <!-- ====================================================================== -->
+  <!-- Scripts                                                                -->
+  <!-- ====================================================================== -->
+  <script src="../dist/ndesign.min.js"></script>
+</body>
+</html>

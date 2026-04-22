@@ -200,6 +200,41 @@ Rule of thumb: if the page has a sidebar, a data table, a card grid, or any
 kind of multi-column application layout, it should be full-width. Reserve
 `.nd-container` for pages where the user is primarily **reading**.
 
+### 1.1a. Three canonical starting layouts — ASK THE USER FIRST
+
+ndesign ships **three canonical starting layouts**. Every new page begins
+from one of them. Picking the wrong skeleton later means rewriting the
+entire shell, so **agents MUST ask the user which of the three to start
+from before writing a single line of HTML.** Do not guess from the task
+description, do not default silently, do not invent a fourth. Ask.
+
+| ID              | Best for                                                           | Key markers                                              |
+|-----------------|--------------------------------------------------------------------|----------------------------------------------------------|
+| `control-panel` | Dashboards, admin UIs, data-heavy internal tools with a sidebar.   | `.app-layout` + `.sidebar` + `.app-body` + top `<header>`|
+| `app-shell`     | Multi-page SaaS apps with a fixed sidebar and per-page content.    | `.sidebar.sidebar-fixed` + `.app-main`                   |
+| `blog`          | Editorial content — posts, articles, docs, marketing copy.         | Top `<nav>` + `.nd-container` + `.nd-panel` + `.nd-prose`|
+
+The required prompt to the user, before writing any markup:
+
+> Which of the three starting layouts should this page use —
+> **control-panel** (sidebar + scrollable content for a dashboard),
+> **app-shell** (fixed sidebar for a multi-page SaaS app), or
+> **blog** (centered prose panel for an article)?
+
+Once the user picks, copy the matching skeleton from Section 20.1 verbatim
+and build inside it.
+Do NOT mix layouts (e.g. do not add `.nd-container` to `control-panel`, do
+not add `.sidebar` to `blog`). If the user's need truly does not fit one of
+the three, flag it and discuss — do not silently invent a hybrid.
+
+Live reference demos for each layout:
+
+| Layout          | Demo file                    |
+|-----------------|------------------------------|
+| `control-panel` | `demo/control-panel.html`    |
+| `app-shell`     | `demo/app-shell.html`        |
+| `blog`          | `demo/blog-post.html`        |
+
 ### 1.2. No custom CSS or JavaScript
 
 ndesign is an **HTML-only** framework from the consumer's perspective. The
@@ -1811,49 +1846,150 @@ custom stylesheet loaded AFTER the theme link.
 All recipes target `https://test.nitecon.org`. They assume the standard page
 skeleton from section 2 (with `<meta name="endpoint:api" content="https://test.nitecon.org">`).
 
-### 20.1. Minimal page skeleton (full-width — the default)
+### 20.1. Starting layouts — pick one
+
+ndesign pages begin from one of three canonical skeletons. **Ask the user
+which to use** (see section 1.1a); do not guess. Once chosen, copy the
+matching skeleton verbatim and build inside it.
+
+All three skeletons share the same `<head>` — the only thing that varies
+is the `<body>` contents.
+
+**Shared `<head>` (use for all three layouts):**
 
 ```html
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>ndesign app</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page title</title>
     <link rel="stylesheet" href="/dist/ndesign.min.css">
+    <link rel="stylesheet" href="/dist/themes/light.css" class="theme" data-theme="light">
+    <meta name="nd-theme" content="light" data-href="/dist/themes/light.css">
+    <meta name="nd-theme" content="dark"  data-href="/dist/themes/dark.css">
     <meta name="endpoint:api" content="https://test.nitecon.org">
   </head>
-  <body>
-    <h1>Hello</h1>
-    <!-- App content lives directly in <body>. Do NOT add nd-container
-         unless the page is primarily long-form reading content. -->
-    <script src="/dist/ndesign.min.js"></script>
-  </body>
+  <!-- body goes here — pick ONE of the three below -->
+  <script src="/dist/ndesign.min.js"></script>
 </html>
 ```
 
-### 20.1b. Prose / blog page skeleton
+#### 20.1.a. `control-panel` — dashboard with sidebar and top header
 
-Use `.nd-container` and `.nd-prose` only when the page is editorial content
-meant to be read in a narrow column:
+Use for admin UIs, dashboards, operations consoles — any data-heavy
+application with persistent left navigation and a scrollable content area.
+Reference: `demo/control-panel.html`.
 
 ```html
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>Blog post</title>
-    <link rel="stylesheet" href="/dist/ndesign.min.css">
-  </head>
-  <body>
-    <main class="nd-container">
-      <article class="nd-prose">
+<body class="app-page">
+  <div class="app-layout nd-h-screen nd-overflow-hidden">
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="app-sidebar">
+      <span class="nd-nav-brand">AppName</span>
+      <p class="nd-nav-section">Main</p>
+      <ul class="nd-nav-menu">
+        <li><a href="#" class="nd-active">Dashboard</a></li>
+        <li><a href="#">Users</a></li>
+      </ul>
+    </nav>
+
+    <!-- Main column: header + scrollable content -->
+    <div class="app-body">
+      <header>
+        <div class="app-header-left">
+          <button class="hamburger" data-nd-toggle="sidebar" aria-label="Toggle navigation">&#9776;</button>
+          <h1 class="app-header-title">Dashboard</h1>
+        </div>
+        <div class="app-header-right">
+          <button class="nd-btn-ghost nd-btn-sm" data-nd-theme-toggle>Toggle Theme</button>
+        </div>
+      </header>
+
+      <main class="app-content">
+        <!-- Page content. Use .nd-row / .nd-col-* for grids.
+             Do NOT wrap in .nd-container. -->
+      </main>
+    </div>
+
+  </div>
+</body>
+```
+
+#### 20.1.b. `app-shell` — fixed sidebar + main content column
+
+Use for multi-page SaaS apps where the sidebar is always visible and the
+page's primary content sits in a single main column. Simpler than
+`control-panel` (no top header bar). Reference: `demo/app-shell.html`.
+
+```html
+<body class="app-page">
+
+  <!-- Fixed sidebar -->
+  <nav class="sidebar sidebar-fixed">
+    <span class="nd-nav-brand">AppName</span>
+    <p class="nd-nav-section">Main</p>
+    <ul class="nd-nav-menu">
+      <li><a href="#" class="nd-active">Dashboard</a></li>
+      <li><a href="#">Reports</a></li>
+    </ul>
+  </nav>
+
+  <!-- Overlay for mobile sidebar toggle -->
+  <div class="nd-nav-overlay"></div>
+
+  <!-- Main content area — .app-main reserves the 16rem sidebar gutter -->
+  <div class="app-main">
+    <!-- Optional top bar -->
+    <nav class="nd-relative nd-mb-lg">
+      <button class="nd-nav-toggle" aria-label="Toggle sidebar" data-nd-toggle="sidebar">&#9776;</button>
+      <span class="nd-nav-brand">Page Title</span>
+      <div class="nd-nav-end">
+        <button class="nd-btn-ghost nd-btn-sm" data-nd-theme-toggle>Theme</button>
+      </div>
+    </nav>
+
+    <!-- Page content. Do NOT wrap in .nd-container. -->
+  </div>
+
+</body>
+```
+
+#### 20.1.c. `blog` — centered prose panel for editorial content
+
+Use for blog posts, articles, documentation, marketing copy, and similar
+long-form reading. The only layout that uses `.nd-container` +
+`.nd-prose`. Reference: `demo/blog-post.html`.
+
+```html
+<body class="app-page">
+
+  <!-- Top nav (flush to viewport edges courtesy of .app-page) -->
+  <nav>
+    <a href="/" class="nd-nav-brand">Brand <span class="nd-nav-brand-sub">Journal</span></a>
+    <ul class="nd-nav-menu">
+      <li><a href="#" class="nd-active">Home</a></li>
+      <li><a href="#">Archive</a></li>
+    </ul>
+    <div class="nd-nav-end">
+      <button class="nd-btn-secondary nd-btn-sm" data-nd-theme-toggle>Theme</button>
+      <button class="nd-btn-primary nd-btn-sm">Subscribe</button>
+    </div>
+  </nav>
+
+  <!-- Centered 900px column; the article sits on a floating .nd-panel -->
+  <main class="nd-container nd-mt-lg nd-mb-2xl">
+    <div class="nd-panel nd-shadow-lg">
+      <article class="nd-prose nd-mx-auto">
         <h1>Article title</h1>
-        <p>Long-form text content goes here…</p>
+        <p class="nd-text-lead">Lead paragraph.</p>
+        <p>Long-form body text…</p>
       </article>
-    </main>
-    <script src="/dist/ndesign.min.js"></script>
-  </body>
-</html>
+    </div>
+  </main>
+
+</body>
 ```
 
 ### 20.2. User card bound to `/api/users/2`
