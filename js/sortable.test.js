@@ -578,3 +578,244 @@ describe('revert on failure (FE-4)', () => {
     assert.equal(c.__ndSortableBound, undefined);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Tests: Cross-container drag (data-nd-sortable-group)
+// ---------------------------------------------------------------------------
+
+/**
+ * Fire a synthetic mouse-drag event on `container`. Callers pass the
+ * listener-matching `target` (e.g. the dragged item for dragstart, the
+ * hover target for dragover). `preventDefaulted` is flipped whenever a
+ * handler calls `preventDefault()` — used by cross-container tests to
+ * assert that an intended drop target was actually accepted.
+ * @param {FakeElement} container
+ * @param {string}      type
+ * @param {FakeElement} target
+ * @param {Object}      [extra]
+ */
+function fireDrag(container, type, target, extra = {}) {
+  const state = { defaulted: false };
+  const evt = {
+    type,
+    target,
+    currentTarget: container,
+    clientY: extra.clientY !== undefined ? extra.clientY : 0,
+    preventDefault: () => { state.defaulted = true; },
+    dataTransfer: {
+      effectAllowed: '',
+      dropEffect: '',
+      setData: () => {},
+    },
+    ...extra,
+  };
+  const handlers = container._listeners[type] || [];
+  for (const h of handlers) h(evt);
+  return state;
+}
+
+describe('cross-container drag (data-nd-sortable-group)', () => {
+  beforeEach(() => { resetDOM(); });
+
+  test('item moves to another container when groups match', () => {
+    const src = makeContainer('UL', 'POST /api/src');
+    src.setAttribute('data-nd-sortable-group', 'tasks');
+    const dst = makeContainer('UL', 'POST /api/dst');
+    dst.setAttribute('data-nd-sortable-group', 'tasks');
+
+    const a = addItem(src, 'a');
+    const b = addItem(dst, 'b');
+    // Stub getBoundingClientRect so insertBefore math runs.
+    b.getBoundingClientRect = () => ({ top: 0, height: 20 });
+    initSortable();
+
+    fireDrag(src, 'dragstart', a);
+    const over = fireDrag(dst, 'dragover', b, { clientY: 5 });
+
+    assert.ok(over.defaulted, 'dragover on matching-group container must preventDefault');
+    assert.equal(a.parentElement, dst, 'item should move into destination container');
+  });
+
+  test('item does NOT move when groups differ', () => {
+    const src = makeContainer('UL', 'POST /api/src');
+    src.setAttribute('data-nd-sortable-group', 'alpha');
+    const dst = makeContainer('UL', 'POST /api/dst');
+    dst.setAttribute('data-nd-sortable-group', 'beta');
+
+    const a = addItem(src, 'a');
+    const b = addItem(dst, 'b');
+    b.getBoundingClientRect = () => ({ top: 0, height: 20 });
+    initSortable();
+
+    fireDrag(src, 'dragstart', a);
+    fireDrag(dst, 'dragover', b, { clientY: 5 });
+
+    assert.equal(a.parentElement, src, 'item must stay in source when groups do not match');
+  });
+
+  test('item does NOT move when neither container has a group', () => {
+    const src = makeContainer('UL', 'POST /api/src');
+    const dst = makeContainer('UL', 'POST /api/dst');
+
+    const a = addItem(src, 'a');
+    const b = addItem(dst, 'b');
+    b.getBoundingClientRect = () => ({ top: 0, height: 20 });
+    initSortable();
+
+    fireDrag(src, 'dragstart', a);
+    fireDrag(dst, 'dragover', b, { clientY: 5 });
+
+    assert.equal(a.parentElement, src, 'no group => no cross-container drop');
+  });
+
+  test('dropping into empty same-group container appends the item', () => {
+    const src = makeContainer('UL', 'POST /api/src');
+    src.setAttribute('data-nd-sortable-group', 'tasks');
+    const dst = makeContainer('UL', 'POST /api/dst');
+    dst.setAttribute('data-nd-sortable-group', 'tasks');
+
+    const a = addItem(src, 'a');
+    initSortable();
+
+    fireDrag(src, 'dragstart', a);
+    const over = fireDrag(dst, 'dragover', dst, { clientY: 5 });
+
+    assert.ok(over.defaulted, 'dragover on empty destination must preventDefault');
+    assert.equal(a.parentElement, dst);
+  });
+
+  test('cross-container drop POSTs to destination URL, not source', async () => {
+    const src = makeContainer('UL', 'POST /api/src-reorder');
+    src.setAttribute('data-nd-sortable-group', 'tasks');
+    const dst = makeContainer('UL', 'POST /api/dst-reorder');
+    dst.setAttribute('data-nd-sortable-group', 'tasks');
+
+    const a = addItem(src, 'a');
+    const b = addItem(dst, 'b');
+    b.getBoundingClientRect = () => ({ top: 0, height: 20 });
+    initSortable();
+
+    let capturedUrl = null;
+    let capturedBody = null;
+    const origFetch = global.fetch;
+    global.fetch = async (url, opts) => {
+      capturedUrl = url;
+      capturedBody = opts.body;
+      return { ok: true };
+    };
+
+    fireDrag(src, 'dragstart', a);
+    fireDrag(dst, 'dragover', b, { clientY: 5 });
+    fireDrag(dst, 'dragend', a);
+
+    await new Promise(r => setTimeout(r, 20));
+
+    assert.equal(capturedUrl, '/api/dst-reorder', 'POST must target destination URL');
+    const body = JSON.parse(capturedBody);
+    assert.ok(body.order.includes('a'), 'body order must include the moved item');
+
+    global.fetch = origFetch;
+  });
+
+  test('cross-container drop fires nd:sortable:reorder with crossContainer=true', async () => {
+    const src = makeContainer('UL', 'POST /api/src');
+    src.setAttribute('data-nd-sortable-group', 'tasks');
+    const dst = makeContainer('UL', 'POST /api/dst');
+    dst.setAttribute('data-nd-sortable-group', 'tasks');
+
+    const a = addItem(src, 'a');
+    const b = addItem(dst, 'b');
+    b.getBoundingClientRect = () => ({ top: 0, height: 20 });
+    initSortable();
+
+    let captured = null;
+    dst.addEventListener('nd:sortable:reorder', (e) => { captured = e.detail; });
+
+    const origFetch = global.fetch;
+    global.fetch = async () => ({ ok: true });
+
+    fireDrag(src, 'dragstart', a);
+    fireDrag(dst, 'dragover', b, { clientY: 5 });
+    fireDrag(dst, 'dragend', a);
+
+    await new Promise(r => setTimeout(r, 10));
+
+    assert.ok(captured, 'reorder event must fire on destination');
+    assert.equal(captured.crossContainer, true);
+    assert.equal(captured.source, src);
+
+    global.fetch = origFetch;
+  });
+
+  test('failed cross-container POST moves item back to source', async () => {
+    const src = makeContainer('UL', 'POST /api/src');
+    src.setAttribute('data-nd-sortable-group', 'tasks');
+    const dst = makeContainer('UL', 'POST /api/dst');
+    dst.setAttribute('data-nd-sortable-group', 'tasks');
+
+    const a = addItem(src, 'a');
+    const b = addItem(dst, 'b');
+    b.getBoundingClientRect = () => ({ top: 0, height: 20 });
+    initSortable();
+
+    const origFetch = global.fetch;
+    global.fetch = async () => ({ ok: false, status: 500, headers: { get: () => null } });
+
+    fireDrag(src, 'dragstart', a);
+    fireDrag(dst, 'dragover', b, { clientY: 5 });
+    // Before dragend: a is in dst.
+    assert.equal(a.parentElement, dst);
+    fireDrag(dst, 'dragend', a);
+
+    await new Promise(r => setTimeout(r, 30));
+
+    assert.equal(a.parentElement, src, 'on failure the item must be restored to source container');
+
+    global.fetch = origFetch;
+  });
+
+  test('data-nd-sortable-refresh dispatches nd:refresh on listed targets after success', async () => {
+    const src = makeContainer('UL', 'POST /api/src');
+    src.setAttribute('data-nd-sortable-group', 'tasks');
+    src.setAttribute('id', 'src');
+    const dst = makeContainer('UL', 'POST /api/dst');
+    dst.setAttribute('data-nd-sortable-group', 'tasks');
+    dst.setAttribute('id', 'dst');
+    dst.setAttribute('data-nd-sortable-refresh', '#src,#dst');
+
+    const a = addItem(src, 'a');
+    const b = addItem(dst, 'b');
+    b.getBoundingClientRect = () => ({ top: 0, height: 20 });
+    initSortable();
+
+    // Teach the fake document.querySelectorAll to match id selectors
+    // AFTER initSortable — initSortable itself calls querySelectorAll
+    // with `[data-nd-sortable]`, which we must keep delegating to the
+    // original implementation.
+    const origQSA = global.document.querySelectorAll.bind(global.document);
+    global.document.querySelectorAll = (sel) => {
+      if (sel === '#src') return [src];
+      if (sel === '#dst') return [dst];
+      return origQSA(sel);
+    };
+
+    let srcRefreshes = 0;
+    let dstRefreshes = 0;
+    src.addEventListener('nd:refresh', () => { srcRefreshes++; });
+    dst.addEventListener('nd:refresh', () => { dstRefreshes++; });
+
+    const origFetch = global.fetch;
+    global.fetch = async () => ({ ok: true });
+
+    fireDrag(src, 'dragstart', a);
+    fireDrag(dst, 'dragover', b, { clientY: 5 });
+    fireDrag(dst, 'dragend', a);
+
+    await new Promise(r => setTimeout(r, 20));
+
+    assert.equal(srcRefreshes, 1, 'source must receive nd:refresh');
+    assert.equal(dstRefreshes, 1, 'destination must receive nd:refresh');
+
+    global.fetch = origFetch;
+  });
+});

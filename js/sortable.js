@@ -10,16 +10,34 @@
  * Uses the native HTML5 drag-and-drop API with delegated listeners at
  * the container level. No external dependencies.
  *
+ * CROSS-CONTAINER DRAG (opt-in via `data-nd-sortable-group="<name>"`):
+ *   Two or more containers declaring the same group value accept drops
+ *   from each other. On a cross-container drop, the item is removed from
+ *   the source container, appended to the destination, and the
+ *   destination's `data-nd-sortable` URL receives the new order POST
+ *   (the source does NOT re-POST — the server is expected to infer the
+ *   state change from the destination's URL, e.g. a status column in a
+ *   kanban board). After a successful POST, an optional
+ *   `data-nd-sortable-refresh="#a,#b,…"` CSV on either container
+ *   dispatches `nd:refresh` on each listed element, giving the caller a
+ *   declarative way to re-sync sibling columns without a reload.
+ *   Containers WITHOUT a group attribute keep the prior behaviour: they
+ *   only accept reorders from within themselves.
+ *
  * KEYBOARD (WAI-ARIA Listbox reordering pattern):
  *   Space       — Grab focused item / drop grabbed item at current position
  *   ArrowUp/Down — Move grabbed item up/down one position (or focus without grab)
  *   Home/End    — Move grabbed item to first/last position
  *   Escape      — Cancel active keyboard drag (revert to snapshot order)
+ *   Keyboard drag stays within the grabbed container — cross-container
+ *   moves are mouse-only by design (no obvious arrow-key affordance).
  *
  * REVERT ON FAILURE: When a server POST returns non-2xx, the DOM is
  * automatically reverted to the pre-drag order, a shake animation
  * plays, and NDesign.toast() is called with an error message. A
- * nd:sortable:revert event is dispatched on the container.
+ * nd:sortable:revert event is dispatched on the container. For
+ * cross-container drops, BOTH the source and destination are restored
+ * from their snapshots.
  *
  * @module sortable
  */
@@ -87,6 +105,64 @@ function sortableContainerFor(el) {
 }
 
 /**
+ * Whether `a` and `b` are both sortable containers that share the same
+ * non-empty `data-nd-sortable-group` value. Used to gate cross-container
+ * drop targets.
+ * @param {HTMLElement} a
+ * @param {HTMLElement} b
+ * @returns {boolean}
+ */
+function sameSortableGroup(a, b) {
+  if (!a || !b || a === b) return false;
+  if (!a.hasAttribute('data-nd-sortable') || !b.hasAttribute('data-nd-sortable')) return false;
+  const ga = a.getAttribute('data-nd-sortable-group');
+  const gb = b.getAttribute('data-nd-sortable-group');
+  return !!ga && ga === gb;
+}
+
+/**
+ * Find the enclosing `[data-nd-sortable]` container for an arbitrary
+ * event target (item, container itself, or nested descendant). Walks
+ * up via `closest`. Returns null if the target is outside every
+ * sortable root.
+ * @param {HTMLElement} el
+ * @returns {HTMLElement|null}
+ */
+function enclosingSortable(el) {
+  if (!el) return null;
+  if (el.hasAttribute && el.hasAttribute('data-nd-sortable')) return el;
+  if (el.closest) return el.closest('[data-nd-sortable]');
+  return null;
+}
+
+/**
+ * Dispatch `nd:refresh` on every element selected by the CSV in
+ * `data-nd-sortable-refresh` on either of the given containers. Silent
+ * no-op when the attribute is absent or a selector matches nothing —
+ * refreshes are best-effort. Selectors resolve against `document`, so
+ * callers target by id / class / attribute freely.
+ * @param {Array<HTMLElement>} containers
+ */
+function dispatchRefreshHints(containers) {
+  /** @type {Set<Element>} */
+  const targets = new Set();
+  for (const container of containers) {
+    if (!container) continue;
+    const csv = container.getAttribute('data-nd-sortable-refresh');
+    if (!csv) continue;
+    for (const selector of csv.split(',')) {
+      const trimmed = selector.trim();
+      if (!trimmed) continue;
+      const matches = document.querySelectorAll(trimmed);
+      for (const m of matches) targets.add(m);
+    }
+  }
+  for (const target of targets) {
+    target.dispatchEvent(new CustomEvent('nd:refresh', { bubbles: true }));
+  }
+}
+
+/**
  * Collect an array of identifiers for the current child ordering of a
  * sortable container. Uses `data-id` when present, falling back to the
  * child's positional index as a string.
@@ -131,16 +207,20 @@ function restoreOrder(container, snapshot) {
 }
 
 /**
- * Fire-and-forget POST of the new order to the configured endpoint.
- * On non-2xx, restores the snapshot order, fires nd:sortable:revert,
- * shows a toast, and adds a brief shake animation.
- * @param {HTMLElement}        container
+ * Fire-and-forget POST of the new order to the destination endpoint.
+ * On non-2xx, both the source and destination are restored from the
+ * snapshot, a shake animation plays on the destination, a toast is
+ * shown, and `nd:sortable:revert` is dispatched on the destination.
+ * On success, any declared refresh siblings are pinged with
+ * `nd:refresh` so callers can re-sync adjacent columns.
+ * @param {HTMLElement}        destination — container holding item at drop time
  * @param {string}             action      — "METHOD /url"
  * @param {Array<string>}      order
- * @param {Array<HTMLElement>} snapshot    — pre-drag DOM order for revert
+ * @param {Array<HTMLElement>} snapshot    — pre-drag DOM order of the SOURCE container
  * @param {HTMLElement}        item        — the item that was moved
+ * @param {HTMLElement}        source      — originating container (== destination for in-place reorders)
  */
-async function submitReorder(container, action, order, snapshot, item) {
+async function submitReorder(destination, action, order, snapshot, item, source) {
   const parts = action.trim().split(/\s+/);
   let method = 'POST';
   let rawUrl = parts[0];
@@ -165,32 +245,45 @@ async function submitReorder(container, action, order, snapshot, item) {
           if (serverMsg) message = String(serverMsg);
         }
       } catch (_) { /* malformed JSON — use fallback message */ }
-      revertAndNotify(container, snapshot, item, message);
+      revertAndNotify(destination, snapshot, item, message, source);
+      return;
     }
+    // Success — ping refresh targets declared on either container.
+    dispatchRefreshHints([source, destination]);
   } catch (err) {
     console.error('[ndesign] Sortable reorder failed:', err);
-    revertAndNotify(container, snapshot, item, 'Reorder failed — order has been reverted.');
+    revertAndNotify(destination, snapshot, item, 'Reorder failed — order has been reverted.', source);
   }
 }
 
 /**
- * Revert container to snapshot order, shake, toast, and dispatch event.
- * @param {HTMLElement}        container
- * @param {Array<HTMLElement>} snapshot
+ * Revert to snapshot order, shake, toast, and dispatch event. When
+ * `source` is distinct from `destination` (cross-container drop), the
+ * item is moved back to its source before the snapshot is restored —
+ * otherwise the snapshot's insertions only affect the destination and
+ * the item stays in the wrong column.
+ * @param {HTMLElement}        destination
+ * @param {Array<HTMLElement>} snapshot      — SOURCE's pre-drag order
  * @param {HTMLElement}        item
- * @param {string}             [message]  — user-visible error text for the toast
+ * @param {string}             [message]     — user-visible error text for the toast
+ * @param {HTMLElement}        [source]      — originating container; defaults to destination
  */
-function revertAndNotify(container, snapshot, item, message) {
+function revertAndNotify(destination, snapshot, item, message, source) {
   const msg = message || 'Reorder failed — order has been reverted.';
-  restoreOrder(container, snapshot);
+  const src = source || destination;
 
-  container.classList.add('nd-sortable-error');
-  setTimeout(() => container.classList.remove('nd-sortable-error'), 2000);
+  if (src !== destination && item && item.parentElement === destination) {
+    src.appendChild(item);
+  }
+  restoreOrder(src, snapshot);
+
+  destination.classList.add('nd-sortable-error');
+  setTimeout(() => destination.classList.remove('nd-sortable-error'), 2000);
 
   toast(msg, 'error');
 
-  container.dispatchEvent(new CustomEvent('nd:sortable:revert', {
-    detail: { item },
+  destination.dispatchEvent(new CustomEvent('nd:sortable:revert', {
+    detail: { item, source: src },
     bubbles: true,
   }));
 
@@ -217,8 +310,11 @@ function handleDragStart(e) {
     cancelKeyboardDrag();
   }
 
-  // Snapshot before drag.
+  // Snapshot SOURCE order on the item — used to revert on server
+  // failure even after a cross-container move. `__ndSourceContainer`
+  // lets dragend detect whether the drop landed back in the origin.
   item.__ndSnapshot = snapshotOrder(container);
+  item.__ndSourceContainer = container;
 
   draggedItem = item;
   item.classList.add('nd-dragging');
@@ -233,26 +329,59 @@ function handleDragStart(e) {
 
 /**
  * While dragging, reorder the DOM live so the user sees the drop slot.
+ * Supports both in-container reorder and cross-container moves when
+ * the source and hovered containers share a `data-nd-sortable-group`.
  * @param {DragEvent} e
  */
 function handleDragOver(e) {
   if (!draggedItem) return;
-  e.preventDefault();
-  if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
 
   const target = /** @type {HTMLElement} */ (e.target);
+  const sourceContainer = draggedItem.__ndSourceContainer || draggedItem.parentElement;
+  const currentContainer = draggedItem.parentElement;
+
+  // Case 1: over another draggable child. Move the dragged item next
+  // to it (either within the same container OR into the hovered item's
+  // container when the groups match).
   const over = target.closest && target.closest('[draggable="true"]');
-  if (!over || over === draggedItem) return;
+  if (over && over !== draggedItem) {
+    const overContainer = over.parentElement;
+    const sameContainer = overContainer === currentContainer;
+    const sameGroup = sameSortableGroup(sourceContainer, overContainer)
+      || sameSortableGroup(currentContainer, overContainer);
+    if (!sameContainer && !sameGroup) return;
 
-  if (over.parentElement !== draggedItem.parentElement) return;
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
 
-  const rect = over.getBoundingClientRect();
-  const midY = rect.top + rect.height / 2;
+    const rect = over.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    if (e.clientY < midY) {
+      overContainer.insertBefore(draggedItem, over);
+    } else {
+      overContainer.insertBefore(draggedItem, over.nextSibling);
+    }
+    return;
+  }
 
-  if (e.clientY < midY) {
-    over.parentElement.insertBefore(draggedItem, over);
-  } else {
-    over.parentElement.insertBefore(draggedItem, over.nextSibling);
+  // Case 2: over a sortable container with no draggable hit (empty
+  // column or padding around the list). Only meaningful when groups
+  // match — otherwise leave the dragged item where it is.
+  const overContainer = enclosingSortable(target);
+  if (overContainer && overContainer !== currentContainer
+      && sameSortableGroup(sourceContainer, overContainer)) {
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+    overContainer.appendChild(draggedItem);
+    return;
+  }
+
+  // Case 3: hovering inside the current container's padding — keep the
+  // drop slot live so the browser dispatches dragend instead of a
+  // cancelled drag.
+  if (overContainer === currentContainer) {
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
   }
 }
 
@@ -268,30 +397,41 @@ function handleDrop(e) {
 
 /**
  * Clean up dragging state, dispatch nd:sortable:reorder, and optionally POST.
+ * When the drop landed in a different container, the POST targets the
+ * destination's `data-nd-sortable` URL (server infers the state change
+ * from the URL's status/group param) and both source + destination are
+ * snapshot-restored on failure.
  * @param {DragEvent} _e
  */
 function handleDragEnd(_e) {
   if (!draggedItem) return;
-  const container = draggedItem.parentElement;
+  const destination = draggedItem.parentElement;
   draggedItem.classList.remove('nd-dragging');
   draggedItem.setAttribute('aria-grabbed', 'false');
   const item = draggedItem;
   const snapshot = item.__ndSnapshot || [];
+  const source = item.__ndSourceContainer || destination;
   delete item.__ndSnapshot;
+  delete item.__ndSourceContainer;
   draggedItem = null;
 
-  if (!container || !container.hasAttribute('data-nd-sortable')) return;
+  if (!destination || !destination.hasAttribute('data-nd-sortable')) return;
 
-  const order = collectOrder(container);
+  const crossContainer = source !== destination;
+  const order = collectOrder(destination);
 
-  container.dispatchEvent(new CustomEvent('nd:sortable:reorder', {
-    detail: { order, item },
+  destination.dispatchEvent(new CustomEvent('nd:sortable:reorder', {
+    detail: { order, item, source, crossContainer },
     bubbles: true,
   }));
 
-  const action = container.getAttribute('data-nd-sortable');
+  const action = destination.getAttribute('data-nd-sortable');
   if (action && action.trim()) {
-    submitReorder(container, action, order, snapshot, item);
+    submitReorder(destination, action, order, snapshot, item, source);
+  } else if (crossContainer) {
+    // No action — still refresh declared siblings so callers that use
+    // sortable purely for client-side state can re-render.
+    dispatchRefreshHints([source, destination]);
   }
 }
 
@@ -371,7 +511,8 @@ function handleKeyDown(e) {
 
         const action = container.getAttribute('data-nd-sortable');
         if (action && action.trim()) {
-          submitReorder(container, action, dropOrder, dropSnapshot, item);
+          // Keyboard drag stays in-container, so source === destination.
+          submitReorder(container, action, dropOrder, dropSnapshot, item, container);
         }
 
         const children = draggableChildren(container);
