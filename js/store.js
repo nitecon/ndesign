@@ -427,24 +427,27 @@ export function applySetDirective(el, responseData) {
  * @returns {void}
  */
 export function initSetTriggers(_config) {
+  // Uses event delegation (document-level listener + closest()) so triggers
+  // rendered asynchronously by `data-nd-bind` / `data-nd-template` also fire.
+  // A per-element `querySelectorAll` scan at init time would miss every
+  // template-rendered button — the old behaviour left clicks on bound task
+  // cards silently inert.
   const selector =
     '[data-nd-set]:not([data-nd-action]):not([data-nd-bind]):not([data-nd-upload]):not([data-nd-sortable])';
-  const elements = document.querySelectorAll(selector);
 
-  for (const el of elements) {
-    const handler = (e) => {
-      // Prevent <button type="submit"> or <a href="..."> default behaviour
-      if (typeof e.preventDefault === 'function') e.preventDefault();
-      applySetDirective(el, undefined);
-      el.dispatchEvent(new CustomEvent('nd:set', { bubbles: true, detail: { el } }));
-      // Chain data-nd-success actions (refresh:#selector, emit:eventName).
-      // A deliberate subset of what action.js handleSuccess supports —
-      // only the actions that make sense without a server response.
-      _runSetSuccessActions(el);
-    };
-    el.addEventListener('click', handler);
-    _trackListener(el, 'click', handler);
-  }
+  const handler = (e) => {
+    const el = e.target && e.target.closest && e.target.closest(selector);
+    if (!el) return;
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+    applySetDirective(el, undefined);
+    el.dispatchEvent(new CustomEvent('nd:set', { bubbles: true, detail: { el } }));
+    // Chain data-nd-success actions (refresh:#selector, emit:eventName).
+    // A deliberate subset of what action.js handleSuccess supports —
+    // only the actions that make sense without a server response.
+    _runSetSuccessActions(el);
+  };
+  document.addEventListener('click', handler);
+  _trackDocumentListener('click', handler);
 }
 
 /**

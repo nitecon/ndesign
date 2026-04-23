@@ -137,7 +137,7 @@ export function init() {
   initTabs();
   initTooltips();
   initUploads();
-  initSortable();
+  initSortable(config);
   initSetTriggers(config);
   initModel(config);
 

@@ -49,6 +49,16 @@ import { resolveVars } from './store.js';
 /** @type {Array<{container: HTMLElement, handlers: Object, observer: MutationObserver|null}>} */
 let instances = [];
 
+/**
+ * Runtime config injected by `initSortable(config)`. The reorder POST
+ * in `submitReorder` reads `sortableConfig.headers` so it picks up the
+ * same `Authorization`/`X-Requested-With` headers `NDesign.configure()`
+ * set for bind/action fetches — without this, auth-gated reorder
+ * endpoints return 401.
+ * @type {{headers?: Object}}
+ */
+let sortableConfig = { headers: {} };
+
 /** @type {HTMLElement|null} Currently dragged item (mouse drag), shared across containers. */
 let draggedItem = null;
 
@@ -232,7 +242,7 @@ async function submitReorder(destination, action, order, snapshot, item, source)
   try {
     const response = await fetch(url, {
       method,
-      headers: buildHeaders(),
+      headers: buildHeaders(sortableConfig.headers),
       body: JSON.stringify({ order }),
     });
     if (!response.ok) {
@@ -622,8 +632,15 @@ function wireChild(child, needsListRole) {
  * Marks each child as draggable and attaches delegated listeners.
  * A MutationObserver auto-wires dynamically added children.
  * Safe to call repeatedly — already-initialized containers are skipped.
+ *
+ * @param {Object} [config] — NDesign runtime config. `config.headers` is
+ *        merged into every reorder POST so bearer tokens / CSRF set via
+ *        `NDesign.configure({headers: ...})` reach the server.
  */
-export function initSortable() {
+export function initSortable(config) {
+  if (config && typeof config === 'object') {
+    sortableConfig = config;
+  }
   const containers = document.querySelectorAll('[data-nd-sortable]');
 
   for (const container of containers) {

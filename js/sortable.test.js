@@ -565,6 +565,39 @@ describe('revert on failure (FE-4)', () => {
     meta.remove();
   });
 
+  test('submitReorder includes Authorization header configured via initSortable(config)', async () => {
+    // Regression: the gateway's /v1/projects/:ident/tasks/reorder endpoint
+    // is bearer-auth'd. Previously submitReorder called buildHeaders() with
+    // no args, so the `Authorization: Bearer <key>` header configured via
+    // `NDesign.configure({headers: ...})` was dropped and the POST 401'd.
+    let capturedHeaders = null;
+    const origFetch = global.fetch;
+    global.fetch = async (url, opts) => {
+      capturedHeaders = opts.headers;
+      return { ok: true };
+    };
+
+    const c = makeContainer('DIV', 'POST /api/reorder');
+    const a = addItem(c, 'a');
+    const b = addItem(c, 'b');
+
+    initSortable({ headers: { Authorization: 'Bearer test-token-xyz' } });
+
+    fireKeydown(c, ' ', a);
+    fireKeydown(c, ' ', a);
+
+    await new Promise(r => setTimeout(r, 20));
+
+    assert.ok(capturedHeaders, 'fetch should have been called');
+    assert.equal(
+      capturedHeaders['Authorization'],
+      'Bearer test-token-xyz',
+      'Authorization header from config must reach the reorder POST',
+    );
+
+    global.fetch = origFetch;
+  });
+
   test('destroySortable disconnects observer and removes attributes', () => {
     const c = makeContainer();
     const a = addItem(c, 'a');

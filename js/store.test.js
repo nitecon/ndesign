@@ -575,6 +575,23 @@ describe('destroyStore', () => {
  */
 function makeEventDoc(elements = []) {
   const doc = new EventTarget();
+  // Track click handlers separately so `fireDocumentClick` can invoke them
+  // directly with a spoofed `target` — Node's real Event forbids target
+  // overrides, but the delegated handler only needs `e.target.closest(...)`.
+  doc._clickHandlers = [];
+  const origAdd = doc.addEventListener.bind(doc);
+  const origRemove = doc.removeEventListener.bind(doc);
+  doc.addEventListener = (type, handler, options) => {
+    if (type === 'click') doc._clickHandlers.push(handler);
+    return origAdd(type, handler, options);
+  };
+  doc.removeEventListener = (type, handler, options) => {
+    if (type === 'click') {
+      const i = doc._clickHandlers.indexOf(handler);
+      if (i !== -1) doc._clickHandlers.splice(i, 1);
+    }
+    return origRemove(type, handler, options);
+  };
   doc.querySelectorAll = (selector) => {
     // Very small selector matcher — enough for the tests below
     return elements.filter(el => {
@@ -617,7 +634,44 @@ function makeFakeEl(attrs, props = {}) {
   el.setAttribute = (name, val) => { el._attrs[name] = val; };
   el.hasAttribute = (name) => name in el._attrs;
   el.removeAttribute = (name) => { delete el._attrs[name]; };
+  // Minimal closest() implementation — enough to satisfy the delegated
+  // click handler in initSetTriggers. The handler only ever calls closest
+  // with the compound [data-nd-set]:not(...) selector.
+  el.closest = (selector) => {
+    if (selector.includes('[data-nd-set]')) {
+      if (!('data-nd-set' in el._attrs)) return null;
+      if ('data-nd-action' in el._attrs) return null;
+      if ('data-nd-bind' in el._attrs) return null;
+      if ('data-nd-upload' in el._attrs) return null;
+      if ('data-nd-sortable' in el._attrs) return null;
+      return el;
+    }
+    if (selector.startsWith('[data-nd-modal]')) {
+      return ('data-nd-modal' in el._attrs) ? el : null;
+    }
+    return null;
+  };
   return el;
+}
+
+/**
+ * Fire a click event on the document with a spoofed `target`. The
+ * delegated click handler in initSetTriggers calls
+ * `e.target.closest(selector)` to find the triggering element.
+ * @param {EventTarget} target — the element the click should appear to come from
+ */
+function fireDocumentClick(target) {
+  // Use a plain object rather than a real Event — Event's `defaultPrevented`
+  // is a getter-only property so we can't let `preventDefault` mutate it,
+  // and we don't need bubbling because there's only one listener anyway.
+  const evt = {
+    type: 'click',
+    target,
+    defaultPrevented: false,
+    preventDefault() { this.defaultPrevented = true; },
+  };
+  const handlers = globalThis.document._clickHandlers || [];
+  for (const h of handlers) h(evt);
 }
 
 describe('setVar reactive notification', () => {
@@ -676,7 +730,7 @@ describe('initSetTriggers success chain', () => {
     target.addEventListener('nd:refresh', () => { refreshFired = true; });
 
     initSet();
-    button.dispatchEvent(new Event('click'));
+    fireDocumentClick(button);
 
     assert.equal(vars.get('foo'), 42);
     assert.equal(refreshFired, true);
@@ -698,10 +752,30 @@ describe('initSetTriggers success chain', () => {
     button.addEventListener('themeChanged', () => { emitted = true; });
 
     initSet();
-    button.dispatchEvent(new Event('click'));
+    fireDocumentClick(button);
 
     assert.equal(vars.get('theme'), 'dark');
     assert.equal(emitted, true);
+
+    delete globalThis.document;
+  });
+
+  test('delegated click fires for a button added AFTER initSetTriggers ran', async () => {
+    // Regression: previously initSetTriggers snapshotted matching elements
+    // at init time, so buttons rendered later by data-nd-bind + template
+    // never received a click listener. Delegation on `document` fixes this.
+    const { initSetTriggers: initSet } = await import('./store.js');
+
+    globalThis.document = makeEventDoc([]);
+    initSet();
+
+    const lateButton = makeFakeEl({
+      'data-nd-set': "selectedId='late'",
+    }, { tagName: 'BUTTON' });
+
+    fireDocumentClick(lateButton);
+
+    assert.equal(vars.get('selectedId'), 'late');
 
     delete globalThis.document;
   });

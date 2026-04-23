@@ -57,15 +57,19 @@ export function initModals() {
   controller = new AbortController();
   const signal = controller.signal;
 
-  // Trigger buttons — [data-nd-modal] click opens the target dialog
-  const triggers = document.querySelectorAll('[data-nd-modal]');
-  for (const trigger of triggers) {
-    trigger.addEventListener('click', (e) => {
-      e.preventDefault();
-      const selector = trigger.getAttribute('data-nd-modal');
-      openModal(selector);
-    }, { signal });
-  }
+  // Trigger buttons — [data-nd-modal] click opens the target dialog.
+  //
+  // Uses event delegation (document-level listener + closest()) so triggers
+  // rendered asynchronously by `data-nd-bind` / `data-nd-template` also work.
+  // A per-element `querySelectorAll` loop at init time would miss every card
+  // button rendered after the initial scan.
+  document.addEventListener('click', (e) => {
+    const trigger = e.target && e.target.closest && e.target.closest('[data-nd-modal]');
+    if (!trigger) return;
+    e.preventDefault();
+    const selector = trigger.getAttribute('data-nd-modal');
+    openModal(selector);
+  }, { signal });
 
   // Close buttons inside dialogs — .nd-modal-close and [data-nd-dismiss]
   const closeButtons = document.querySelectorAll(
