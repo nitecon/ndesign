@@ -43,6 +43,8 @@ and loaded in a browser.
 | `data-nd-select`           | Dot-path selecting a sub-field of the response before rendering (envelope unwrap).     | 6.6     |
 | `data-nd-set`              | Write one or more values into the store (response, literal, ref, or arithmetic).      | 5.5     |
 | `data-nd-sortable`         | Mark a container as sortable; optional `"METHOD URL"` to POST new order.               | 12      |
+| `data-nd-sortable-group`   | Opt containers with the same value into cross-container drag-and-drop.                 | 12.8    |
+| `data-nd-sortable-refresh` | CSV of selectors to `nd:refresh` after a successful reorder (pairs with group).        | 12.8    |
 | `data-nd-sse`              | Connect to a server-sent events stream and render messages.                            | 9       |
 | `data-nd-sse-event`        | Filter for a named SSE event type (default is the generic `message`).                  | 9       |
 | `data-nd-success`          | Comma-separated chain of post-success actions.                                        | 7.7     |
@@ -122,8 +124,8 @@ and loaded in a browser.
 | `nd:modal:close`        | `<dialog>`            | On `close` (Escape, backdrop, `.close()`).             | 13      |
 | `nd:modal:confirm`      | `<dialog>`            | `confirmDialog()` resolved `true` (accept click).      | 13      |
 | `nd:modal:cancel`       | `<dialog>`            | `confirmDialog()` resolved `false` (dismiss/escape).   | 13      |
-| `nd:sortable:reorder`   | sortable container    | After any successful reorder (drop or keyboard drop). | 12      |
-| `nd:sortable:revert`    | sortable container    | After a server-side reorder POST fails and reverts.   | 12      |
+| `nd:sortable:reorder`   | destination container | After any successful reorder. Detail carries `source` + `crossContainer`. | 12.4, 12.8 |
+| `nd:sortable:revert`    | destination container | After a server-side reorder POST fails and reverts.   | 12.6    |
 
 Any custom event name used in `data-nd-success="emit:foo"` is also dispatched on
 the action/set element as a bubbling `CustomEvent` with `detail = responseData`.
@@ -1412,8 +1414,16 @@ A `MutationObserver` auto-wires dynamically added children.
 While dragging, the item is reordered live so the user sees the drop slot.
 On drop:
 
-1. `nd:sortable:reorder` is dispatched with `detail = { order, item }`.
-2. If the attribute carries a URL, `submitReorder()` POSTs the order.
+1. `nd:sortable:reorder` is dispatched on the destination container with
+   `detail = { order, item, source, crossContainer }`. For a plain
+   in-container reorder, `source === destination` and `crossContainer`
+   is `false`; for a cross-container drop (§12.8), `source` is the
+   originating container and `crossContainer` is `true`.
+2. If the destination's `data-nd-sortable` attribute carries a URL,
+   `submitReorder()` POSTs the order to that URL. The source container
+   is NOT re-POSTed on cross-container drops — the server is expected to
+   infer the state change from the destination URL (e.g. a status column
+   in a kanban board).
 
 ### 12.5. Keyboard behaviour
 
@@ -1432,11 +1442,15 @@ An `aria-live` polite region is injected into `<body>` and announces grab/drop/c
 
 ### 12.6. Revert-on-failure
 
-On server POST failure, the container's children are restored to the
-pre-drag snapshot, the container gets `nd-sortable-error` for 2 s, a toast
-fires, and `nd:sortable:revert` is dispatched. The toast message comes from
-`responseData.errors._form` or `responseData.message` when the response is
-JSON; otherwise a generic "Reorder failed — order has been reverted."
+On server POST failure, the source container's children are restored to
+the pre-drag snapshot, the destination container gets `nd-sortable-error`
+for 2 s, a toast fires, and `nd:sortable:revert` is dispatched on the
+destination with `detail = { item, source }`. For a cross-container drop,
+the moved item is returned to the source before the snapshot is applied,
+so both columns end up in their pre-drag state. The toast message comes
+from `responseData.errors._form` or `responseData.message` when the
+response is JSON; otherwise a generic "Reorder failed — order has been
+reverted."
 
 ### 12.7. Example
 
@@ -1447,6 +1461,61 @@ JSON; otherwise a generic "Reorder failed — order has been reverted."
   <li data-id="3">Third</li>
 </ul>
 ```
+
+### 12.8. Cross-container drag (`data-nd-sortable-group`)
+
+Two or more sortable containers declaring the same non-empty
+`data-nd-sortable-group` value accept drops from each other. A mouse drag
+that starts in one group member and ends in another moves the item across
+containers and POSTs the destination's `data-nd-sortable` URL with the
+destination's new order. The source container is NOT re-POSTed — the
+server infers the state change from the destination URL (e.g. the status
+column of a kanban board). Containers without a group attribute keep the
+prior in-container-only behaviour.
+
+Keyboard drag is intentionally constrained to the grabbed container —
+there is no obvious arrow-key affordance for jumping between columns.
+
+`data-nd-sortable-refresh="selector1,selector2,…"` on either container
+dispatches `nd:refresh` on every element matched by the CSV after a
+successful reorder. Use this to re-sync sibling columns declaratively
+without a page reload. Selectors resolve against `document`; missing
+selectors are a silent no-op.
+
+#### Events
+
+| Event                | Dispatched on | Detail                                         |
+|----------------------|---------------|------------------------------------------------|
+| `nd:sortable:reorder`| destination   | `{ order, item, source, crossContainer }`      |
+| `nd:sortable:revert` | destination   | `{ item, source }`                              |
+| `nd:refresh`         | each match of `data-nd-sortable-refresh` | none (bubbles)     |
+
+#### Example — kanban with three status columns
+
+```html
+<section class="kanban">
+  <ul data-nd-sortable="POST ${api}/api/tasks/move?status=todo"
+      data-nd-sortable-group="tasks"
+      data-nd-sortable-refresh="#doing,#done"
+      id="todo"></ul>
+
+  <ul data-nd-sortable="POST ${api}/api/tasks/move?status=doing"
+      data-nd-sortable-group="tasks"
+      data-nd-sortable-refresh="#todo,#done"
+      id="doing"></ul>
+
+  <ul data-nd-sortable="POST ${api}/api/tasks/move?status=done"
+      data-nd-sortable-group="tasks"
+      data-nd-sortable-refresh="#todo,#doing"
+      id="done"></ul>
+</section>
+```
+
+Dragging a card from `#todo` into `#doing` POSTs
+`/api/tasks/move?status=doing` with the new `#doing` order and then
+dispatches `nd:refresh` on `#todo` and `#done`. Pair `nd:refresh` with a
+`data-nd-bind` element whose bind URL reloads that column's contents to
+close the loop.
 
 ---
 
@@ -1762,8 +1831,8 @@ A consolidated list (also in section 0.5):
 | `nd:modal:close`         | `<dialog>`            | none                                  |
 | `nd:modal:confirm`       | `<dialog>`            | none — `confirmDialog()` accepted       |
 | `nd:modal:cancel`        | `<dialog>`            | none — `confirmDialog()` dismissed      |
-| `nd:sortable:reorder`    | sortable container    | `{order, item}`                       |
-| `nd:sortable:revert`     | sortable container    | `{item}`                              |
+| `nd:sortable:reorder`    | destination container | `{order, item, source, crossContainer}` |
+| `nd:sortable:revert`     | destination container | `{item, source}`                      |
 | user-defined `emit:X`    | action/set element     | `responseData` (for set: `undefined`) |
 
 ---
