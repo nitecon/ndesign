@@ -15,6 +15,7 @@
 import { getByPath, buildHeaders } from './utils.js';
 import { render } from './template.js';
 import { resolveVars, applySetDirective } from './store.js';
+import { refreshSelect } from './select.js';
 
 /** @type {Map<string, Promise<any>>} in-flight request dedup cache */
 const pendingRequests = new Map();
@@ -83,6 +84,68 @@ async function fetchJSON(url, config) {
 }
 
 /**
+ * Populate a native <select>'s options from a JSON array.
+ *
+ * Activated when a <select data-nd-bind="…"> also carries `data-nd-options`.
+ * The attribute value is a `"valuePath:labelPath"` shorthand (dot-notation
+ * paths into each item). Either side may be blank; an attribute with no
+ * value (or no colon) works too:
+ *
+ *   data-nd-options                  → primitives, item is both value & label
+ *   data-nd-options="id:name"        → value from item.id, label from item.name
+ *   data-nd-options="name"           → value and label both from item.name
+ *   data-nd-options=":name"          → value and label both from item.name
+ *   data-nd-options="id:"            → value and label both from item.id
+ *
+ * Static <option> elements already in the select are preserved (useful for a
+ * leading `<option value="">Choose…</option>` placeholder). Options added by
+ * this function are tagged `data-nd-generated` so subsequent fetches can
+ * remove and replace only their own output.
+ *
+ * If the select has already been upgraded by select.js the custom dropdown
+ * wrapper is rebuilt so the new options become visible.
+ *
+ * @param {HTMLSelectElement} select — target <select> element
+ * @param {Array} items              — array of objects or primitives
+ */
+function populateSelectOptions(select, items) {
+  if (!Array.isArray(items)) return;
+
+  const spec = select.getAttribute('data-nd-options') || '';
+  let valuePath = '', labelPath = '';
+  if (spec) {
+    const colon = spec.indexOf(':');
+    if (colon === -1) {
+      valuePath = labelPath = spec;
+    } else {
+      valuePath = spec.slice(0, colon) || spec.slice(colon + 1);
+      labelPath = spec.slice(colon + 1) || spec.slice(0, colon);
+    }
+  }
+
+  for (const opt of Array.from(select.querySelectorAll('option[data-nd-generated]'))) {
+    opt.remove();
+  }
+
+  for (const item of items) {
+    const option = document.createElement('option');
+    option.setAttribute('data-nd-generated', '');
+    let v, l;
+    if (item !== null && typeof item === 'object') {
+      v = valuePath ? getByPath(item, valuePath) : '';
+      l = labelPath ? getByPath(item, labelPath) : '';
+    } else {
+      v = l = item;
+    }
+    option.value = v != null ? String(v) : '';
+    option.textContent = l != null ? String(l) : '';
+    select.appendChild(option);
+  }
+
+  refreshSelect(select);
+}
+
+/**
  * Process a single data-nd-bind element: fetch data and render it.
  * @param {HTMLElement} el    — element with data-nd-bind attribute
  * @param {Object} config    — NDesign configuration object
@@ -138,9 +201,14 @@ async function processBind(el, config) {
       } else {
         el.textContent = value != null ? String(value) : '';
       }
-    } else {
-      // No template, no field — treat data as plain text
-      el.textContent = typeof data === 'string' ? data : JSON.stringify(data);
+    } else if (el.tagName === 'SELECT' && el.hasAttribute('data-nd-options')) {
+      populateSelectOptions(el, renderData);
+    } else if (typeof data === 'string') {
+      // Templateless / fieldless bind with a string payload — render as text.
+      // For non-string payloads (objects, arrays) the element is left alone;
+      // consumers should use onRender to handle the raw data. Prior versions
+      // wrote JSON.stringify(data) into textContent, which surprised callers.
+      el.textContent = data;
     }
 
     // Handle empty state — show empty template if the rendered data is an

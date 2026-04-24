@@ -138,6 +138,61 @@ With the Go handler responding:
 
 ndesign extracts `data` and renders it via the template exactly as if the handler had returned a bare array. Empty-state detection (`<template data-nd-empty>`) also honours the selected sub-field.
 
+### Populating a `<select>` from JSON -- `data-nd-options`
+
+A `<select>` carrying both `data-nd-bind` and `data-nd-options` turns the fetched JSON array into its `<option>` children. The attribute value is a compact `"valuePath:labelPath"` shorthand (dot-notation into each array item):
+
+```html
+<select data-nd-bind="/api/training/runs" data-nd-options="id:name">
+  <option value="">Choose a run…</option>
+</select>
+```
+
+Given `/api/training/runs` returns `[{id:1,name:"Run A"},{id:2,name:"Run B"}]`, the select ends up with three options: the static placeholder, plus `<option value="1">Run A</option>` and `<option value="2">Run B</option>`.
+
+Shorthand rules:
+
+| Attribute form | Applies when items are | Behaviour |
+|----------------|-----------------------|-----------|
+| `data-nd-options` | primitives (strings/numbers) | item used as both value and label |
+| `data-nd-options="name"` | objects | value and label both read from `item.name` |
+| `data-nd-options="id:name"` | objects | value from `item.id`, label from `item.name` |
+| `data-nd-options=":name"` or `"id:"` | objects | blank side mirrors the other |
+
+Static `<option>` children written in HTML are preserved across fetches, so a leading `<option value="">Choose…</option>` placeholder survives. Options added by the runtime are tagged `data-nd-generated` internally and are the only ones removed when the element refetches (via `nd:refresh`, polling, or a `data-nd-bind-trigger`).
+
+Envelope responses unwrap via `data-nd-select` exactly as with templates:
+
+```html
+<select data-nd-bind="/api/runs"
+        data-nd-select="data"
+        data-nd-options="id:name"></select>
+```
+
+If the select was upgraded by the custom-dropdown module, its wrapper is rebuilt automatically after options are populated, so the themed UI stays in sync with the native list. `onRender` still fires after the options are in place.
+
+### Raw JSON without a template or field
+
+`data-nd-bind` is also useful as a pure fetch-and-callback hook — no template, no field, no `data-nd-options`. The response is passed to your `onRender` handler and the element itself is left alone (with one exception: a plain-string response is written to `textContent`, so `<span data-nd-bind="/api/version"></span>` still works the intuitive way).
+
+Because the element stays empty, the cleanest pattern pairs `data-nd-bind` with `data-nd-defer` so the bind is held until the page explicitly asks for it — this also closes the timing window where a globally-registered `onRender` might not be in place yet:
+
+```html
+<div id="run-list" data-nd-bind="/api/training/runs" data-nd-defer hidden></div>
+<script>
+  NDesign.configure({
+    onRender(el, data) {
+      if (el.id === 'run-list') populateWhatever(data);
+    }
+  });
+  document.getElementById('run-list').dispatchEvent(new CustomEvent('nd:refresh'));
+</script>
+```
+
+For the common "fill a `<select>` from an API" case, prefer `data-nd-options` (above) over rolling your own.
+
+> **Behaviour change in v0.3.0**: prior releases wrote `JSON.stringify(data)` into the element's `textContent` for non-string payloads in this path, which could dump JSON blobs into hidden containers during debugging. The textless behaviour is now the default.
+
 ### Pagination -- `data-nd-bind-trigger`
 
 Pagination is wired up declaratively. Put `data-nd-bind-trigger="#target"` on a link (or any element), and ndesign will:
@@ -1897,6 +1952,7 @@ Quick reference of every `data-nd-*` attribute:
 | `data-nd-attr` | With `data-nd-field` | Target an HTML attribute instead of textContent (e.g., `value`, `src`, `href`) |
 | `data-nd-params` | With `data-nd-bind` | Query string appended to the bind URL (e.g., `page=1&per_page=25`) |
 | `data-nd-select` | With `data-nd-bind` | Dot-notation path to pluck a sub-field from the response before rendering (e.g., `data`) |
+| `data-nd-options` | `<select>` with `data-nd-bind` | Populate `<option>`s from the fetched JSON array. Format: `"valuePath:labelPath"`; bare attribute for primitive arrays |
 | `data-nd-template` | Any | ID of a `<template>` element to clone and interpolate |
 | `data-nd-mode` | Any with template | Render mode: `replace`, `append`, or `prepend` |
 | `data-nd-max` | Any with template | Maximum number of rendered items (oldest removed) |

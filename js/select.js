@@ -414,6 +414,33 @@ export function initSelects() {
 }
 
 /**
+ * Rebuild the custom dropdown wrapper for a specific <select>. Safe no-op if
+ * the select has not yet been upgraded (initSelects hasn't wrapped it, or it
+ * was skipped as a `multiple` select). Used after the native options list is
+ * mutated — e.g. when data-nd-bind populates <option>s from a JSON fetch —
+ * so the custom dropdown reflects the new items.
+ *
+ * @param {HTMLSelectElement} select
+ */
+export function refreshSelect(select) {
+  const idx = instances.findIndex(i => i.select === select);
+  if (idx === -1) return;
+  const { wrapper } = instances[idx];
+  wrapper.remove();
+  instances.splice(idx, 1);
+
+  // Restore inline styles so buildCustomSelect can re-hide cleanly.
+  select.style.position = '';
+  select.style.opacity = '';
+  select.style.pointerEvents = '';
+  select.style.width = '';
+  select.style.height = '';
+  select.style.overflow = '';
+
+  buildCustomSelect(select);
+}
+
+/**
  * Remove all custom select wrappers and restore native <select> elements.
  * Used for re-initialization or teardown.
  */

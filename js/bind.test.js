@@ -166,3 +166,100 @@ describe('data-nd-defer', () => {
     delete globalThis.document;
   });
 });
+
+// ---------------------------------------------------------------------------
+// Templateless / fieldless bind — onRender must fire, and non-string payloads
+// must NOT be JSON-stringified into textContent (surprised the training-team
+// when hidden <div data-nd-bind> pickers rendered JSON blobs as visible text).
+// ---------------------------------------------------------------------------
+
+describe('templateless bind', () => {
+  let originalFetch;
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+    delete globalThis.document;
+    bind.destroyBindings();
+  });
+
+  function makeEl(attrs = {}, tagName = 'DIV') {
+    const el = {
+      _attrs: { ...attrs },
+      _listeners: {},
+      tagName,
+      getAttribute(k) { return this._attrs[k] !== undefined ? this._attrs[k] : null; },
+      hasAttribute(k) { return k in this._attrs; },
+      setAttribute(k, v) { this._attrs[k] = v; },
+      removeAttribute(k) { delete this._attrs[k]; },
+      classList: { add() {}, remove() {}, contains() { return false; } },
+      childNodes: [],
+      children: [],
+      nodeName: tagName,
+      querySelectorAll() { return []; },
+      querySelector() { return null; },
+      appendChild() {},
+      removeChild() {},
+      textContent: '',
+      addEventListener(ev, fn) {
+        if (!this._listeners[ev]) this._listeners[ev] = [];
+        this._listeners[ev].push(fn);
+      },
+      dispatchEvent(ev) {
+        const handlers = this._listeners[ev.type];
+        if (handlers) handlers.forEach(h => h(ev));
+      },
+    };
+    return el;
+  }
+
+  function installDoc(el) {
+    globalThis.document = {
+      querySelectorAll(sel) {
+        if (sel === '[data-nd-bind]') return [el];
+        return [];
+      },
+      querySelector() { return null; },
+      body: { contains() { return true; } },
+    };
+  }
+
+  function installFetch(payload) {
+    originalFetch = globalThis.fetch;
+    globalThis.fetch = () => Promise.resolve({
+      ok: true,
+      headers: { get: () => 'application/json' },
+      json: async () => payload,
+    });
+  }
+
+  test('object payload leaves textContent untouched and fires onRender', async () => {
+    installFetch([{ id: 1, name: 'A' }, { id: 2, name: 'B' }]);
+    const el = makeEl({ 'data-nd-bind': 'https://test.nitecon.org/api/demo' });
+    installDoc(el);
+
+    let renderedWith = null;
+    const config = {
+      headers: {}, onRequest: null, onResponse: null, onError: null,
+      onRender: (_el, data) => { renderedWith = data; },
+    };
+
+    bind.initBindings(config);
+    await new Promise(r => setTimeout(r, 10));
+
+    assert.equal(el.textContent, '', 'object payload must not be stringified into textContent');
+    assert.ok(Array.isArray(renderedWith), 'onRender should have received the array');
+    assert.equal(renderedWith.length, 2);
+  });
+
+  test('string payload is written to textContent', async () => {
+    installFetch('1.2.3');
+    const el = makeEl({ 'data-nd-bind': 'https://test.nitecon.org/api/version' });
+    installDoc(el);
+
+    const config = { headers: {}, onRequest: null, onResponse: null, onError: null, onRender: null };
+    bind.initBindings(config);
+    await new Promise(r => setTimeout(r, 10));
+
+    assert.equal(el.textContent, '1.2.3');
+  });
+});
