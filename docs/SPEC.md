@@ -38,6 +38,7 @@ and loaded in a browser.
 | `data-nd-mode`             | Render mode: `replace` (default), `append`, `prepend`.                                | 6.7     |
 | `data-nd-model`            | Two-way bind a form input to a store var.                                             | 5.6     |
 | `data-nd-on`               | Escape hatch: `"event:handlerName"`; calls `window[handlerName](e, el)`.               | 7.11    |
+| `data-nd-options`          | On a `<select data-nd-bind>`: populate `<option>`s from a JSON array (`"value:label"`).| 6.12    |
 | `data-nd-params`           | Extra query string appended to the bind URL.                                          | 6.5     |
 | `data-nd-refresh`          | Polling interval (ms) for a bound element.                                            | 6.9     |
 | `data-nd-select`           | Dot-path selecting a sub-field of the response before rendering (envelope unwrap).     | 6.6     |
@@ -865,6 +866,87 @@ See 5.7. Skips the initial fetch only.
 - Re-init clears the in-flight request cache.
 - `data-nd-set` is applied after a successful render (the full response is
   passed, not the selected sub-field).
+
+### 6.12. Select population — `data-nd-options="VALUE:LABEL"`
+
+A `<select>` carrying both `data-nd-bind` and `data-nd-options` turns the
+fetched JSON array into `<option>` children. The attribute value is a
+compact dot-path shorthand into each array item.
+
+```html
+<select data-nd-bind="${api}/api/training/runs" data-nd-options="id:name">
+  <option value="">Choose a run…</option>
+</select>
+```
+
+Shorthand rules:
+
+| Attribute form        | Items are           | Behaviour                                     |
+|-----------------------|---------------------|-----------------------------------------------|
+| `data-nd-options`     | primitives          | item is used as BOTH `value` and label text.  |
+| `data-nd-options="name"` | objects          | `value` and label both read from `item.name`. |
+| `data-nd-options="id:name"` | objects       | `value` from `item.id`, label from `item.name`. |
+| `data-nd-options=":name"` / `"id:"` | objects | blank side mirrors the other.                 |
+
+Rules:
+
+- **Static `<option>` children are preserved** across fetches. A leading
+  `<option value="">Choose…</option>` placeholder survives refetches.
+- Runtime-generated options carry an internal `data-nd-generated` marker
+  and are the only ones removed when the element refetches (via
+  `nd:refresh`, polling, or a `data-nd-bind-trigger`).
+- **Envelope unwrap** via `data-nd-select` applies exactly as with
+  templates — the array is extracted from the envelope before option
+  generation.
+- If the `<select>` was upgraded by the custom-dropdown module
+  (`js/select.js`), its visual wrapper is **rebuilt automatically**
+  after options are populated via `refreshSelect(el)`, so the themed UI
+  stays in sync with the native element.
+- `config.onRender(el, data)` still fires after the options are in place.
+- `data-nd-options` is mutually additive with the templateless /
+  fieldless branch (§6.13): when present, options generation runs
+  instead of the pure callback path.
+
+### 6.13. Templateless binding (raw JSON)
+
+When a `data-nd-bind` element has **no** `data-nd-template`, **no**
+`data-nd-field`, and **no** `data-nd-options`, the fetched payload is
+passed to `config.onRender(el, data)` as a pure fetch-and-callback hook.
+
+Text-content rules for this branch:
+
+| Payload type      | Effect on `textContent`                                |
+|-------------------|--------------------------------------------------------|
+| `string`          | Written to `textContent` as-is.                        |
+| Anything else     | `textContent` is **not** touched.                      |
+
+This lets `<span data-nd-bind="/api/version"></span>` still display the
+version string intuitively, while object/array payloads stay out of the
+DOM and flow only to `onRender`.
+
+Recommended pattern pairs this with `data-nd-defer` so the callback is
+registered before the fetch fires:
+
+```html
+<div id="run-list" data-nd-bind="${api}/api/training/runs" data-nd-defer hidden></div>
+<script>
+  NDesign.configure({
+    onRender(el, data) {
+      if (el.id === 'run-list') populateCustomUI(data);
+    }
+  });
+  document.getElementById('run-list').dispatchEvent(new CustomEvent('nd:refresh'));
+</script>
+```
+
+For the common "fill a `<select>` from an API" case, prefer
+`data-nd-options` (§6.12) over a custom `onRender` callback.
+
+> **Behaviour change in v0.3.0:** prior releases wrote
+> `JSON.stringify(data)` into `textContent` for non-string payloads on
+> this branch, which could dump JSON blobs into hidden containers. The
+> textless behaviour documented above is now the default. Templated
+> binding, scalar binding, and attribute binding are unchanged.
 
 ---
 
