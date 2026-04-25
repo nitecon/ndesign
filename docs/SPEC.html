@@ -1619,6 +1619,10 @@ template.</p>
 <p>The URL is <code>${var}</code>-resolved. Elements sharing the same resolved URL
 share a single <code>EventSource</code>. A new <code>EventSource</code> is created per
 unique URL.</p>
+<p>As with <code>data-nd-ws</code>, the URL is the subscription envelope —
+encode channels / topics / filters in the path or query string and
+let the server read them on connect. There is no client-side
+subscribe frame and no post-connect handshake.</p>
 <h4 id="event-filtering--data-nd-sse-eventtype">Event filtering — <code>data-nd-sse-event=&quot;TYPE&quot;</code></h4>
 <p>If set, the element only renders messages dispatched under that named
 SSE event type (<code>event: TYPE</code> in the stream). If absent, the element
@@ -1662,6 +1666,50 @@ authenticated traffic. Elements sharing a resolved URL share one
 list (if non-empty). If <code>config.wsTokenProvider</code> is a function, its
 return value is appended as <code>token=&lt;encoded&gt;</code> to the URL&#39;s query
 string.</p>
+<h4 id="the-url-is-the-subscription-envelope">The URL is the subscription envelope</h4>
+<p>ndesign does NOT define a client-side subscribe frame. There is no
+<code>data-nd-ws-subscribe</code> directive, no init message the runtime sends
+on connect, no JSON-RPC handshake. The runtime opens the socket and
+reads JSON. <strong>All subscription state — which feeds, channels,
+symbols, filters — is encoded in the URL itself</strong> and read by the
+server on connect. This is the canonical pattern; backends that
+expect a post-connect subscribe frame are working against the design.</p>
+<p>Encode subscription parameters in the path (<code>/ws/account/42</code>), the
+query string (<code>?channels=ladder,news,pnl</code>), or both. Two elements
+that resolve to the same URL share one socket, so multiplexing many
+channels onto a single connection is just &quot;list them all in the
+same query string and let the server fan out the frames.&quot;</p>
+<pre><code class="language-html">&lt;!-- One socket carrying four channels; each tbody filters the
+     stream it cares about via data-nd-ws-filter. --&gt;
+&lt;tbody data-nd-ws=&quot;wss://api.example.com/ws?channels=ladder,news,pnl,orders&quot;
+       data-nd-ws-filter=&quot;type:ladder&quot;
+       data-nd-template=&quot;ladder-row&quot;&gt;&lt;/tbody&gt;
+
+&lt;tbody data-nd-ws=&quot;wss://api.example.com/ws?channels=ladder,news,pnl,orders&quot;
+       data-nd-ws-filter=&quot;type:news&quot;
+       data-nd-template=&quot;news-row&quot;&gt;&lt;/tbody&gt;
+</code></pre>
+<p>The server sees one connection with <code>?channels=ladder,news,pnl,orders</code>,
+auto-subscribes the client to all four feeds, and tags each outgoing
+frame with a <code>type</code> field that the per-element filter selects on.</p>
+<h4 id="authentication">Authentication</h4>
+<p>Browsers cannot set custom request headers on WebSocket upgrades —
+this is a constraint of the WebSocket protocol (RFC 6455) and the
+browser <code>WebSocket</code> API, not a framework limitation. There is no way
+for any client library to attach an <code>Authorization: Bearer &lt;token&gt;</code>
+header from the browser.</p>
+<p>ndesign&#39;s canonical browser auth path is therefore the query-string
+token, set via <code>config.wsTokenProvider</code>:</p>
+<pre><code class="language-javascript">NDesign.configure({ wsTokenProvider: () =&gt; sessionStorage.token });
+</code></pre>
+<p>The provider&#39;s return value is URI-encoded and appended as
+<code>token=&lt;value&gt;</code> to the WS URL on every connect (including
+reconnects). Backends MUST accept this query parameter for browser
+clients. A backend that only accepts <code>Authorization</code> headers is
+unreachable from a browser regardless of which framework is in use.</p>
+<p>For non-browser callers (server-to-server, CLI tools) where headers
+ARE settable on the upgrade request, use those instead — but that
+path does not pass through ndesign.</p>
 <h4 id="connection-state-classes">Connection state classes</h4>
 <p>Every bound element is stamped with <code>nd-ws-disconnected</code> at init.
 On <code>open</code>, <code>nd-ws-disconnected</code> is removed and <code>nd-ws-connected</code> is

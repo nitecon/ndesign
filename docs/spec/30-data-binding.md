@@ -920,6 +920,11 @@ The URL is `${var}`-resolved. Elements sharing the same resolved URL
 share a single `EventSource`. A new `EventSource` is created per
 unique URL.
 
+As with `data-nd-ws`, the URL is the subscription envelope —
+encode channels / topics / filters in the path or query string and
+let the server read them on connect. There is no client-side
+subscribe frame and no post-connect handshake.
+
 #### Event filtering — `data-nd-sse-event="TYPE"`
 
 If set, the element only renders messages dispatched under that named
@@ -975,6 +980,63 @@ Before connection, `config.wsProtocols` is passed as the protocol
 list (if non-empty). If `config.wsTokenProvider` is a function, its
 return value is appended as `token=<encoded>` to the URL's query
 string.
+
+#### The URL is the subscription envelope
+
+ndesign does NOT define a client-side subscribe frame. There is no
+`data-nd-ws-subscribe` directive, no init message the runtime sends
+on connect, no JSON-RPC handshake. The runtime opens the socket and
+reads JSON. **All subscription state — which feeds, channels,
+symbols, filters — is encoded in the URL itself** and read by the
+server on connect. This is the canonical pattern; backends that
+expect a post-connect subscribe frame are working against the design.
+
+Encode subscription parameters in the path (`/ws/account/42`), the
+query string (`?channels=ladder,news,pnl`), or both. Two elements
+that resolve to the same URL share one socket, so multiplexing many
+channels onto a single connection is just "list them all in the
+same query string and let the server fan out the frames."
+
+```html
+<!-- One socket carrying four channels; each tbody filters the
+     stream it cares about via data-nd-ws-filter. -->
+<tbody data-nd-ws="wss://api.example.com/ws?channels=ladder,news,pnl,orders"
+       data-nd-ws-filter="type:ladder"
+       data-nd-template="ladder-row"></tbody>
+
+<tbody data-nd-ws="wss://api.example.com/ws?channels=ladder,news,pnl,orders"
+       data-nd-ws-filter="type:news"
+       data-nd-template="news-row"></tbody>
+```
+
+The server sees one connection with `?channels=ladder,news,pnl,orders`,
+auto-subscribes the client to all four feeds, and tags each outgoing
+frame with a `type` field that the per-element filter selects on.
+
+#### Authentication
+
+Browsers cannot set custom request headers on WebSocket upgrades —
+this is a constraint of the WebSocket protocol (RFC 6455) and the
+browser `WebSocket` API, not a framework limitation. There is no way
+for any client library to attach an `Authorization: Bearer <token>`
+header from the browser.
+
+ndesign's canonical browser auth path is therefore the query-string
+token, set via `config.wsTokenProvider`:
+
+```javascript
+NDesign.configure({ wsTokenProvider: () => sessionStorage.token });
+```
+
+The provider's return value is URI-encoded and appended as
+`token=<value>` to the WS URL on every connect (including
+reconnects). Backends MUST accept this query parameter for browser
+clients. A backend that only accepts `Authorization` headers is
+unreachable from a browser regardless of which framework is in use.
+
+For non-browser callers (server-to-server, CLI tools) where headers
+ARE settable on the upgrade request, use those instead — but that
+path does not pass through ndesign.
 
 #### Connection state classes
 
