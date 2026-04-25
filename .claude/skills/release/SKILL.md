@@ -16,9 +16,19 @@ The skill does NOT do anything the user couldn't do by hand; it just makes
 the release deliberate, auditable, and safe. Every mutating step runs
 through the existing `package.json` lifecycle hooks:
 
-- `preversion` → `npm test` (143 JS + 8 browser — aborts the bump on failure)
-- `npm version <level>` → bumps `package.json`, creates commit, tags `vX.Y.Z`
+- `preversion` → `npm run test:js` (aborts the bump on failure)
+- `npm version <level>` → bumps `package.json`
+- `version` → `npm run build:spec && git add docs/SPEC.md` (regenerates the
+  canonical SPEC.md from `docs/spec/*.md` fragments and stages it so the
+  version commit and tag include a fresh, in-sync agent handoff document)
+- npm creates the version commit + `vX.Y.Z` tag
 - `postversion` → `npm run deploy:cdn && git push --follow-tags`
+
+`docs/SPEC.md` is a GENERATED artifact. It is concatenated from fragments
+in `docs/spec/` per `docs/spec/_manifest.txt` by `scripts/build-spec.js`.
+Edits MUST be made to the fragments — direct edits to `docs/SPEC.md` are
+overwritten on the next `npm run build:spec` (which runs automatically as
+part of `build:prod`, `version`, and `deploy:cdn`).
 
 ## When to use
 
@@ -167,25 +177,40 @@ Do NOT assume consent from silence, from "ok", or from prior
 conversation context. The user must acknowledge the specific version
 transition (`0.1.0 → 0.2.0`) before you touch `npm version`.
 
-## Step 4 — Verify SPEC.md is current
+## Step 4 — Verify SPEC fragments are current
 
 Before running the bump, remind the user that `docs/SPEC.md` is the
-authoritative agent-handoff document. If new features were added (MINOR
-or MAJOR) but `SPEC.md` wasn't updated in the release window:
+authoritative agent-handoff document and that it is GENERATED from
+`docs/spec/*.md` fragments. The `version` lifecycle hook will regenerate
+SPEC.md and stage it automatically — but only if the fragments have been
+updated. A stale fragment ships a stale spec.
+
+If new features were added (MINOR or MAJOR) but no fragment under
+`docs/spec/` was touched in the release window:
 
 1. Point out the gap: "The following features were added since v0.1.0
-   but I don't see corresponding updates in `docs/SPEC.md`: ..."
-2. Offer to update the spec first — but let the user decide.
+   but I don't see corresponding updates under `docs/spec/`: ..."
+2. Offer to update the fragments first — but let the user decide.
 3. If they say "ship it anyway", note that the pinned SPEC at
    `v<new>/SPEC.md` will be immutable for 1 year and may undersell the
    release. Their call.
 
-Detection heuristic: check whether `docs/SPEC.md` was touched in any
-commit in the release window:
+Detection heuristic: check whether any spec fragment OR the manifest was
+touched in any commit in the release window:
 ```bash
-git log "${LAST_TAG}..HEAD" --name-only --pretty=format: -- docs/SPEC.md | sort -u
+git log "${LAST_TAG}..HEAD" --name-only --pretty=format: -- docs/spec/ docs/SPEC.md | sort -u
 ```
 If empty AND you classified any commit as MINOR or MAJOR, flag it.
+
+Sanity check that the regen would be a no-op vs the committed SPEC.md
+(i.e. fragments are already in sync):
+```bash
+npm run build:spec >/dev/null && git diff --stat docs/SPEC.md
+```
+Expected: empty output. If there's a diff, fragments diverged from the
+committed SPEC.md — the regen during `version` will produce a different
+SPEC.md than what's currently on disk. That's fine (the version commit
+will include the regen) but worth surfacing to the user before the bump.
 
 ## Step 5 — Run the release
 
@@ -292,9 +317,14 @@ stay linear.
   stash, or discard first — the preflight check enforces this.
 - **Do NOT bypass `preversion` with `--no-verify` or similar.** The
   tests are the release contract.
-- **Do NOT skip the SPEC.md review.** The pinned SPEC URL is the
+- **Do NOT skip the SPEC fragment review.** The pinned SPEC URL is the
   primary product of this skill; shipping a spec that doesn't match
   the code strands downstream agents on incorrect documentation.
+- **Do NOT edit `docs/SPEC.md` directly** to "fix the spec" before a
+  release. It is generated from `docs/spec/*.md`. Direct edits are
+  overwritten by the next `npm run build:spec` (which runs in the
+  `version` lifecycle hook). Edit the fragments, then let the release
+  pipeline regenerate.
 - **Do NOT auto-run this skill on commit, push, or merge.** Release
   cadence is a human decision. The skill only fires when the user
   explicitly asks.
@@ -308,11 +338,16 @@ stay linear.
 
 ## Related files
 
-- `package.json` — scripts: `deploy:cdn`, `preversion`, `postversion`
+- `package.json` — scripts: `build:spec`, `deploy:cdn`, `preversion`,
+  `version`, `postversion`
+- `scripts/build-spec.js` — concatenates `docs/spec/*.md` fragments into
+  `docs/SPEC.md` per `docs/spec/_manifest.txt`
 - `scripts/deploy-cdn.sh` — the CDN upload script invoked by
   `deploy:cdn`
-- `docs/SPEC.md` — the agent-handoff artifact uploaded alongside
-  `dist/*`
+- `docs/spec/` — the SPEC source fragments (the source of truth)
+- `docs/spec/_manifest.txt` — fragment build order
+- `docs/SPEC.md` — GENERATED agent-handoff artifact uploaded alongside
+  `dist/*`. Do not edit by hand.
 - `~/.claude/CLAUDE.md` — the global prohibition on git worktrees (do
   not create a worktree to "review" the release)
 

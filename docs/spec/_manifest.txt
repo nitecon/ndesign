@@ -1,0 +1,13 @@
+# docs/spec/_manifest.txt
+#
+# Build order for docs/SPEC.md. The build script (scripts/build-spec.js)
+# concatenates the listed fragments in order, separated by a blank line.
+# Lines starting with "#" are comments; blank lines are ignored.
+#
+# To re-order, rename, or split a section, edit this file — fragment
+# filenames are NOT used to determine ordering.
+#
+# Edit fragments here, then run `npm run build:spec` to regenerate
+# docs/SPEC.md (the canonical artifact uploaded to CDN).
+
+00-spec.md

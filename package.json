@@ -14,13 +14,15 @@
     "build:css:dev": "sass scss/core.scss dist/ndesign.css --source-map",
     "build:themes": "sass scss/themes/light.scss dist/themes/light.min.css --style=compressed --no-source-map && sass scss/themes/dark.scss dist/themes/dark.min.css --style=compressed --no-source-map",
     "build:themes:dev": "sass scss/themes/light.scss dist/themes/light.css --source-map && sass scss/themes/dark.scss dist/themes/dark.css --source-map",
+    "build:spec": "node scripts/build-spec.js",
     "build": "npm run build:dev && npm run build:prod",
     "build:dev": "npm run build:js:dev && npm run build:css:dev && npm run build:themes:dev",
-    "build:prod": "npm run build:js && npm run build:css && npm run build:themes",
+    "build:prod": "npm run build:spec && npm run build:js && npm run build:css && npm run build:themes",
     "watch:css": "sass --watch scss:dist",
     "watch:js": "esbuild js/ndesign.js --bundle --outfile=dist/ndesign.js --format=iife --global-name=NDesign --sourcemap --watch",
     "deploy:cdn": "bash scripts/deploy-cdn.sh",
     "preversion": "npm run test:js",
+    "version": "npm run build:spec && git add docs/SPEC.md",
     "postversion": "npm run deploy:cdn && git push --follow-tags"
   },
   "devDependencies": {
