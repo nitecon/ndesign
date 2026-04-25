@@ -12,7 +12,7 @@ import { initActions, resolveConfirm } from './action.js';
 import { initUploads, destroyUploads } from './upload.js';
 import { initWebSockets, destroyWebSockets } from './ws.js';
 import { initSSE, destroySSE } from './sse.js';
-import { initSelects, destroySelects } from './select.js';
+import { initSelects, destroySelects, refreshSelect } from './select.js';
 import { initNav, destroyNav } from './nav.js';
 import { initDropdowns, destroyDropdowns } from './dropdown.js';
 import { initModals, destroyModals, openModal, closeModal, confirmDialog } from './modal.js';
@@ -136,7 +136,7 @@ export function init() {
   initToasts();
   initTabs();
   initTooltips();
-  initUploads();
+  initUploads(config);
   initSortable(config);
   initSetTriggers(config);
   initModel(config);
@@ -359,7 +359,7 @@ export function getThemes() {
 }
 
 // Re-export utilities for advanced usage
-export { render, renderOne, interpolate, escapeHTML, getByPath, setByPath, getCSRFToken, openModal, closeModal, confirmDialog, resolveConfirm, toast };
+export { render, renderOne, interpolate, escapeHTML, getByPath, setByPath, getCSRFToken, openModal, closeModal, confirmDialog, resolveConfirm, toast, refreshSelect };
 
 // Store public API
 export { resolveVars, getVar as storeGet, setVar as storeSet, getEndpoint as endpoint };

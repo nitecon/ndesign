@@ -57,19 +57,22 @@ display, and success-action chaining behave consistently.
 |---------------------------------|-----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `data-nd-upload="METHOD URL"`   | `<form>` only         | Hijacks submit. Method defaults to `POST`. URL is `${var}`-resolved at submit time (see [Data binding](#data-binding) for store interpolation).                         |
 | `data-nd-feedback="ID"`         | `<form>`              | Element id receiving the success / error message text.                                                                                                                  |
-| `data-nd-confirm="MESSAGE"`     | `<form>`              | Shows a `window.confirm` prompt before submitting. Cancellation aborts the upload silently.                                                                              |
+| `data-nd-confirm="MESSAGE"`     | `<form>`              | Plain text shows `window.confirm`; `"#dialog-id"` opens a native `<dialog>` confirm. Cancellation aborts the upload silently.                                            |
 | `data-nd-success="CHAIN"`       | `<form>`              | Comma-separated success actions executed after a 2xx response. Same vocabulary as `data-nd-action` (`refresh:#sel`, `redirect:/path`, `toast:msg`, `close-modal`, ...).  |
+| `data-nd-set="OPS"`             | `<form>`              | Store writes executed after a 2xx response. Same grammar as `data-nd-action`.                                                                                            |
+| `data-nd-timeout="MS"`          | `<form>`              | Per-upload XHR timeout; overrides `NDesign.configure({timeout})`.                                                                                                        |
 | `progress.nd-upload-progress`   | inside the `<form>`   | Optional. When present, `value` is updated from `xhr.upload.progress` (capped at `max=100`).                                                                            |
 
-`data-nd-set` is **NOT** processed on upload forms. If a server response
-needs to drive a store mutation, listen for the success chain or call
-`NDesign.store.set(...)` from a custom handler.
+`data-nd-set` receives the parsed JSON response (or `null`) after a
+successful upload, before the `data-nd-success` chain runs.
 
 ### Headers and CSRF
 
-The XHR sets exactly two headers manually:
+The XHR applies the same configured headers as bind/action requests, then
+removes `Content-Type` before sending:
 
 - `X-Requested-With: NDesign`
+- any headers from `NDesign.configure({ headers: ... })`
 - `X-CSRF-Token: <meta name="csrf-token">` (only when the meta tag is
   present)
 
@@ -77,34 +80,34 @@ The browser sets `Content-Type: multipart/form-data; boundary=...`
 automatically from the `FormData`. **Do not override it** — without the
 boundary parameter the server cannot parse the body.
 
-Upload runs on the legacy XHR path and does not consume
-`NDesign.configure({ headers: ... })` automatically. Custom headers
-SHOULD be applied via a server-side proxy or by adding them through
-`onRequest` when migrating off this path.
+`NDesign.configure({ onRequest })` receives an options object with
+`{ method, headers, body: FormData, transport: 'xhr' }` before headers
+are applied, so applications MAY mutate `headers` for upload requests.
 
 ### Error handling
 
 The upload handler dispatches the response payload through the same
 helpers used by form actions:
 
-- **2xx** — `handleSuccess(form, responseData)` runs the
-  `data-nd-success` chain. The feedback element shows
-  `responseData.message` or "Upload complete".
+- **2xx** — `data-nd-set` runs first, then
+  `handleSuccess(form, responseData)` runs the `data-nd-success`
+  chain. The feedback element shows `responseData.message` or
+  "Upload complete".
 - **non-2xx with JSON `errors`** — `displayErrors(form, errors,
   feedbackId)` paints `.nd-form-error` next to fields and the global
   `errors._form` / `errors.error` message into the feedback element.
 - **non-2xx without JSON** — the feedback element shows the response
   text or `xhr.statusText`.
 
-The upload module pre-dates the unified error envelope rollout. It
-recognises field errors but does **not** invoke `config.onError` —
-treat it as a legacy code path until parity work lands. See
-[Data binding → Error envelope](#error-envelope) for the canonical
-shape.
+Upload failures are normalised into the unified error envelope shape and
+passed to `config.onError(url, envelope, err)` after visible feedback is
+updated. See [Data binding → Error envelope](#error-envelope) for the
+canonical shape.
 
 A network failure dispatches `xhr.onerror` and sets the feedback to
-*"Network error. Please try again."* An aborted request (typically
-because `destroyUploads()` ran mid-flight) sets the feedback to
+*"Network error. Please try again."* A timeout sets the feedback to
+*"Request timed out"*. An aborted request (typically because
+`destroyUploads()` ran mid-flight) sets the feedback to
 *"Upload cancelled."*
 
 ### Events fired
@@ -121,7 +124,7 @@ present at init time.
 
 | Method               | Behavior                                                                                                                                            |
 |----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| `initUploads()`      | Idempotent. Skips forms already wired. Called automatically by `NDesign.init()`.                                                                    |
+| `initUploads(config)` | Idempotent. Skips forms already wired. Called automatically by `NDesign.init()`. Uses the shared runtime config for headers, hooks, and timeout.    |
 | `destroyUploads()`   | Removes every submit handler **and aborts any in-flight `XMLHttpRequest`**. Called by `NDesign.init()` on re-init. Aborted XHRs surface a "cancelled" feedback. |
 
 ### Accessibility
@@ -150,10 +153,8 @@ present at init time.
   prevents the browser from injecting the multipart boundary; the
   server then fails to parse the body. The runtime never sets
   `Content-Type` on the XHR for this reason.
-- `data-nd-set` is intentionally NOT processed on upload forms. Migrate
-  to `data-nd-action` (with no file input) when you need direct store
-  mutation, or chain `toast:` / `refresh:` and let the server response
-  drive subsequent fetches.
+- Upload still uses XHR rather than `fetch` because browsers do not
+  expose upload progress events through `fetch`.
 - A re-init via `NDesign.init()` aborts any active upload — the user
   sees an "Upload cancelled" feedback. Avoid wholesale re-init while
   uploads are in flight.

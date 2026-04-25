@@ -63,7 +63,18 @@ This keeps markup clean and idiomatic. `<article>` means a self-contained piece 
 
 ---
 
-## v0.4 — Release Highlights
+## v0.3.5 — Release Highlights
+
+### Runtime/spec alignment patch
+
+This patch tightens the released contract for agents and backend teams:
+
+- `NDesign.refreshSelect(selectEl)` is now exported on the global API, matching the Select spec.
+- `data-nd-bind` now uses the same timeout path as actions (`data-nd-timeout` or configured `timeout`).
+- `NDesign.store.set(...)` documentation now matches runtime behavior: writes support dot paths and fire `nd:var-change`.
+- `data-nd-upload` now honors configured headers, timeout, `config.onError`, dialog confirms, and `data-nd-set` while still using XHR for progress and still leaving multipart `Content-Type` to the browser.
+
+## Previous Highlights
 
 ### nd-flex-1 / nd-grow / nd-shrink utilities
 

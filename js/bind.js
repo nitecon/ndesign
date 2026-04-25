@@ -12,7 +12,7 @@
  * @module bind
  */
 
-import { getByPath, buildHeaders } from './utils.js';
+import { getByPath, buildHeaders, fetchWithTimeout } from './utils.js';
 import { render } from './template.js';
 import { resolveVars, applySetDirective } from './store.js';
 import { refreshSelect } from './select.js';
@@ -50,7 +50,7 @@ function buildFetchURL(el) {
  * @param {Object} config  — NDesign configuration object
  * @returns {Promise<any>} parsed JSON response
  */
-async function fetchJSON(url, config) {
+async function fetchJSON(url, config, timeoutMs) {
   if (pendingRequests.has(url)) {
     return pendingRequests.get(url);
   }
@@ -65,7 +65,7 @@ async function fetchJSON(url, config) {
     config.onRequest(url, options);
   }
 
-  const promise = fetch(url, options)
+  const promise = fetchWithTimeout(url, options, timeoutMs)
     .then(async (response) => {
       if (typeof config.onResponse === 'function') {
         config.onResponse(url, response);
@@ -169,7 +169,9 @@ async function processBind(el, config) {
     el.classList.remove('nd-error');
     el.classList.add('nd-loading');
 
-    const data = await fetchJSON(url, config);
+    const timeoutMs =
+      parseInt(el.getAttribute('data-nd-timeout'), 10) || config.timeout || 15000;
+    const data = await fetchJSON(url, config, timeoutMs);
 
     el.classList.remove('nd-loading');
 

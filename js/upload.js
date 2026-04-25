@@ -6,9 +6,9 @@
  * @module upload
  */
 
-import { handleSuccess, clearFormErrors, displayErrors } from './action.js';
-import { getCSRFToken } from './utils.js';
-import { resolveVars } from './store.js';
+import { handleSuccess, clearFormErrors, displayErrors, resolveConfirm } from './action.js';
+import { buildHeaders } from './utils.js';
+import { resolveVars, applySetDirective } from './store.js';
 
 /** @type {Map<HTMLFormElement, {handler: (e: SubmitEvent) => void, xhr: XMLHttpRequest|null, hideTimer: number|null}>} */
 const uploadHandlers = new Map();
@@ -46,10 +46,29 @@ function showFeedback(feedbackId, message, type) {
 }
 
 /**
+ * Normalize upload failures into the same envelope shape used by actions
+ * and bindings. Upload still uses XHR for progress, but callers can handle
+ * failures through the same `config.onError(url, envelope, err)` hook.
+ * @param {Object|null} responseData
+ * @param {string} statusText
+ * @param {Error|null} err
+ * @returns {{errors: Object}}
+ */
+function synthesizeUploadEnvelope(responseData, statusText, err = null) {
+  if (responseData && responseData.errors) return { errors: responseData.errors };
+  if (responseData && responseData.message) return { errors: { error: responseData.message } };
+  if (err && err.name === 'TimeoutError') return { errors: { error: 'Request timed out' } };
+  if (err && err.name === 'AbortError') return { errors: { error: 'Upload cancelled.' } };
+  if (err instanceof TypeError) return { errors: { error: "Couldn't reach server" } };
+  return { errors: { error: `Error: ${statusText || 'Upload failed'}` } };
+}
+
+/**
  * Submit a form upload via XHR with progress reporting.
  * @param {HTMLFormElement} form — the form element
+ * @param {Object} config       — NDesign configuration object
  */
-function submitUpload(form) {
+async function submitUpload(form, config = {}) {
   const uploadStr = form.getAttribute('data-nd-upload');
   if (!uploadStr) return;
 
@@ -58,8 +77,7 @@ function submitUpload(form) {
   const url = resolveVars(parsed.url);
   const feedbackId = form.getAttribute('data-nd-feedback') || null;
 
-  const confirmMsg = form.getAttribute('data-nd-confirm');
-  if (confirmMsg && !window.confirm(confirmMsg)) {
+  if (!(await resolveConfirm(form))) {
     return;
   }
 
@@ -94,9 +112,18 @@ function submitUpload(form) {
 
   const xhr = new XMLHttpRequest();
   xhr.open(method, url, true);
-  xhr.setRequestHeader('X-Requested-With', 'NDesign');
-  const csrf = getCSRFToken();
-  if (csrf) xhr.setRequestHeader('X-CSRF-Token', csrf);
+  xhr.timeout =
+    parseInt(form.getAttribute('data-nd-timeout'), 10) || config.timeout || 15000;
+
+  const headers = buildHeaders(config.headers);
+  delete headers['Content-Type'];
+  const requestOptions = { method, headers, body: formData, transport: 'xhr' };
+  if (typeof config.onRequest === 'function') {
+    config.onRequest(url, requestOptions);
+  }
+  for (const [name, value] of Object.entries(requestOptions.headers || {})) {
+    if (value != null) xhr.setRequestHeader(name, String(value));
+  }
 
   // Store the live XHR so destroyUploads can abort it if teardown happens mid-upload.
   const entry = uploadHandlers.get(form);
@@ -148,22 +175,31 @@ function submitUpload(form) {
     }
 
     if (xhr.status >= 200 && xhr.status < 300) {
+      if (typeof config.onResponse === 'function') {
+        config.onResponse(url, xhr);
+      }
       showFeedback(
         feedbackId,
         (responseData && responseData.message) || 'Upload complete',
         'success'
       );
+      if (form.hasAttribute('data-nd-set')) {
+        applySetDirective(form, responseData);
+      }
       handleSuccess(form, responseData);
     } else {
-      if (responseData && responseData.errors) {
-        displayErrors(form, responseData.errors, feedbackId);
-      } else {
-        showFeedback(
-          feedbackId,
-          (responseData && responseData.message) ||
-            `Error: ${xhr.statusText || 'Upload failed'}`,
-          'error'
-        );
+      if (typeof config.onResponse === 'function') {
+        config.onResponse(url, xhr);
+      }
+      const envelope = synthesizeUploadEnvelope(responseData, xhr.statusText);
+      if (envelope.errors) {
+        displayErrors(form, envelope.errors, feedbackId);
+      }
+      if (!(responseData && responseData.errors)) {
+        showFeedback(feedbackId, envelope.errors.error, 'error');
+      }
+      if (typeof config.onError === 'function') {
+        config.onError(url, envelope, null);
       }
     }
     cleanup();
@@ -171,12 +207,32 @@ function submitUpload(form) {
 
   xhr.addEventListener('error', () => {
     console.error(`[ndesign] Upload error for ${url}`);
+    const err = new TypeError('Network error');
+    const envelope = synthesizeUploadEnvelope(null, '', err);
     showFeedback(feedbackId, 'Network error. Please try again.', 'error');
+    if (typeof config.onError === 'function') {
+      config.onError(url, envelope, err);
+    }
+    cleanup();
+  });
+
+  xhr.addEventListener('timeout', () => {
+    const err = new DOMException('Request timed out', 'TimeoutError');
+    const envelope = synthesizeUploadEnvelope(null, '', err);
+    showFeedback(feedbackId, envelope.errors.error, 'error');
+    if (typeof config.onError === 'function') {
+      config.onError(url, envelope, err);
+    }
     cleanup();
   });
 
   xhr.addEventListener('abort', () => {
-    showFeedback(feedbackId, 'Upload cancelled.', 'error');
+    const err = new DOMException('Upload cancelled.', 'AbortError');
+    const envelope = synthesizeUploadEnvelope(null, '', err);
+    showFeedback(feedbackId, envelope.errors.error, 'error');
+    if (typeof config.onError === 'function') {
+      config.onError(url, envelope, err);
+    }
     cleanup();
   });
 
@@ -187,7 +243,7 @@ function submitUpload(form) {
  * Initialize all data-nd-upload forms in the document.
  * Intercepts submit events and routes them through XHR upload.
  */
-export function initUploads() {
+export function initUploads(config = {}) {
   const forms = document.querySelectorAll('form[data-nd-upload]');
   for (const form of forms) {
     // Skip if already wired
@@ -195,7 +251,7 @@ export function initUploads() {
 
     const handler = (e) => {
       e.preventDefault();
-      submitUpload(form);
+      submitUpload(form, config);
     };
     form.addEventListener('submit', handler);
     uploadHandlers.set(form, { handler, xhr: null, hideTimer: null });

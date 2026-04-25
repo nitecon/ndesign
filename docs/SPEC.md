@@ -259,19 +259,19 @@ required.
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>My App</title>
 
-    <!-- Core stylesheet (pinned version — swap v0.3.0 for your target). -->
+    <!-- Core stylesheet (pinned version — swap v0.3.5 for your target). -->
     <link rel="stylesheet"
-          href="https://storage.googleapis.com/ndesign-cdn/ndesign/v0.3.0/ndesign.min.css">
+          href="https://storage.googleapis.com/ndesign-cdn/ndesign/v0.3.5/ndesign.min.css">
 
     <!-- Optional theme. class="theme" is REQUIRED so the theme switcher
          can find and swap the link element. -->
     <link rel="stylesheet"
-          href="https://storage.googleapis.com/ndesign-cdn/ndesign/v0.3.0/themes/light.min.css"
+          href="https://storage.googleapis.com/ndesign-cdn/ndesign/v0.3.5/themes/light.min.css"
           class="theme" data-theme="light">
     <meta name="nd-theme" content="light"
-          data-href="https://storage.googleapis.com/ndesign-cdn/ndesign/v0.3.0/themes/light.min.css">
+          data-href="https://storage.googleapis.com/ndesign-cdn/ndesign/v0.3.5/themes/light.min.css">
     <meta name="nd-theme" content="dark"
-          data-href="https://storage.googleapis.com/ndesign-cdn/ndesign/v0.3.0/themes/dark.min.css">
+          data-href="https://storage.googleapis.com/ndesign-cdn/ndesign/v0.3.5/themes/dark.min.css">
 
     <!-- Store configuration via meta tags. Agents SHOULD prefer this over
          NDesign.configure() because it keeps URLs declarative. -->
@@ -286,12 +286,12 @@ required.
 
     <!-- Runtime bundle. Loads synchronously and auto-initialises on
          DOMContentLoaded (or immediately if the DOM is already parsed). -->
-    <script src="https://storage.googleapis.com/ndesign-cdn/ndesign/v0.3.0/ndesign.min.js"></script>
+    <script src="https://storage.googleapis.com/ndesign-cdn/ndesign/v0.3.5/ndesign.min.js"></script>
   </body>
 </html>
 ```
 
-For active development, substitute `latest` for `v0.3.0` in every URL
+For active development, substitute `latest` for `v0.3.5` in every URL
 above. For a production deployment, always pin to a specific
 `v<semver>` so your app does not silently upgrade when the CDN's
 `latest/` pointer moves.
@@ -686,10 +686,9 @@ Every fetch made by bind/action routes through
 ```
 
 `data-nd-bind` (GET) deletes `Content-Type` from the header set before
-sending. `data-nd-upload` does NOT use `buildHeaders`; it sets only
-`X-Requested-With` and `X-CSRF-Token` manually on the XHR (multipart
-body requires the browser to set its own `Content-Type` with the
-boundary).
+sending. `data-nd-upload` also deletes `Content-Type` before setting
+headers on its XHR, because multipart bodies require the browser to set
+its own `Content-Type` with the boundary.
 
 ### Store, meta tags, and ${var} interpolation
 
@@ -763,16 +762,15 @@ value falls through to endpoint lookup.
 #### Store API
 
 The public store is exposed as `NDesign.store` plus several top-level
-aliases. `NDesign.store.set` is a thin façade over the raw `vars`
-Map — it does NOT fire `nd:var-change`. `NDesign.storeSet` (alias of
-the module-level `setVar`) DOES fire `nd:var-change`. Agents that need
-`data-nd-model` inputs to re-sync MUST use `NDesign.storeSet`.
+aliases. `NDesign.store.set` and `NDesign.storeSet` both route through
+the module-level `setVar`, support dot paths, and fire
+`nd:var-change` so `data-nd-model` inputs stay in sync.
 
 | Call                                              | Path support | Fires `nd:var-change`? |
 |---------------------------------------------------|--------------|------------------------|
-| `NDesign.store.get('k')`                          | top-level    | n/a                    |
-| `NDesign.store.set('k', v)`                       | top-level    | **no**                 |
-| `NDesign.store.has/delete/clear`                  | top-level    | no                     |
+| `NDesign.store.get('k')`                          | dot-path     | n/a                    |
+| `NDesign.store.set('k', v)`                       | dot-path     | **yes**                |
+| `NDesign.store.has/delete/clear`                  | dot-path get; delete/clear dispatch | delete/clear dispatch removals |
 | `NDesign.storeGet('a.b.c')`                       | dot-path     | n/a                    |
 | `NDesign.storeSet('a.b.c', v)`                    | dot-path     | **yes**                |
 | `NDesign.endpoint('api')`                         | flat         | n/a                    |
@@ -1288,6 +1286,7 @@ processed in order.
 | `redirect:URL`      | any         | `window.location.href = URL`. Stops the chain.                                  |
 | `refresh:SELECTOR`  | any         | Dispatches `nd:refresh` on every matching element.                             |
 | `emit:EVENT`        | any         | Dispatches a bubbling `CustomEvent(EVENT, {detail: responseData})` on the element. |
+| `toast:MESSAGE`     | any         | Shows a success toast with `MESSAGE`.                                           |
 | `close-modal`       | any         | Closes the nearest ancestor `<dialog>` of the triggering element (no-op if none). |
 
 Actions not in this list are silently ignored (no warning).
@@ -1316,8 +1315,10 @@ instead.
 
 #### Per-element timeout — `data-nd-timeout="MS"`
 
-Every form and button action is submitted via `fetchWithTimeout()`
-with an `AbortController`. The timeout resolves to, in order:
+Every bind, form action, and button action request is submitted via
+`fetchWithTimeout()` with an `AbortController`. Uploads use XHR and set
+`xhr.timeout` to the same resolved value. The timeout resolves to, in
+order:
 
 1. The `data-nd-timeout` attribute on the element, parsed as an
    integer.
@@ -1388,7 +1389,7 @@ STRING     ::= "'" ( any-char | "\\'" | "\\\\" )* "'"
 | On a `data-nd-bind` element                              | After a successful fetch.                 | parsed JSON    |
 | On a `form[data-nd-action]` element                      | After a successful submit (HTTP 2xx).     | parsed JSON (or `null`) |
 | On a non-form `[data-nd-action]` (button/link)           | After a successful submit.                | parsed JSON (or `null`) |
-| On a `form[data-nd-upload]` element                      | NOT invoked (upload does not process set). | —              |
+| On a `form[data-nd-upload]` element                      | After a successful upload (HTTP 2xx).       | parsed JSON (or `null`) |
 | Standalone (no bind/action/upload/sortable)              | On click. Response form warns.             | `undefined`    |
 
 #### Examples
@@ -1692,10 +1693,11 @@ Bind errors flow through the same envelope shape but render either a
 
 #### Upload errors
 
-Uploads are a separate code path (XHR, not fetch) and do not yet use
-the unified envelope:
+Uploads use XHR, not fetch, so upload progress remains observable. They
+still route failures through the unified envelope for `config.onError`:
 
-- 2xx → feedback shows success message; `handleSuccess` chain runs.
+- 2xx → feedback shows success message; `data-nd-set` and
+  `handleSuccess` chain run.
 - non-2xx with JSON `errors` → `displayErrors` maps fields.
 - non-2xx otherwise → feedback shows server message or generic
   "Upload failed" text.
@@ -1762,8 +1764,9 @@ mistakes are common enough that they each have a section below.
   fires every store write and is scoped conceptually to
   `data-nd-model`. Use `nd:refresh` for view refreshes and `nd:set`
   / custom `emit:` events for cross-component signalling.
-- **`data-nd-set` is NOT processed on upload forms.** Upload success
-  only processes `data-nd-success` and the feedback message.
+- **Upload is still XHR.** It honors configured headers, timeout,
+  `data-nd-set`, and `config.onError`, but it deliberately removes
+  `Content-Type` so the browser can add the multipart boundary.
 - **`NDesign.init()` tears down everything.** It is safe but heavy.
   Prefer `MutationObserver`-driven re-wiring (sortable does this
   automatically) over a full re-init for incremental DOM additions.
@@ -1788,7 +1791,7 @@ fragments and are also collected in [Reference](#reference).
 | Event              | Target                | When                                                      | Detail                          |
 |--------------------|-----------------------|-----------------------------------------------------------|---------------------------------|
 | `nd:refresh`       | bound element          | External trigger (e.g. `refresh:#id`, bind trigger).       | none — consumer refetches       |
-| `nd:var-change`    | `document`            | After `setVar()` / `NDesign.storeSet` (NOT `store.set`).   | `{path, topKey, value}`         |
+| `nd:var-change`    | `document`            | After `setVar()` / `NDesign.store.set` / `NDesign.storeSet`. | `{path, topKey, value}`         |
 | `nd:model`         | model input            | After user input updates the store.                       | `{name, value}`                 |
 | `nd:set`           | set-trigger element    | After a standalone `data-nd-set` click runs.              | `{el}`                          |
 | user-defined `emit:X` | action / set element | When a `data-nd-success="emit:X"` step runs.              | `responseData` (`undefined` for set) |
@@ -3554,11 +3557,13 @@ two binding directives work in concert with this component:
 | Attribute              | Location          | Behavior                                                                                                                     |
 |------------------------|-------------------|------------------------------------------------------------------------------------------------------------------------------|
 | `data-nd-options`      | the `<select>`    | Populates `<option>` elements from a JSON array fetched by [Data binding](#data-binding). Mechanics live in [Data binding](#data-binding). |
-| `data-nd-bind`         | the `<select>`    | Re-fetches the option list when triggered. After mutation, callers SHOULD invoke `NDesign.refreshSelect(selectEl)` (see JS API). |
+| `data-nd-bind`         | the `<select>`    | Re-fetches the option list when triggered. The binding runtime rebuilds the custom wrapper after `data-nd-options` populates options. |
 
-When the native option list changes (programmatic `appendChild`,
-binding-driven re-population, etc.) the visible custom dropdown does
-not auto-rebuild. Call `refreshSelect(selectEl)` to rewrap.
+When the native option list changes through application code
+(`appendChild`, direct `innerHTML`, etc.) the visible custom dropdown
+does not auto-rebuild. Call `NDesign.refreshSelect(selectEl)` to
+rewrap. Binding-driven `data-nd-options` population does this
+automatically.
 
 ### Events fired
 
@@ -4029,19 +4034,22 @@ display, and success-action chaining behave consistently.
 |---------------------------------|-----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `data-nd-upload="METHOD URL"`   | `<form>` only         | Hijacks submit. Method defaults to `POST`. URL is `${var}`-resolved at submit time (see [Data binding](#data-binding) for store interpolation).                         |
 | `data-nd-feedback="ID"`         | `<form>`              | Element id receiving the success / error message text.                                                                                                                  |
-| `data-nd-confirm="MESSAGE"`     | `<form>`              | Shows a `window.confirm` prompt before submitting. Cancellation aborts the upload silently.                                                                              |
+| `data-nd-confirm="MESSAGE"`     | `<form>`              | Plain text shows `window.confirm`; `"#dialog-id"` opens a native `<dialog>` confirm. Cancellation aborts the upload silently.                                            |
 | `data-nd-success="CHAIN"`       | `<form>`              | Comma-separated success actions executed after a 2xx response. Same vocabulary as `data-nd-action` (`refresh:#sel`, `redirect:/path`, `toast:msg`, `close-modal`, ...).  |
+| `data-nd-set="OPS"`             | `<form>`              | Store writes executed after a 2xx response. Same grammar as `data-nd-action`.                                                                                            |
+| `data-nd-timeout="MS"`          | `<form>`              | Per-upload XHR timeout; overrides `NDesign.configure({timeout})`.                                                                                                        |
 | `progress.nd-upload-progress`   | inside the `<form>`   | Optional. When present, `value` is updated from `xhr.upload.progress` (capped at `max=100`).                                                                            |
 
-`data-nd-set` is **NOT** processed on upload forms. If a server response
-needs to drive a store mutation, listen for the success chain or call
-`NDesign.store.set(...)` from a custom handler.
+`data-nd-set` receives the parsed JSON response (or `null`) after a
+successful upload, before the `data-nd-success` chain runs.
 
 ### Headers and CSRF
 
-The XHR sets exactly two headers manually:
+The XHR applies the same configured headers as bind/action requests, then
+removes `Content-Type` before sending:
 
 - `X-Requested-With: NDesign`
+- any headers from `NDesign.configure({ headers: ... })`
 - `X-CSRF-Token: <meta name="csrf-token">` (only when the meta tag is
   present)
 
@@ -4049,34 +4057,34 @@ The browser sets `Content-Type: multipart/form-data; boundary=...`
 automatically from the `FormData`. **Do not override it** — without the
 boundary parameter the server cannot parse the body.
 
-Upload runs on the legacy XHR path and does not consume
-`NDesign.configure({ headers: ... })` automatically. Custom headers
-SHOULD be applied via a server-side proxy or by adding them through
-`onRequest` when migrating off this path.
+`NDesign.configure({ onRequest })` receives an options object with
+`{ method, headers, body: FormData, transport: 'xhr' }` before headers
+are applied, so applications MAY mutate `headers` for upload requests.
 
 ### Error handling
 
 The upload handler dispatches the response payload through the same
 helpers used by form actions:
 
-- **2xx** — `handleSuccess(form, responseData)` runs the
-  `data-nd-success` chain. The feedback element shows
-  `responseData.message` or "Upload complete".
+- **2xx** — `data-nd-set` runs first, then
+  `handleSuccess(form, responseData)` runs the `data-nd-success`
+  chain. The feedback element shows `responseData.message` or
+  "Upload complete".
 - **non-2xx with JSON `errors`** — `displayErrors(form, errors,
   feedbackId)` paints `.nd-form-error` next to fields and the global
   `errors._form` / `errors.error` message into the feedback element.
 - **non-2xx without JSON** — the feedback element shows the response
   text or `xhr.statusText`.
 
-The upload module pre-dates the unified error envelope rollout. It
-recognises field errors but does **not** invoke `config.onError` —
-treat it as a legacy code path until parity work lands. See
-[Data binding → Error envelope](#error-envelope) for the canonical
-shape.
+Upload failures are normalised into the unified error envelope shape and
+passed to `config.onError(url, envelope, err)` after visible feedback is
+updated. See [Data binding → Error envelope](#error-envelope) for the
+canonical shape.
 
 A network failure dispatches `xhr.onerror` and sets the feedback to
-*"Network error. Please try again."* An aborted request (typically
-because `destroyUploads()` ran mid-flight) sets the feedback to
+*"Network error. Please try again."* A timeout sets the feedback to
+*"Request timed out"*. An aborted request (typically because
+`destroyUploads()` ran mid-flight) sets the feedback to
 *"Upload cancelled."*
 
 ### Events fired
@@ -4093,7 +4101,7 @@ present at init time.
 
 | Method               | Behavior                                                                                                                                            |
 |----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| `initUploads()`      | Idempotent. Skips forms already wired. Called automatically by `NDesign.init()`.                                                                    |
+| `initUploads(config)` | Idempotent. Skips forms already wired. Called automatically by `NDesign.init()`. Uses the shared runtime config for headers, hooks, and timeout.    |
 | `destroyUploads()`   | Removes every submit handler **and aborts any in-flight `XMLHttpRequest`**. Called by `NDesign.init()` on re-init. Aborted XHRs surface a "cancelled" feedback. |
 
 ### Accessibility
@@ -4122,10 +4130,8 @@ present at init time.
   prevents the browser from injecting the multipart boundary; the
   server then fails to parse the body. The runtime never sets
   `Content-Type` on the XHR for this reason.
-- `data-nd-set` is intentionally NOT processed on upload forms. Migrate
-  to `data-nd-action` (with no file input) when you need direct store
-  mutation, or chain `toast:` / `refresh:` and let the server response
-  drive subsequent fetches.
+- Upload still uses XHR rather than `fetch` because browsers do not
+  expose upload progress events through `fetch`.
 - A re-init via `NDesign.init()` aborts any active upload — the user
   sees an "Upload cancelled" feedback. Avoid wholesale re-init while
   uploads are in flight.
@@ -4235,9 +4241,9 @@ attached to `window`; these are the supported entry points.
 |-----------------------------------------------|-------------------------------------------------------------------|---------|
 | `NDesign.configure(partial)`                  | Merge runtime configuration.                                       | [Configuration](#configuration) |
 | `NDesign.init()`                              | Re-init the runtime (tears down first).                           | [Lifecycle and initialization](#lifecycle-and-initialization) |
-| `NDesign.store.get(key)`                      | Read a top-level var.                                             | [Store API](#store-api) |
-| `NDesign.store.set(key, value)`               | Write a top-level var (does NOT fire `nd:var-change`).            | [Store API](#store-api) |
-| `NDesign.store.has(key)` / `delete` / `clear` | Standard map ops on top-level vars.                               | [Store API](#store-api) |
+| `NDesign.store.get(path)`                     | Read a var by dot-path.                                           | [Store API](#store-api) |
+| `NDesign.store.set(path, value)`              | Write a var by dot-path; fires `nd:var-change`.                   | [Store API](#store-api) |
+| `NDesign.store.has(path)` / `delete` / `clear` | Store helpers; delete/clear dispatch removal events.              | [Store API](#store-api) |
 | `NDesign.storeGet(path)`                      | Read a var by dot-path (fires through `getVar`).                  | [Store API](#store-api) |
 | `NDesign.storeSet(path, value)`               | Write a var by dot-path; FIRES `nd:var-change`.                   | [Store API](#store-api) |
 | `NDesign.endpoint(name)`                      | Return the URL base for a named endpoint, or `''`.                 | [Store API](#store-api) |
@@ -4253,6 +4259,7 @@ attached to `window`; these are the supported entry points.
 | `NDesign.closeModal(selector)`                | `.close()` a `<dialog>` by selector.                               | [Modals](#modals) |
 | `NDesign.confirmDialog(selector)`             | Open a `<dialog>` as confirm; returns `Promise<boolean>`.          | [Modals](#modals) |
 | `NDesign.toast(msg, type?, duration?)`        | Show a toast.                                                      | [Toasts](#toasts) |
+| `NDesign.refreshSelect(selectEl)`             | Rebuild the custom dropdown wrapper after native option mutations. | [Select](#select) |
 | `NDesign.setTheme(name)`                      | Switch to a named theme.                                           | [Theme](#theme) |
 | `NDesign.toggleTheme()`                       | Cycle to the next registered theme.                                | [Theme](#theme) |
 | `NDesign.getThemes()`                         | List registered themes and which is active.                        | [Theme](#theme) |

@@ -95,9 +95,9 @@ attached to `window`; these are the supported entry points.
 |-----------------------------------------------|-------------------------------------------------------------------|---------|
 | `NDesign.configure(partial)`                  | Merge runtime configuration.                                       | [Configuration](#configuration) |
 | `NDesign.init()`                              | Re-init the runtime (tears down first).                           | [Lifecycle and initialization](#lifecycle-and-initialization) |
-| `NDesign.store.get(key)`                      | Read a top-level var.                                             | [Store API](#store-api) |
-| `NDesign.store.set(key, value)`               | Write a top-level var (does NOT fire `nd:var-change`).            | [Store API](#store-api) |
-| `NDesign.store.has(key)` / `delete` / `clear` | Standard map ops on top-level vars.                               | [Store API](#store-api) |
+| `NDesign.store.get(path)`                     | Read a var by dot-path.                                           | [Store API](#store-api) |
+| `NDesign.store.set(path, value)`              | Write a var by dot-path; fires `nd:var-change`.                   | [Store API](#store-api) |
+| `NDesign.store.has(path)` / `delete` / `clear` | Store helpers; delete/clear dispatch removal events.              | [Store API](#store-api) |
 | `NDesign.storeGet(path)`                      | Read a var by dot-path (fires through `getVar`).                  | [Store API](#store-api) |
 | `NDesign.storeSet(path, value)`               | Write a var by dot-path; FIRES `nd:var-change`.                   | [Store API](#store-api) |
 | `NDesign.endpoint(name)`                      | Return the URL base for a named endpoint, or `''`.                 | [Store API](#store-api) |
@@ -113,6 +113,7 @@ attached to `window`; these are the supported entry points.
 | `NDesign.closeModal(selector)`                | `.close()` a `<dialog>` by selector.                               | [Modals](#modals) |
 | `NDesign.confirmDialog(selector)`             | Open a `<dialog>` as confirm; returns `Promise<boolean>`.          | [Modals](#modals) |
 | `NDesign.toast(msg, type?, duration?)`        | Show a toast.                                                      | [Toasts](#toasts) |
+| `NDesign.refreshSelect(selectEl)`             | Rebuild the custom dropdown wrapper after native option mutations. | [Select](#select) |
 | `NDesign.setTheme(name)`                      | Switch to a named theme.                                           | [Theme](#theme) |
 | `NDesign.toggleTheme()`                       | Cycle to the next registered theme.                                | [Theme](#theme) |
 | `NDesign.getThemes()`                         | List registered themes and which is active.                        | [Theme](#theme) |

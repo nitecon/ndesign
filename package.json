@@ -1,6 +1,6 @@
 {
   "name": "ndesign",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "private": true,
   "description": "Lightweight, framework-free frontend design system and binding runtime",
   "type": "module",

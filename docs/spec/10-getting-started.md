@@ -53,19 +53,19 @@ required.
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>My App</title>
 
-    <!-- Core stylesheet (pinned version — swap v0.3.0 for your target). -->
+    <!-- Core stylesheet (pinned version — swap v0.3.5 for your target). -->
     <link rel="stylesheet"
-          href="https://storage.googleapis.com/ndesign-cdn/ndesign/v0.3.0/ndesign.min.css">
+          href="https://storage.googleapis.com/ndesign-cdn/ndesign/v0.3.5/ndesign.min.css">
 
     <!-- Optional theme. class="theme" is REQUIRED so the theme switcher
          can find and swap the link element. -->
     <link rel="stylesheet"
-          href="https://storage.googleapis.com/ndesign-cdn/ndesign/v0.3.0/themes/light.min.css"
+          href="https://storage.googleapis.com/ndesign-cdn/ndesign/v0.3.5/themes/light.min.css"
           class="theme" data-theme="light">
     <meta name="nd-theme" content="light"
-          data-href="https://storage.googleapis.com/ndesign-cdn/ndesign/v0.3.0/themes/light.min.css">
+          data-href="https://storage.googleapis.com/ndesign-cdn/ndesign/v0.3.5/themes/light.min.css">
     <meta name="nd-theme" content="dark"
-          data-href="https://storage.googleapis.com/ndesign-cdn/ndesign/v0.3.0/themes/dark.min.css">
+          data-href="https://storage.googleapis.com/ndesign-cdn/ndesign/v0.3.5/themes/dark.min.css">
 
     <!-- Store configuration via meta tags. Agents SHOULD prefer this over
          NDesign.configure() because it keeps URLs declarative. -->
@@ -80,12 +80,12 @@ required.
 
     <!-- Runtime bundle. Loads synchronously and auto-initialises on
          DOMContentLoaded (or immediately if the DOM is already parsed). -->
-    <script src="https://storage.googleapis.com/ndesign-cdn/ndesign/v0.3.0/ndesign.min.js"></script>
+    <script src="https://storage.googleapis.com/ndesign-cdn/ndesign/v0.3.5/ndesign.min.js"></script>
   </body>
 </html>
 ```
 
-For active development, substitute `latest` for `v0.3.0` in every URL
+For active development, substitute `latest` for `v0.3.5` in every URL
 above. For a production deployment, always pin to a specific
 `v<semver>` so your app does not silently upgrade when the CDN's
 `latest/` pointer moves.

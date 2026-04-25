@@ -129,10 +129,9 @@ Every fetch made by bind/action routes through
 ```
 
 `data-nd-bind` (GET) deletes `Content-Type` from the header set before
-sending. `data-nd-upload` does NOT use `buildHeaders`; it sets only
-`X-Requested-With` and `X-CSRF-Token` manually on the XHR (multipart
-body requires the browser to set its own `Content-Type` with the
-boundary).
+sending. `data-nd-upload` also deletes `Content-Type` before setting
+headers on its XHR, because multipart bodies require the browser to set
+its own `Content-Type` with the boundary.
 
 ### Store, meta tags, and ${var} interpolation
 
@@ -206,16 +205,15 @@ value falls through to endpoint lookup.
 #### Store API
 
 The public store is exposed as `NDesign.store` plus several top-level
-aliases. `NDesign.store.set` is a thin façade over the raw `vars`
-Map — it does NOT fire `nd:var-change`. `NDesign.storeSet` (alias of
-the module-level `setVar`) DOES fire `nd:var-change`. Agents that need
-`data-nd-model` inputs to re-sync MUST use `NDesign.storeSet`.
+aliases. `NDesign.store.set` and `NDesign.storeSet` both route through
+the module-level `setVar`, support dot paths, and fire
+`nd:var-change` so `data-nd-model` inputs stay in sync.
 
 | Call                                              | Path support | Fires `nd:var-change`? |
 |---------------------------------------------------|--------------|------------------------|
-| `NDesign.store.get('k')`                          | top-level    | n/a                    |
-| `NDesign.store.set('k', v)`                       | top-level    | **no**                 |
-| `NDesign.store.has/delete/clear`                  | top-level    | no                     |
+| `NDesign.store.get('k')`                          | dot-path     | n/a                    |
+| `NDesign.store.set('k', v)`                       | dot-path     | **yes**                |
+| `NDesign.store.has/delete/clear`                  | dot-path get; delete/clear dispatch | delete/clear dispatch removals |
 | `NDesign.storeGet('a.b.c')`                       | dot-path     | n/a                    |
 | `NDesign.storeSet('a.b.c', v)`                    | dot-path     | **yes**                |
 | `NDesign.endpoint('api')`                         | flat         | n/a                    |
@@ -731,6 +729,7 @@ processed in order.
 | `redirect:URL`      | any         | `window.location.href = URL`. Stops the chain.                                  |
 | `refresh:SELECTOR`  | any         | Dispatches `nd:refresh` on every matching element.                             |
 | `emit:EVENT`        | any         | Dispatches a bubbling `CustomEvent(EVENT, {detail: responseData})` on the element. |
+| `toast:MESSAGE`     | any         | Shows a success toast with `MESSAGE`.                                           |
 | `close-modal`       | any         | Closes the nearest ancestor `<dialog>` of the triggering element (no-op if none). |
 
 Actions not in this list are silently ignored (no warning).
@@ -759,8 +758,10 @@ instead.
 
 #### Per-element timeout — `data-nd-timeout="MS"`
 
-Every form and button action is submitted via `fetchWithTimeout()`
-with an `AbortController`. The timeout resolves to, in order:
+Every bind, form action, and button action request is submitted via
+`fetchWithTimeout()` with an `AbortController`. Uploads use XHR and set
+`xhr.timeout` to the same resolved value. The timeout resolves to, in
+order:
 
 1. The `data-nd-timeout` attribute on the element, parsed as an
    integer.
@@ -831,7 +832,7 @@ STRING     ::= "'" ( any-char | "\\'" | "\\\\" )* "'"
 | On a `data-nd-bind` element                              | After a successful fetch.                 | parsed JSON    |
 | On a `form[data-nd-action]` element                      | After a successful submit (HTTP 2xx).     | parsed JSON (or `null`) |
 | On a non-form `[data-nd-action]` (button/link)           | After a successful submit.                | parsed JSON (or `null`) |
-| On a `form[data-nd-upload]` element                      | NOT invoked (upload does not process set). | —              |
+| On a `form[data-nd-upload]` element                      | After a successful upload (HTTP 2xx).       | parsed JSON (or `null`) |
 | Standalone (no bind/action/upload/sortable)              | On click. Response form warns.             | `undefined`    |
 
 #### Examples
@@ -1135,10 +1136,11 @@ Bind errors flow through the same envelope shape but render either a
 
 #### Upload errors
 
-Uploads are a separate code path (XHR, not fetch) and do not yet use
-the unified envelope:
+Uploads use XHR, not fetch, so upload progress remains observable. They
+still route failures through the unified envelope for `config.onError`:
 
-- 2xx → feedback shows success message; `handleSuccess` chain runs.
+- 2xx → feedback shows success message; `data-nd-set` and
+  `handleSuccess` chain run.
 - non-2xx with JSON `errors` → `displayErrors` maps fields.
 - non-2xx otherwise → feedback shows server message or generic
   "Upload failed" text.
@@ -1205,8 +1207,9 @@ mistakes are common enough that they each have a section below.
   fires every store write and is scoped conceptually to
   `data-nd-model`. Use `nd:refresh` for view refreshes and `nd:set`
   / custom `emit:` events for cross-component signalling.
-- **`data-nd-set` is NOT processed on upload forms.** Upload success
-  only processes `data-nd-success` and the feedback message.
+- **Upload is still XHR.** It honors configured headers, timeout,
+  `data-nd-set`, and `config.onError`, but it deliberately removes
+  `Content-Type` so the browser can add the multipart boundary.
 - **`NDesign.init()` tears down everything.** It is safe but heavy.
   Prefer `MutationObserver`-driven re-wiring (sortable does this
   automatically) over a full re-init for incremental DOM additions.
@@ -1231,7 +1234,7 @@ fragments and are also collected in [Reference](#reference).
 | Event              | Target                | When                                                      | Detail                          |
 |--------------------|-----------------------|-----------------------------------------------------------|---------------------------------|
 | `nd:refresh`       | bound element          | External trigger (e.g. `refresh:#id`, bind trigger).       | none — consumer refetches       |
-| `nd:var-change`    | `document`            | After `setVar()` / `NDesign.storeSet` (NOT `store.set`).   | `{path, topKey, value}`         |
+| `nd:var-change`    | `document`            | After `setVar()` / `NDesign.store.set` / `NDesign.storeSet`. | `{path, topKey, value}`         |
 | `nd:model`         | model input            | After user input updates the store.                       | `{name, value}`                 |
 | `nd:set`           | set-trigger element    | After a standalone `data-nd-set` click runs.              | `{el}`                          |
 | user-defined `emit:X` | action / set element | When a `data-nd-success="emit:X"` step runs.              | `responseData` (`undefined` for set) |

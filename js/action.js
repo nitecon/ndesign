@@ -17,6 +17,7 @@
 import { setByPath, buildHeaders, fetchWithTimeout } from './utils.js';
 import { resolveVars, applySetDirective } from './store.js';
 import { confirmDialog } from './modal.js';
+import { toast } from './toast.js';
 
 // Monotonic UID for auto-generated feedback element IDs
 let _uidCounter = 0;
@@ -430,6 +431,11 @@ export function handleSuccess(el, responseData) {
       el.dispatchEvent(
         new CustomEvent(eventName, { detail: responseData, bubbles: true })
       );
+      continue;
+    }
+
+    if (action.startsWith('toast:')) {
+      toast(action.substring('toast:'.length), 'success');
       continue;
     }
 

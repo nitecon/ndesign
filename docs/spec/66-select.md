@@ -72,11 +72,13 @@ two binding directives work in concert with this component:
 | Attribute              | Location          | Behavior                                                                                                                     |
 |------------------------|-------------------|------------------------------------------------------------------------------------------------------------------------------|
 | `data-nd-options`      | the `<select>`    | Populates `<option>` elements from a JSON array fetched by [Data binding](#data-binding). Mechanics live in [Data binding](#data-binding). |
-| `data-nd-bind`         | the `<select>`    | Re-fetches the option list when triggered. After mutation, callers SHOULD invoke `NDesign.refreshSelect(selectEl)` (see JS API). |
+| `data-nd-bind`         | the `<select>`    | Re-fetches the option list when triggered. The binding runtime rebuilds the custom wrapper after `data-nd-options` populates options. |
 
-When the native option list changes (programmatic `appendChild`,
-binding-driven re-population, etc.) the visible custom dropdown does
-not auto-rebuild. Call `refreshSelect(selectEl)` to rewrap.
+When the native option list changes through application code
+(`appendChild`, direct `innerHTML`, etc.) the visible custom dropdown
+does not auto-rebuild. Call `NDesign.refreshSelect(selectEl)` to
+rewrap. Binding-driven `data-nd-options` population does this
+automatically.
 
 ### Events fired
 
