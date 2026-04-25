@@ -13,6 +13,18 @@ Every runnable example targets the public test server at
 `https://test.nitecon.org`. Examples can be pasted verbatim into an HTML
 file and loaded in a browser.
 
+This document is published in two equivalent forms at the same CDN
+prefix:
+
+- **`SPEC.md`** — raw markdown, intended for agents that consume
+  markdown directly (read the file once, navigate by `## Heading` text).
+- **`SPEC.html`** — the same content rendered as HTML with auto-generated
+  `id="..."` anchors on every heading. Use this URL when you want
+  browser-clickable navigation, or when an agent-tool resolves
+  `[Title](#anchor)` links by HTTP. Both URLs serve byte-equivalent
+  content; the HTML form simply wraps the markdown so anchor links
+  actually work.
+
 ## How to read this document
 
 The spec is organised as one continuous document. Read it top-to-bottom the

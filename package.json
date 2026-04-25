@@ -22,11 +22,12 @@
     "watch:js": "esbuild js/ndesign.js --bundle --outfile=dist/ndesign.js --format=iife --global-name=NDesign --sourcemap --watch",
     "deploy:cdn": "bash scripts/deploy-cdn.sh",
     "preversion": "npm run test:js",
-    "version": "npm run build:spec && git add docs/SPEC.md",
+    "version": "npm run build:spec && git add docs/SPEC.md docs/SPEC.html",
     "postversion": "npm run deploy:cdn && git push --follow-tags"
   },
   "devDependencies": {
     "esbuild": "^0.24.0",
+    "marked": "^18.0.2",
     "sass": "^1.80.0"
   }
 }

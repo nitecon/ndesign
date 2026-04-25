@@ -100,21 +100,34 @@ upload_tree() {
 upload_tree "$VERSION_PREFIX" "$VERSIONED_CACHE"
 upload_tree "$LATEST_PREFIX"  "$LATEST_CACHE"
 
-# 3b. Upload the SPEC document alongside the assets. This is the
+# 3b. Upload the SPEC documents alongside the assets. SPEC.md is the
 #     agent-consumption artifact — an agent pointed at SPEC.md can build
-#     an entire ndesign app without touching the source tree.
+#     an entire ndesign app without touching the source tree. SPEC.html
+#     is the same content rendered with working `id="..."` anchors on
+#     every heading; agents that follow markdown links via HTTP can
+#     fetch SPEC.html#section instead.
 upload_spec() {
   local prefix="$1" cache="$2"
-  if [[ ! -f docs/SPEC.md ]]; then
-    echo "WARNING: docs/SPEC.md not found — skipping spec upload for $prefix" >&2
-    return 0
+  if [[ -f docs/SPEC.md ]]; then
+    echo "==> Uploading docs/SPEC.md -> gs://$BUCKET/$prefix/SPEC.md"
+    gcloud storage cp \
+      --cache-control="$cache" \
+      --content-type="text/markdown; charset=utf-8" \
+      --project="$PROJECT" \
+      "docs/SPEC.md" "gs://$BUCKET/$prefix/SPEC.md"
+  else
+    echo "WARNING: docs/SPEC.md not found — skipping markdown upload for $prefix" >&2
   fi
-  echo "==> Uploading docs/SPEC.md -> gs://$BUCKET/$prefix/SPEC.md"
-  gcloud storage cp \
-    --cache-control="$cache" \
-    --content-type="text/markdown; charset=utf-8" \
-    --project="$PROJECT" \
-    "docs/SPEC.md" "gs://$BUCKET/$prefix/SPEC.md"
+  if [[ -f docs/SPEC.html ]]; then
+    echo "==> Uploading docs/SPEC.html -> gs://$BUCKET/$prefix/SPEC.html"
+    gcloud storage cp \
+      --cache-control="$cache" \
+      --content-type="text/html; charset=utf-8" \
+      --project="$PROJECT" \
+      "docs/SPEC.html" "gs://$BUCKET/$prefix/SPEC.html"
+  else
+    echo "WARNING: docs/SPEC.html not found — skipping html upload for $prefix" >&2
+  fi
 }
 
 upload_spec "$VERSION_PREFIX" "$VERSIONED_CACHE"
@@ -128,9 +141,11 @@ TARGETS=(
   "$BASE/$VERSION_PREFIX/themes/light.min.css"
   "$BASE/$VERSION_PREFIX/themes/dark.min.css"
   "$BASE/$VERSION_PREFIX/SPEC.md"
+  "$BASE/$VERSION_PREFIX/SPEC.html"
   "$BASE/$LATEST_PREFIX/ndesign.min.js"
   "$BASE/$LATEST_PREFIX/ndesign.min.css"
   "$BASE/$LATEST_PREFIX/SPEC.md"
+  "$BASE/$LATEST_PREFIX/SPEC.html"
 )
 
 echo "==> Validating public availability"
@@ -157,14 +172,17 @@ echo "    JS         : $BASE/$LATEST_PREFIX/ndesign.min.js"
 echo "    CSS        : $BASE/$LATEST_PREFIX/ndesign.min.css"
 echo "    Light theme: $BASE/$LATEST_PREFIX/themes/light.min.css"
 echo "    Dark theme : $BASE/$LATEST_PREFIX/themes/dark.min.css"
-echo "    SPEC       : $BASE/$LATEST_PREFIX/SPEC.md"
+echo "    SPEC (md)  : $BASE/$LATEST_PREFIX/SPEC.md"
+echo "    SPEC (html): $BASE/$LATEST_PREFIX/SPEC.html"
 echo
 echo "  PINNED v$VERSION (immutable, 1 year cache):"
 echo "    JS         : $BASE/$VERSION_PREFIX/ndesign.min.js"
 echo "    CSS        : $BASE/$VERSION_PREFIX/ndesign.min.css"
 echo "    Light theme: $BASE/$VERSION_PREFIX/themes/light.min.css"
 echo "    Dark theme : $BASE/$VERSION_PREFIX/themes/dark.min.css"
-echo "    SPEC       : $BASE/$VERSION_PREFIX/SPEC.md"
+echo "    SPEC (md)  : $BASE/$VERSION_PREFIX/SPEC.md"
+echo "    SPEC (html): $BASE/$VERSION_PREFIX/SPEC.html"
 echo
 echo "  Agent handoff — point any coding agent at the pinned SPEC URL:"
-echo "    $BASE/$VERSION_PREFIX/SPEC.md"
+echo "    Markdown : $BASE/$VERSION_PREFIX/SPEC.md"
+echo "    HTML     : $BASE/$VERSION_PREFIX/SPEC.html  (browser-navigable, working anchors)"
