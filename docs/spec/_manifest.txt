@@ -10,4 +10,45 @@
 # Edit fragments here, then run `npm run build:spec` to regenerate
 # docs/SPEC.md (the canonical artifact uploaded to CDN).
 
-00-spec.md
+# Foundations
+00-intro.md
+05-philosophy.md
+10-getting-started.md
+20-layouts.md
+
+# The framework's runtime mechanics
+30-data-binding.md
+
+# Visual / structural components
+40-typography.md
+41-buttons.md
+42-forms.md
+43-tables.md
+44-cards.md
+45-panels.md
+46-wells.md
+47-alerts.md
+48-badges.md
+49-breadcrumbs.md
+50-pagination.md
+51-skeletons.md
+52-progress.md
+53-avatars.md
+54-asides.md
+
+# Interactive components
+60-modals.md
+61-toasts.md
+62-tooltips.md
+63-tabs.md
+64-dropdowns.md
+65-navigation.md
+66-select.md
+67-theme.md
+
+# Heavy-interactive components with their own directive contracts
+70-sortable.md
+71-upload.md
+
+# Reference appendix
+90-reference.md
