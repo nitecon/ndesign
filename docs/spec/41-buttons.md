@@ -1,5 +1,12 @@
 ## Buttons
 
+> **Rules**
+> - Use `<button>` for in-page actions; use `<a href>` only for real navigable URLs (right-click → open in new tab).
+> - There is no `.nd-btn` base class — `<button>` is the base; add a variant class for color (`nd-btn-primary`, etc.).
+> - Inside a `<form>`, a bare `<button>` defaults to `type="submit"` — always set `type="button"` for non-submit actions.
+> - Do NOT set `--nd-btn-text` globally; only set it per-button when the spinner color is inadequate on a ghost/transparent variant.
+> - `.nd-btn-group` children MUST be direct `<button>` siblings — any wrapper `<div>` breaks the border collapse.
+
 Native `<button>` elements are styled by default. Add a variant class for color, a size class for scale, and one or more `data-nd-*` attributes to wire behavior. There is no `.nd-btn` base class — `<button>` itself is the base.
 
 ### When to use

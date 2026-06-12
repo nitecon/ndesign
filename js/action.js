@@ -11,6 +11,14 @@
  * data-nd-set on action elements: called on success with the response data,
  * enabling chained store writes (explicit or response forms).
  *
+ * Lifecycle hook chains (comma-separated verbs, same grammar for all three):
+ *   data-nd-success — runs on 2xx responses.
+ *   data-nd-error   — runs on non-2xx / thrown errors, AFTER feedback renders.
+ *   data-nd-finally — runs in BOTH paths after the phase chain, UNLESS a verb
+ *                     in the phase chain already navigated the page away.
+ * Verbs resolve through an extensible registry; apps add/override verbs via
+ * NDesign.registerHook(verb, handler). See runChain / verbRegistry below.
+ *
  * @module action
  */
 
@@ -256,6 +264,8 @@ function synthesizeEnvelope(err) {
  * @param {string|null} feedbackId        — declared feedback id (forms only)
  * @param {string} url
  * @param {Error|null} [err=null]
+ * @returns {Promise<void>} resolves once the data-nd-error / data-nd-finally
+ *          lifecycle chains have run (after feedback renders).
  */
 function handleActionError(el, envelope, config, feedbackId, url, err = null) {
   el.classList.add('nd-error');
@@ -283,6 +293,17 @@ function handleActionError(el, envelope, config, feedbackId, url, err = null) {
   if (typeof config.onError === 'function') {
     config.onError(url, envelope, err);
   }
+
+  // Run the error-phase lifecycle (data-nd-error) AFTER feedback renders,
+  // then the shared data-nd-finally chain. ctx.error carries the envelope;
+  // ctx.data is null on the error path. Returned so callers may await.
+  return runLifecycle(el, el.getAttribute('data-nd-error'), {
+    element: el,
+    response: null,
+    data: null,
+    error: envelope,
+    phase: 'error',
+  });
 }
 
 /**
@@ -388,62 +409,184 @@ export function displayErrors(form, errors, feedbackId) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Lifecycle hook chain runner + extensible verb registry
+// ---------------------------------------------------------------------------
+
 /**
- * Handle successful form submission based on data-nd-success attribute.
- * Supports comma-separated chained actions (e.g. "refresh:#table,reset").
- * Actions that navigate away (redirect, reload) stop the chain.
- * @param {HTMLFormElement|HTMLElement} el — the element with data-nd-success
- * @param {Object} responseData           — parsed JSON response from server
+ * Internal sentinel returned by a verb handler to signal that the page is
+ * navigating away (e.g. redirect, reload). `runChain` stops the chain when a
+ * handler returns this object and reports navigation back to its caller so
+ * the success/error path can suppress any subsequent `data-nd-finally` chain.
+ *
+ * Convention: a verb handler navigates iff it returns a truthy object whose
+ * `navigate` property is `true`. All other return values (including `undefined`
+ * and Promises that resolve to nothing) continue the chain.
+ *
+ * @type {{ navigate: true }}
  */
-export function handleSuccess(el, responseData) {
-  const successAttr = el.getAttribute('data-nd-success');
-  if (!successAttr) return;
+const NAV = Object.freeze({ navigate: true });
 
-  // Support comma-separated chained actions
-  const actions = successAttr.split(',').map(a => a.trim());
+/**
+ * Lifecycle context passed to every verb handler.
+ * @typedef {Object} HookContext
+ * @property {HTMLElement} element        — element carrying the lifecycle attr
+ * @property {Response|null} [response]   — raw fetch Response (when available)
+ * @property {Object|null} data           — parsed success payload, or null on error
+ * @property {Object|null} error          — error envelope on the error phase, else null
+ * @property {'success'|'error'|'finally'} phase — which lifecycle phase is running
+ */
 
-  for (const action of actions) {
-    if (action.startsWith('redirect:')) {
-      window.location.href = action.substring('redirect:'.length);
-      return; // redirect stops the chain
-    }
+/**
+ * Verb registry: verb name → handler `(arg, ctx) => void | {navigate:true} |
+ * Promise<void | {navigate:true}>`. `arg` is the substring after the first
+ * colon in `verb:arg` (empty string when the verb takes no argument).
+ *
+ * Built-in verbs are seeded here through the SAME registry — `runChain` has no
+ * special cases; it simply looks each verb up. Navigating built-ins return the
+ * shared NAV sentinel so the chain short-circuits. Apps extend or override any
+ * verb via the public `registerHook(verb, handler)`.
+ *
+ * @type {Map<string, (arg: string, ctx: HookContext) => any>}
+ */
+const verbRegistry = new Map();
 
-    if (action === 'reset' && el.tagName === 'FORM') {
-      el.reset();
-      continue;
-    }
+/**
+ * Register (or override) a lifecycle verb handler. Exposed publicly as
+ * `NDesign.registerHook`. Handlers may be sync or async; `runChain` awaits each
+ * before running the next verb. Return `{ navigate: true }` to stop the chain
+ * and signal the page is leaving.
+ *
+ * @param {string} verb — verb name (the token before `:` in `verb:arg`)
+ * @param {(arg: string, ctx: HookContext) => any} handler
+ */
+export function registerHook(verb, handler) {
+  if (typeof verb !== 'string' || !verb) {
+    console.warn('[ndesign] registerHook: verb must be a non-empty string');
+    return;
+  }
+  if (typeof handler !== 'function') {
+    console.warn(`[ndesign] registerHook: handler for "${verb}" must be a function`);
+    return;
+  }
+  verbRegistry.set(verb, handler);
+}
 
-    if (action === 'reload') {
-      window.location.reload();
-      return; // reload stops the chain
-    }
+// ── Seed built-in verbs through the registry (no special-casing) ────────────
 
-    if (action.startsWith('refresh:')) {
-      const selector = action.substring('refresh:'.length);
-      document.querySelectorAll(selector).forEach(target => {
-        target.dispatchEvent(new CustomEvent('nd:refresh'));
-      });
-      continue;
-    }
+verbRegistry.set('redirect', (arg) => {
+  window.location.href = arg;
+  return NAV; // navigating verb — stops the chain
+});
 
-    if (action.startsWith('emit:')) {
-      const eventName = action.substring('emit:'.length);
-      el.dispatchEvent(
-        new CustomEvent(eventName, { detail: responseData, bubbles: true })
-      );
-      continue;
-    }
+verbRegistry.set('reload', () => {
+  window.location.reload();
+  return NAV; // navigating verb — stops the chain
+});
 
-    if (action.startsWith('toast:')) {
-      toast(action.substring('toast:'.length), 'success');
-      continue;
-    }
+verbRegistry.set('reset', (_arg, ctx) => {
+  if (ctx.element.tagName === 'FORM') ctx.element.reset();
+});
 
-    if (action === 'close-modal') {
-      _autoCloseDialog(el);
-      continue;
+verbRegistry.set('refresh', (arg) => {
+  document.querySelectorAll(arg).forEach(target => {
+    target.dispatchEvent(new CustomEvent('nd:refresh'));
+  });
+});
+
+// emit stays fire-and-forget (returns nothing → chain continues immediately).
+verbRegistry.set('emit', (arg, ctx) => {
+  ctx.element.dispatchEvent(
+    new CustomEvent(arg, { detail: ctx.data, bubbles: true })
+  );
+});
+
+verbRegistry.set('toast', (arg) => {
+  toast(arg, 'success');
+});
+
+verbRegistry.set('close-modal', (_arg, ctx) => {
+  _autoCloseDialog(ctx.element);
+});
+
+/**
+ * Run a comma-separated verb chain against the registry.
+ *
+ * Each token is parsed as `verb:arg`, splitting on the FIRST colon only so
+ * args containing colons (e.g. `redirect:https://x/y`) survive intact. Verbs
+ * with no colon (`reset`, `reload`, `close-modal`) pass an empty-string arg.
+ *
+ * Handlers are awaited sequentially so an async verb can pause the chain. A
+ * handler returning a truthy `{ navigate: true }` (the NAV sentinel) stops the
+ * chain. Unknown verbs are silently ignored (back-compat).
+ *
+ * @param {string|null} chainStr — raw attribute value (may be null/empty)
+ * @param {HookContext} ctx
+ * @returns {Promise<boolean>} true if a verb navigated away, else false
+ */
+export async function runChain(chainStr, ctx) {
+  if (!chainStr) return false;
+
+  const tokens = chainStr.split(',').map(t => t.trim()).filter(Boolean);
+
+  for (const token of tokens) {
+    const colonIdx = token.indexOf(':');
+    const verb = colonIdx === -1 ? token : token.substring(0, colonIdx);
+    const arg = colonIdx === -1 ? '' : token.substring(colonIdx + 1);
+
+    const handler = verbRegistry.get(verb);
+    if (!handler) continue; // unknown verb — silently ignored
+
+    const result = await handler(arg, ctx);
+    if (result && result.navigate) {
+      return true; // navigating verb — stop the chain, report navigation
     }
   }
+
+  return false;
+}
+
+/**
+ * Run the success-phase chain (`data-nd-success`).
+ * Thin wrapper preserved as the public API for back-compat. Builds the success
+ * HookContext and delegates to `runChain`.
+ *
+ * @param {HTMLFormElement|HTMLElement} el — element with data-nd-success
+ * @param {Object} responseData           — parsed JSON response from server
+ * @param {Response|null} [response=null] — raw fetch Response, if available
+ * @returns {Promise<boolean>} true if a verb navigated away
+ */
+export function handleSuccess(el, responseData, response = null) {
+  return runChain(el.getAttribute('data-nd-success'), {
+    element: el,
+    response,
+    data: responseData,
+    error: null,
+    phase: 'success',
+  });
+}
+
+/**
+ * Run both the phase chain and the shared `data-nd-finally` chain.
+ *
+ * The phase chain (`data-nd-success` or `data-nd-error`) runs first. If it
+ * navigates away, the finally chain is skipped entirely — once the page is
+ * leaving, finally verbs are moot (and finally's own nav verbs must not fire).
+ * When no navigation occurred, the finally chain runs with the same context
+ * but `phase: 'finally'`.
+ *
+ * @param {HTMLElement} el      — element carrying the lifecycle attributes
+ * @param {string|null} phaseAttr — `data-nd-success` or `data-nd-error` value
+ * @param {HookContext} ctx     — context for the phase (data/error/response set)
+ * @returns {Promise<void>}
+ */
+export async function runLifecycle(el, phaseAttr, ctx) {
+  const navigated = await runChain(phaseAttr, ctx);
+  if (navigated) return; // page is leaving — skip finally entirely
+
+  const finallyAttr = el.getAttribute('data-nd-finally');
+  if (!finallyAttr) return;
+  await runChain(finallyAttr, { ...ctx, phase: 'finally' });
 }
 
 /**
@@ -521,7 +664,7 @@ async function submitForm(form, config) {
     if (!response.ok) {
       // Server-returned error envelope
       if (responseData && responseData.errors) {
-        handleActionError(form, responseData, config, feedbackId, url, null);
+        await handleActionError(form, responseData, config, feedbackId, url, null);
       } else {
         // Generic error — synthesize envelope from statusText/message
         const envelope = {
@@ -529,7 +672,7 @@ async function submitForm(form, config) {
             error: (responseData && responseData.message) || `Error: ${response.statusText}`,
           },
         };
-        handleActionError(form, envelope, config, feedbackId, url, null);
+        await handleActionError(form, envelope, config, feedbackId, url, null);
       }
       return;
     }
@@ -537,18 +680,27 @@ async function submitForm(form, config) {
     // Success
     _showSuccessFeedback(form, feedbackId, (responseData && responseData.message) || 'Success');
 
-    handleSuccess(form, responseData);
-
-    // data-nd-set on form: write response to store after success
+    // data-nd-set on form: write response to store before the lifecycle chain
+    // so emit/refresh verbs observe the updated store.
     if (form.hasAttribute('data-nd-set')) {
       applySetDirective(form, responseData);
     }
+
+    // Run success-phase chain (data-nd-success), then data-nd-finally. If a
+    // verb navigates away, runLifecycle skips finally automatically.
+    await runLifecycle(form, form.getAttribute('data-nd-success'), {
+      element: form,
+      response,
+      data: responseData,
+      error: null,
+      phase: 'success',
+    });
   } catch (err) {
     console.error(`[ndesign] Action error for ${url}:`, err);
     // Synthesize a unified envelope from the thrown error and route it
     // through the same handler as server-returned errors.
     const envelope = synthesizeEnvelope(err);
-    handleActionError(form, envelope, config, feedbackId, url, err);
+    await handleActionError(form, envelope, config, feedbackId, url, err);
   } finally {
     if (submitBtn) {
       submitBtn.disabled = false;
@@ -598,7 +750,7 @@ async function submitButton(el, config) {
     } catch (_) {
       const errMsg = 'data-nd-body: invalid JSON after interpolation';
       console.error(`[ndesign] ${errMsg}:`, interpolated);
-      handleActionError(el, { errors: { error: errMsg } }, config, feedbackId, url, null);
+      await handleActionError(el, { errors: { error: errMsg } }, config, feedbackId, url, null);
       el.disabled = false;
       el.classList.remove('nd-loading');
       return;
@@ -631,23 +783,31 @@ async function submitButton(el, config) {
       const envelope = (responseData && responseData.errors)
         ? responseData
         : { errors: { error: (responseData && responseData.message) || `Error: ${response.statusText}` } };
-      handleActionError(el, envelope, config, feedbackId, url, null);
+      await handleActionError(el, envelope, config, feedbackId, url, null);
       return;
     }
 
     el.classList.remove('nd-error');
     _showSuccessFeedback(el, feedbackId, (responseData && responseData.message) || 'Done');
 
-    handleSuccess(el, responseData);
-
-    // data-nd-set on button: write response to store after success
+    // data-nd-set on button: write response to store before the lifecycle
+    // chain so emit/refresh verbs observe the updated store.
     if (el.hasAttribute('data-nd-set')) {
       applySetDirective(el, responseData);
     }
+
+    // Run success-phase chain (data-nd-success), then data-nd-finally.
+    await runLifecycle(el, el.getAttribute('data-nd-success'), {
+      element: el,
+      response,
+      data: responseData,
+      error: null,
+      phase: 'success',
+    });
   } catch (err) {
     console.error(`[ndesign] Action error for ${url}:`, err);
     const envelope = synthesizeEnvelope(err);
-    handleActionError(el, envelope, config, feedbackId, url, err);
+    await handleActionError(el, envelope, config, feedbackId, url, err);
   } finally {
     el.disabled = false;
     el.classList.remove('nd-loading');

@@ -15,6 +15,7 @@
 05-philosophy.md
 10-getting-started.md
 20-layouts.md
+25-composition.md
 
 # The framework's runtime mechanics
 30-data-binding.md

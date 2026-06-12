@@ -1,5 +1,12 @@
 ## Tooltips
 
+> **Rules**
+> - Use to clarify icon-only buttons or annotate compact controls — add `data-nd-tooltip="TEXT"` to any focusable element.
+> - Do NOT apply to non-focusable elements (`<div>`, `<span>`) without adding `tabindex="0"` — keyboard users will never see it.
+> - Do NOT use for interactive content (links, forms) — tooltips are `pointer-events: none`. Use a [Dropdown](#dropdowns) instead.
+> - Content is plain text only; HTML markup renders as literal characters.
+> - Only one tooltip is visible at a time — do not design UIs that require stacked tooltips.
+
 Tooltips are short descriptive popups that anchor to an element on hover
 or focus. ndesign uses a single shared `<div class="nd-tooltip">`
 appended to `<body>` and re-positioned for each anchor; there is no

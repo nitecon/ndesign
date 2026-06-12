@@ -1,5 +1,12 @@
 ## Progress
 
+> **Rules**
+> - Use for file uploads (`data-nd-upload`) and long-running operations with a known percentage.
+> - Do NOT use for a loading indicator inside a button — use `.nd-loading` on the button.
+> - Do NOT use for a loading indicator on a list — use [Skeletons](#skeletons).
+> - The `<progress class="nd-upload-progress">` MUST start with the `hidden` attribute — the runtime removes it on submit; do NOT set `display: block` manually.
+> - `<progress value="">` or no `value` = indeterminate. Use `value="0"` for an explicit empty bar.
+
 Native `<progress>` is fully styled — determinate (with a `value`) and indeterminate (no `value`). No wrapper class is required. The `.nd-upload-progress` class hooks into the file-upload XHR runtime, which toggles the element's visibility and updates `value` as bytes transfer.
 
 ### When to use

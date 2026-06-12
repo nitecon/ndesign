@@ -1,5 +1,12 @@
 ## Asides
 
+> **Rules**
+> - Use asides for SMALL tangential callouts only: tips, notes, sidebar quotes. Keep them brief.
+> - Place asides OUTSIDE the main data panel — never nest an aside inside a panel or card.
+> - Do NOT use for status messages — use [Alerts](#alerts).
+> - Do NOT use for general bordered grouping — use [Panels](#panels).
+> - `.fold` MUST be a direct child of a container with viewport-edge padding — it will clip inside a card.
+
 Bare `<aside>` is styled by default as a simple bordered callout with a left accent strip — drop it into the document for tangentially related content. The `.fold` variant overrides this with an edge-pinned geometric callout that bleeds to the viewport edge for sidebar-style notes.
 
 ### When to use
@@ -54,5 +61,6 @@ The default `.fold` (no semantic variant) renders without an accent — pair it 
 
 ### See also
 
+- [Composition & stacking](#composition--stacking) — where asides belong in the page hierarchy.
 - [Alerts](#alerts), [Panels](#panels), [Wells](#wells)
 - Source: `scss/_asides.scss`

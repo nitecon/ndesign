@@ -1,5 +1,12 @@
 ## Pagination
 
+> **Rules**
+> - Use for server-paged lists where the URL carries `?page=N` — tables, search results, log viewers.
+> - Do NOT use for infinite-scroll feeds — use `data-nd-mode="append"` with a "Load more" trigger instead.
+> - Pair each page link with `data-nd-bind-trigger` to refetch the bound list without a full page reload.
+> - The ellipsis MUST be `<span aria-hidden="true">` — a linked ellipsis breaks keyboard navigation order.
+> - Do NOT add `.nd-nav` to the `.nd-pagination` container.
+
 Page-number trail for paged lists. Like breadcrumbs, pagination is a native `<nav>` containing an ordered list of links. The runtime does NOT manage page state — pair pagination with `data-nd-bind-trigger` to refetch a bound list when the user clicks a page link.
 
 ### When to use

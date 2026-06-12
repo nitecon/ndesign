@@ -1,5 +1,33 @@
 ## Select
 
+> **Rules**
+> - Every non-`multiple` `<select>` is auto-enhanced — write a plain `<select>` and ndesign wraps it; do NOT build `.nd-select` markup by hand.
+> - For **dynamic options from JSON**: add `data-nd-bind` + `data-nd-options='VALUE:LABEL'` to the `<select>`. Static options (e.g. placeholder) are preserved across fetches; runtime options carry `data-nd-generated`.
+> - After any programmatic `<option>` mutation, call `NDesign.refreshSelect(selectEl)` to rebuild the themed wrapper. Binding-driven population does this automatically.
+> - Opt out of enhancement with `multiple` OR by pre-wrapping in `.nd-select` before `initSelects()` runs.
+> - The open dropdown MUST NOT be clipped — ancestor panels, cards, and tables must NOT have `overflow: hidden` while a select is open.
+
+### Dynamic-options recipe
+
+Populate a `<select>` from a JSON array at runtime:
+
+```html
+<!-- Server returns: [{"id":1,"name":"Run A"},{"id":2,"name":"Run B"}] -->
+<label for="run">Training run</label>
+<select id="run" name="run"
+        data-nd-bind="${api}/api/training/runs"
+        data-nd-options="id:name">
+  <option value="">Choose a run…</option>   <!-- static; preserved on refetch -->
+</select>
+```
+
+- `data-nd-options="id:name"` — `value` from `item.id`, visible label from `item.name`.
+- Runtime-generated options receive a `data-nd-generated` attribute; only these are removed on refetch.
+- The custom-dropdown wrapper is rebuilt automatically by `refreshSelect()` after population; no extra JS needed.
+- To refresh on a store change: `data-nd-success="refresh:#run"` or dispatch `nd:refresh` on the select element.
+
+---
+
 ndesign auto-enhances every non-multi `<select>` on the page into a
 themed `.nd-select` wrapper at init time. The native `<select>` is hidden
 but **kept in the layout** (zero-sized, opacity 0) so browser form

@@ -23,8 +23,9 @@ processes.
 | `data-nd-defer`            | Skip the initial auto-fetch on a `data-nd-bind` element.                              | [Deferred fetch](#deferred-fetch--data-nd-defer) |
 | `data-nd-dismiss`          | On a button inside `<dialog>`: closes the dialog.                                     | [Modals](#modals) |
 | `data-nd-empty`            | `<template data-nd-empty>`: shown when a bound array is empty.                        | [Loading, empty, and error templates](#loading-empty-and-error-templates) |
-| `data-nd-error`            | `<template data-nd-error>`: rendered when a bound fetch fails.                        | [Loading, empty, and error templates](#loading-empty-and-error-templates) |
+| `data-nd-error`            | `<template data-nd-error>`: rendered when a bound fetch fails. Also: comma-separated chain of post-error actions on `[data-nd-action]` (same verb grammar as `data-nd-success`). | [Loading, empty, and error templates](#loading-empty-and-error-templates), [Action lifecycle hooks](#action-lifecycle-hooks) |
 | `data-nd-feedback`         | ID of a feedback element that receives server messages for this action/upload.        | [Feedback element](#feedback-element--data-nd-feedbackid-and-the-auto-slot) |
+| `data-nd-finally`          | Comma-separated chain of actions on `[data-nd-action]` that run after BOTH success and error phases. Navigation verbs suppressed if already navigated. | [Action lifecycle hooks](#action-lifecycle-hooks) |
 | `data-nd-field`            | Dot-path extracting a scalar from response data (for bind/sse/ws).                    | [Scalar field binding](#scalar-field-binding--data-nd-fieldpath) |
 | `data-nd-if`               | Inside a template: remove the element when the named field is falsy.                  | [Templates and {{field}} interpolation](#templates-and-field-interpolation) |
 | `data-nd-loading`          | `<template data-nd-loading>`: shown while a bound fetch is in flight.                 | [Loading, empty, and error templates](#loading-empty-and-error-templates) |
@@ -94,6 +95,7 @@ attached to `window`; these are the supported entry points.
 | Name                                          | Description                                                       | Section |
 |-----------------------------------------------|-------------------------------------------------------------------|---------|
 | `NDesign.configure(partial)`                  | Merge runtime configuration.                                       | [Configuration](#configuration) |
+| `NDesign.registerHook(verb, handler)`         | Register a custom verb — or override a built-in — for use in `data-nd-success`, `data-nd-error`, and `data-nd-finally` chains. `handler(arg, ctx)` where `ctx = { element, response, data, error, phase }`. MAY return a Promise. | [Action lifecycle hooks](#action-lifecycle-hooks) |
 | `NDesign.init()`                              | Re-init the runtime (tears down first).                           | [Lifecycle and initialization](#lifecycle-and-initialization) |
 | `NDesign.store.get(path)`                     | Read a var by dot-path.                                           | [Store API](#store-api) |
 | `NDesign.store.set(path, value)`              | Write a var by dot-path; fires `nd:var-change`.                   | [Store API](#store-api) |

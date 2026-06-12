@@ -1,5 +1,12 @@
 ## Dropdowns
 
+> **Rules**
+> - Use for action menus (row actions, account menus) and compact lists of secondary commands.
+> - Do NOT use for form input — use [Select](#select) which keeps native form validation semantics.
+> - The trigger MUST be a direct-child `<button>` of `.nd-dropdown` — the runtime uses `:scope > button` selection.
+> - Menu items MUST be `<li> <a>` or `<li> <button>` to receive `role="menuitem"`.
+> - The dropdown does not auto-flip near viewport edges — use `.nd-dropdown-up` or `.nd-dropdown-right` declaratively.
+
 A dropdown is a click-to-toggle menu anchored to a trigger button. ndesign
 wires `role="menu"` and `role="menuitem"` automatically, supports keyboard
 navigation, and closes on outside click. The trigger is a real `<button>`,

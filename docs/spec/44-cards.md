@@ -1,5 +1,12 @@
 ## Cards
 
+> **Rules**
+> - Use cards for discrete, scannable content units that need a header/body/footer split: list items, dashboard tiles, settings rows.
+> - Do NOT use for lightweight bordered grouping without a header/footer — use [Panels](#panels) instead.
+> - Do NOT use for recessed/inset secondary info — use [Wells](#wells).
+> - Cards live inside panels or in a grid; wells live inside card bodies. See [Composition](#composition--stacking) for the canonical stack.
+> - Keep `overflow: visible` on cards — never apply `overflow: hidden` on a card ancestor, or dropdown/select panels will clip.
+
 A card is a self-contained content block with optional header, body, and footer regions. Use cards for list items, dashboard tiles, settings rows, and any unit of content the user might scan in a grid. The semantically correct outer element is `<article>`, though any block element accepts `.nd-card`.
 
 ### When to use
@@ -54,5 +61,6 @@ Headings (`<h1>`–`<h6>`) inside `.nd-card-header` have their margins reset.
 
 ### See also
 
+- [Composition & stacking](#composition--stacking) — canonical nesting rules for Panel/Card/Well.
 - [Panels](#panels), [Wells](#wells), [Tables](#tables)
 - Source: `scss/_cards.scss`

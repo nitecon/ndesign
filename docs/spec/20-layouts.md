@@ -1,5 +1,12 @@
 ## Layouts
 
+> **Rules**
+> - ALWAYS ask the user which of the three layouts to use before writing any HTML — do NOT default silently.
+> - Pick `control-panel` for dashboards/admin UIs with a sidebar; `app-shell` for multi-page SaaS; `blog` for long-form prose only.
+> - Do NOT wrap `control-panel` or `app-shell` content in `.nd-container` — `.nd-container` is for the `blog` layout only.
+> - Do NOT mix layouts (e.g. add `.sidebar` to a `blog` skeleton) — each skeleton's CSS assumes only its own structural elements.
+> - Do NOT invent a fourth canonical layout — if none of the three fit, flag the case and discuss with the user.
+
 ndesign ships **three canonical starting layouts**. Every new page begins
 from one of them. Picking the wrong skeleton later means rewriting the
 entire shell, so **agents MUST ask the user which of the three to start

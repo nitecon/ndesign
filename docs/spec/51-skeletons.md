@@ -1,5 +1,12 @@
 ## Skeletons
 
+> **Rules**
+> - Use inside `<template data-nd-loading>` for `data-nd-bind` elements — the runtime shows/hides them automatically.
+> - Do NOT use for sub-100ms operations or for button feedback — use `.nd-loading` on the button instead.
+> - `.nd-skeleton` MUST be on every shape element — the shape classes alone only set dimensions, not the shimmer.
+> - Skeleton elements MUST be `display: block` (or `inline-flex`) for width to apply — a bare `<span>` in flowing text collapses.
+> - Do NOT add a manual animation on top — the shimmer respects `prefers-reduced-motion` automatically.
+
 Animated shimmer placeholders that occupy the same shape as the content they will be replaced with. The idiomatic use is inside a `<template data-nd-loading>` — the runtime renders the template into the bound element while the fetch is in flight, then replaces it with the real content.
 
 ### When to use

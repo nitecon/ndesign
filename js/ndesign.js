@@ -8,7 +8,7 @@
  */
 
 import { initBindings, destroyBindings } from './bind.js';
-import { initActions, resolveConfirm } from './action.js';
+import { initActions, resolveConfirm, registerHook } from './action.js';
 import { initUploads, destroyUploads } from './upload.js';
 import { initWebSockets, destroyWebSockets } from './ws.js';
 import { initSSE, destroySSE } from './sse.js';
@@ -360,6 +360,10 @@ export function getThemes() {
 
 // Re-export utilities for advanced usage
 export { render, renderOne, interpolate, escapeHTML, getByPath, setByPath, getCSRFToken, openModal, closeModal, confirmDialog, resolveConfirm, toast, refreshSelect };
+
+// Action lifecycle hooks — register/override verbs for data-nd-success,
+// data-nd-error, and data-nd-finally chains (e.g. NDesign.registerHook('toast', ...)).
+export { registerHook };
 
 // Store public API
 export { resolveVars, getVar as storeGet, setVar as storeSet, getEndpoint as endpoint };

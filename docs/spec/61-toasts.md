@@ -1,5 +1,12 @@
 ## Toasts
 
+> **Rules**
+> - Use for transient acknowledgements that auto-dismiss: "Saved", "Copied", recoverable background errors.
+> - Do NOT use for confirmations or destructive choices — use a confirm [Modal](#modals).
+> - Do NOT use for form-field validation — those belong inline next to the field.
+> - Toast text is plain text only — HTML markup is escaped and rendered as literal entities.
+> - `duration: 0` keeps the toast persistent until the user dismisses it manually.
+
 Toasts are transient, non-blocking notifications that slide in from the
 top-right of the viewport. The runtime auto-creates a single
 `.nd-toast-container` in `<body>` on first use; individual toasts append to

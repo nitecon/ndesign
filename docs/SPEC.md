@@ -352,6 +352,13 @@ against staging or production by swapping a single meta tag.
 
 ## Layouts
 
+> **Rules**
+> - ALWAYS ask the user which of the three layouts to use before writing any HTML — do NOT default silently.
+> - Pick `control-panel` for dashboards/admin UIs with a sidebar; `app-shell` for multi-page SaaS; `blog` for long-form prose only.
+> - Do NOT wrap `control-panel` or `app-shell` content in `.nd-container` — `.nd-container` is for the `blog` layout only.
+> - Do NOT mix layouts (e.g. add `.sidebar` to a `blog` skeleton) — each skeleton's CSS assumes only its own structural elements.
+> - Do NOT invent a fourth canonical layout — if none of the three fit, flag the case and discuss with the user.
+
 ndesign ships **three canonical starting layouts**. Every new page begins
 from one of them. Picking the wrong skeleton later means rewriting the
 entire shell, so **agents MUST ask the user which of the three to start
@@ -554,6 +561,113 @@ misuses, all of which MUST be avoided:
   framework is HTML-only (see [Philosophy](#philosophy)). If a layout
   visibly needs adjustment, the framework is missing a utility class
   or modifier and the fix belongs in the framework, not the page.
+
+## Composition & stacking
+
+> **Rules**
+> - **Panel** = PRIMARY container for raw/primary data in the main grid. Use it first.
+> - **Card** = region that needs a distinct header/body/footer split; sits INSIDE a panel or standalone in a grid.
+> - **Well** = secondary inset for quoted content, code, empty states, or key facts; ALWAYS inside a panel or card.
+> - **Aside** = small informational callouts only; keep OUTSIDE the main data panel.
+> - Nest up to 3 levels where each layer adds visual and semantic meaning — `Panel › Card › Well` is the canonical stack. Stop at 3; flatten a 4th surface.
+> - Never nest a container just to add spacing — use padding utilities instead.
+
+### Container roles at a glance
+
+| Container | Role | Lives inside | Children |
+|-----------|------|-------------|----------|
+| Panel | Primary data wrapper | Main grid | Anything, incl. cards |
+| Card | Scannable item with header/footer | Panel or grid | Body content, wells |
+| Well | Inset secondary info | Panel or card body | Text, code, figures |
+| Aside | Tangential callout | Outside data panels | Brief prose only |
+
+### Layer diagram
+
+```
+app-content (main grid)
+├── section.nd-panel            ← Level 1 · PRIMARY data region
+│   ├── article.nd-card         ← Level 2 · scannable item / overview
+│   │   ├── .nd-card-header
+│   │   ├── .nd-card-body
+│   │   │   └── div.nd-well     ← Level 3 · key facts / code / quotes
+│   │   └── .nd-card-footer
+│   └── article.nd-card         ← another card in the same panel
+└── aside (or .fold)            ← Aside lives OUTSIDE the data panel
+```
+
+A fourth level of nesting (e.g. a well inside a card inside a panel inside another panel) creates visual noise that degrades readability and conflicts with the inner-shadow model. Flatten: promote the inner surface or eliminate a layer.
+
+### Example 1 — panel with an aside
+
+Use this pattern for the most common dashboard layout: a main data panel alongside a small informational callout.
+
+```html
+<main class="app-content">
+
+  <!-- Primary data region -->
+  <section class="nd-panel">
+    <header class="nd-panel-header">
+      <h2>Run #42 — results</h2>
+    </header>
+    <p>Accuracy: <strong>94.7 %</strong></p>
+    <p>Loss: <strong>0.213</strong></p>
+    <footer class="nd-panel-footer">
+      <button class="nd-btn-primary nd-btn-sm">Export</button>
+    </footer>
+  </section>
+
+  <!-- Small informational aside — OUTSIDE the panel -->
+  <aside>
+    <strong>Note.</strong> Results reflect the validation split only.
+    Re-run on the full dataset before publishing.
+  </aside>
+
+</main>
+```
+
+### Example 2 — Panel › Card › Well (three-level stack)
+
+Use this pattern when a panel contains discrete items (cards) and each item includes a highlighted fact block (well).
+
+```html
+<section class="nd-panel">
+  <header class="nd-panel-header">
+    <h2>Recent deployments</h2>
+  </header>
+
+  <article class="nd-card">
+    <header class="nd-card-header">
+      <h3 class="nd-card-title">v1.4.0 — production</h3>
+      <span class="nd-badge nd-badge-success">Live</span>
+    </header>
+    <div class="nd-card-body">
+      <p>Deployed by Alice · 2 hours ago</p>
+      <!-- Well for a key fact block inside the card -->
+      <div class="nd-well nd-well-sm">
+        <p class="nd-well-title">Config snapshot</p>
+        <pre><code>replicas: 3
+strategy: rolling</code></pre>
+      </div>
+    </div>
+    <footer class="nd-card-footer">
+      <button class="nd-btn-ghost nd-btn-sm">View logs</button>
+    </footer>
+  </article>
+
+</section>
+```
+
+### Pitfalls
+
+- **Do NOT add a fourth nested surface.** If you reach Panel › Card › Well → *something else*, flatten: either merge the fourth level's content into the well, or pull it out as a sibling card.
+- **Asides inside a data panel produce visual confusion** — the left-accent strip reads as an error callout beside your data. Keep asides as siblings of panels, not children.
+- **Do NOT use a card just to add a border.** If there is no logical header/footer division, use a panel.
+- **Do NOT wrap a well in a well.** Double-inset shadows fight each other visually. Merge the content.
+
+### See also
+
+- [Layouts](#layouts) — the three canonical page skeletons that host panels and asides.
+- [Panels](#panels), [Cards](#cards), [Wells](#wells), [Asides](#asides)
 
 ## Data binding
 
@@ -1803,6 +1917,13 @@ reactivity on top of it.
 
 ## Typography
 
+> **Rules**
+> - Use semantic HTML first: `<h1>`–`<h6>` for headings, `<code>` for inline code, `<kbd>` for keys — no class required.
+> - Reach for a modifier class only to change color, weight, or alignment beyond the semantic default.
+> - Do NOT use `.nd-h1`–`.nd-h6` on heading elements — use the actual element so document outline and screen readers work correctly.
+> - Do NOT wrap a UI region in `.nd-prose` — it constrains width to 75ch and is for long-form reading content only.
+> - Pages served offline MUST self-host Inter/JetBrains Mono and override `--nd-font-family-*` tokens.
+
 ndesign styles the full HTML5 text-level vocabulary by default. Native headings (`<h1>`–`<h6>`), inline elements (`<code>`, `<kbd>`, `<samp>`, `<abbr>`, `<cite>`, `<mark>`), and block elements (`<pre>`, `<address>`, `<figure>`, `<details>`) render correctly without any classes. Modifier classes only exist for cases the native vocabulary cannot express.
 
 ### When to use
@@ -1874,6 +1995,13 @@ is <mark>required</mark>.</p>
 - Source: `scss/_typography.scss`, `scss/_utilities.scss`
 
 ## Buttons
+
+> **Rules**
+> - Use `<button>` for in-page actions; use `<a href>` only for real navigable URLs (right-click → open in new tab).
+> - There is no `.nd-btn` base class — `<button>` is the base; add a variant class for color (`nd-btn-primary`, etc.).
+> - Inside a `<form>`, a bare `<button>` defaults to `type="submit"` — always set `type="button"` for non-submit actions.
+> - Do NOT set `--nd-btn-text` globally; only set it per-button when the spinner color is inadequate on a ghost/transparent variant.
+> - `.nd-btn-group` children MUST be direct `<button>` siblings — any wrapper `<div>` breaks the border collapse.
 
 Native `<button>` elements are styled by default. Add a variant class for color, a size class for scale, and one or more `data-nd-*` attributes to wire behavior. There is no `.nd-btn` base class — `<button>` itself is the base.
 
@@ -1956,6 +2084,13 @@ Buttons participate in every declarative-runtime mechanism. Place these attribut
 
 ## Forms
 
+> **Rules**
+> - Write plain `<form>` markup; ndesign styles and wires it — no wrapper class required.
+> - Every form that submits to an API needs `data-nd-action="METHOD URL"`. Without it the form does a full-page submit.
+> - Every input MUST have a `name` attribute — unnamed inputs are silently skipped by the serializer.
+> - Use `data-nd-success`, `data-nd-error`, and `data-nd-finally` to declaratively chain post-submit actions. See [Action lifecycle hooks](#action-lifecycle-hooks) below.
+> - Use `data-nd-upload` (not `data-nd-action`) for any form containing a `<input type="file">`.
+
 Forms are plain `<form>` markup. ndesign styles native inputs, selects, and textareas, and provides `.nd-form-group` / `.nd-form-label` wrappers for tabbed labels and validation slots. Submit handling, JSON serialization, and server-error mapping live on `data-nd-action` (see [Data binding → data-nd-action](#data-nd-action--forms-and-button-actions)) — the markup stays declarative.
 
 ### When to use
@@ -2018,12 +2153,76 @@ Forms are plain `<form>` markup. ndesign styles native inputs, selects, and text
 
 Pair every form with `data-nd-action="METHOD URL"`. The runtime intercepts the `submit` event, serializes named inputs into a JSON object (dot-notation names create nested objects), submits via `fetch`, and:
 
-- On success: removes `nd-error` classes, runs the `data-nd-success` chain, optionally writes response data into the store via `data-nd-set`.
+- On success: removes `nd-error` classes, optionally writes response data into the store via `data-nd-set` (BEFORE the lifecycle chain runs, so verbs like `emit` and `refresh` observe updated data), then runs the `data-nd-success` chain.
 - On error: parses the unified error envelope, sets `.nd-error` on each field whose name appears in `errors`, writes the matching `errors[name]` message into that field's `.nd-form-error`, and writes the global error message into the form's feedback element.
 
 If the form does NOT declare `data-nd-feedback`, the runtime auto-creates an `.nd-alert nd-form-feedback-auto` slot adjacent to the submit button on first error, so the global message is always visible. See [Data binding → data-nd-action](#data-nd-action--forms-and-button-actions) for the full envelope shape and lifecycle.
 
 For multipart file uploads, use `data-nd-upload="METHOD URL"` instead of `data-nd-action` and add a `<progress class="nd-upload-progress" hidden>` element. See [Upload](#upload).
+
+### Action lifecycle hooks
+
+Three attributes on a `<form data-nd-action>` (or any `[data-nd-action]` element) declare comma-separated chains of verbs that run at different lifecycle phases:
+
+| Attribute | When it runs | Typical use |
+|---|---|---|
+| `data-nd-success` | After a **2xx** response | `close-modal`, `toast:Saved!`, `refresh:#list` |
+| `data-nd-error` | After a **non-2xx** or network failure | `toast:Failed`, `emit:submit-error` |
+| `data-nd-finally` | After EITHER phase, once the phase chain completes | `reset`, `refresh:#status` |
+
+#### Verb grammar (shared across all three attributes)
+
+| Verb | Effect | Stops chain? |
+|---|---|---|
+| `reset` | `form.reset()` (forms only) | No |
+| `reload` | `window.location.reload()` | Yes |
+| `redirect:URL` | `window.location.href = URL` | Yes |
+| `refresh:SELECTOR` | Dispatches `nd:refresh` on every matching element | No |
+| `emit:EVENT` | Dispatches a bubbling `CustomEvent(EVENT, {detail: responseData})` | No |
+| `toast:MESSAGE` | Shows a success toast with MESSAGE (composes with the toast subsystem) — **built-in** | No |
+| `close-modal` | Closes the nearest ancestor `<dialog>` | No |
+| Custom verbs | Registered via `NDesign.registerHook()` | Depends on handler |
+
+**Navigation verbs in `data-nd-finally`:** if the `success` or `error` chain already navigated (via `redirect` or `reload`), the `finally` chain suppresses any further navigation verb so the page is not navigated twice.
+
+**Ordering: `data-nd-set` runs BEFORE the phase chain.** If your form or button has both `data-nd-set` and `data-nd-success` (or `data-nd-error`), the store writes execute first, then the lifecycle chain runs. This allows verbs like `refresh:#target` and `emit:eventName` to observe the updated store values in real time.
+
+#### Example — success, error, and finally in one form
+
+```html
+<form data-nd-action="POST ${api}/api/records"
+      data-nd-success="close-modal,toast:Saved!"
+      data-nd-error="toast:Save failed — please retry"
+      data-nd-finally="refresh:#record-list">
+  <!-- fields -->
+  <button type="submit" class="nd-btn-primary">Save</button>
+</form>
+```
+
+#### Extending with `NDesign.registerHook(verb, handler)`
+
+Register a custom verb for use in any `data-nd-success`, `data-nd-error`, or `data-nd-finally` attribute.
+
+```javascript
+// Register a custom verb — then use it in any lifecycle chain:
+NDesign.registerHook('confetti', (arg, ctx) => launchConfetti(ctx.data));
+// data-nd-success='close-modal,confetti'
+```
+
+`registerHook` can also **override a built-in** (e.g. re-point `toast` at a different notifier) — the registry has no special-casing, so a re-registered verb simply replaces the previous handler.
+
+**Handler signature:** `handler(arg, ctx)` where:
+
+| Parameter | Type | Description |
+|---|---|---|
+| `arg` | `string` | The portion after the colon in `verb:arg`. Empty string when no arg. |
+| `ctx.element` | `HTMLElement` | The form or button that triggered the action. |
+| `ctx.response` | `Response \| null` | The raw `fetch` Response (null on network failure). |
+| `ctx.data` | `any` | Parsed JSON response body, or `null`. |
+| `ctx.error` | `{errors: Object} \| null` | The unified error envelope (null on success), with shape `{errors: {error?: string, fieldName?: string, ...}}`. |
+| `ctx.phase` | `'success' \| 'error' \| 'finally'` | Which phase is running. |
+
+A handler MAY return a `Promise` — the runtime awaits it before advancing the chain. Unknown verbs are silently ignored (no console warning). Built-in verbs (`reset`, `reload`, `redirect`, `refresh`, `emit`, `toast`, `close-modal`) can be overridden by calling `registerHook` with the same verb name.
 
 ### Pitfalls
 
@@ -2039,6 +2238,13 @@ For multipart file uploads, use `data-nd-upload="METHOD URL"` instead of `data-n
 - Source: `scss/_forms.scss`, `js/action.js`
 
 ## Tables
+
+> **Rules**
+> - Use for tabular data with a clear row/column relationship — NOT for page layout.
+> - Bind rows dynamically by putting `data-nd-bind` on `<tbody>` with a sibling `<template>` for the row markup.
+> - Wrap in `<div class="nd-table-responsive">` — NOT on the `<table>` itself — for overflow-x scrolling on narrow viewports.
+> - Do NOT put the `<template>` outside `<tbody>` — browsers will move stray `<tr>` elements out of the table and break the bind.
+> - `.nd-table-sortable` only renders the sort chevron; the consumer MUST handle `click` on `th[data-nd-sort]` and refetch.
 
 Native `<table>` is fully styled. Add modifier classes for striping, hover, density, and overflow. The `<tbody>` is the natural target for templated rendering driven by `data-nd-bind`.
 
@@ -2125,6 +2331,13 @@ See [Data binding → data-nd-bind](#data-nd-bind--fetch-and-render) for `data-n
 
 ## Cards
 
+> **Rules**
+> - Use cards for discrete, scannable content units that need a header/body/footer split: list items, dashboard tiles, settings rows.
+> - Do NOT use for lightweight bordered grouping without a header/footer — use [Panels](#panels) instead.
+> - Do NOT use for recessed/inset secondary info — use [Wells](#wells).
+> - Cards live inside panels or in a grid; wells live inside card bodies. See [Composition](#composition--stacking) for the canonical stack.
+> - Keep `overflow: visible` on cards — never apply `overflow: hidden` on a card ancestor, or dropdown/select panels will clip.
+
 A card is a self-contained content block with optional header, body, and footer regions. Use cards for list items, dashboard tiles, settings rows, and any unit of content the user might scan in a grid. The semantically correct outer element is `<article>`, though any block element accepts `.nd-card`.
 
 ### When to use
@@ -2179,10 +2392,18 @@ Headings (`<h1>`–`<h6>`) inside `.nd-card-header` have their margins reset.
 
 ### See also
 
+- [Composition & stacking](#composition--stacking) — canonical nesting rules for Panel/Card/Well.
 - [Panels](#panels), [Wells](#wells), [Tables](#tables)
 - Source: `scss/_cards.scss`
 
 ## Panels
+
+> **Rules**
+> - Panels are the PRIMARY container for raw/primary data in the main grid — reach for a panel first.
+> - Do NOT use for content that needs a distinct header/footer band — use [Cards](#cards) instead.
+> - Do NOT use for recessed/inset backgrounds — use [Wells](#wells) inside a panel.
+> - Cards and wells nest INSIDE panels; asides live OUTSIDE. See [Composition](#composition--stacking).
+> - `.nd-panel-header` and `.nd-panel-footer` MUST be direct children of `.nd-panel` — wrapping them breaks edge-to-edge bleed.
 
 A panel is a single-region bordered content block — lighter than a card (no separate header/body/footer architecture) but visually grouped. Use panels for sidebar widgets, settings sub-sections, and bordered grouping inside another container.
 
@@ -2244,10 +2465,18 @@ A panel is a single-region bordered content block — lighter than a card (no se
 
 ### See also
 
+- [Composition & stacking](#composition--stacking) — canonical nesting rules for Panel/Card/Well.
 - [Cards](#cards), [Wells](#wells), [Asides](#asides)
 - Source: `scss/_panels.scss`
 
 ## Wells
+
+> **Rules**
+> - Use wells for secondary, read-only insets: quotes, code samples, key facts, empty-state placeholders — always INSIDE a panel or card body.
+> - Do NOT use for primary content the user acts on — use [Cards](#cards) or [Panels](#panels) instead.
+> - Do NOT use for status messages — use [Alerts](#alerts).
+> - `Panel › Card › Well` is the canonical three-level stack and is correct UX. See [Composition](#composition--stacking).
+> - Never nest a well inside another well — double inset shadows conflict visually; merge the content.
 
 A well is an inset, recessed region — visually the inverse of a card. The inner shadow simulates content carved into the surface. Use wells to set apart secondary information without giving it the visual weight of a card or panel.
 
@@ -2284,14 +2513,23 @@ A well is an inset, recessed region — visually the inverse of a card. The inne
 ### Pitfalls
 
 - Wells deliberately have no specular highlight — they absorb light rather than catch it. Do NOT add a glass effect on top.
-- Stacking a well inside a card body inside a panel produces three visually conflicting surfaces. Pick one container per region.
+- `Panel › Card › Well` is the canonical three-level nesting stack and is **encouraged** — each layer adds distinct meaning. A fourth nested surface (e.g. a well inside a card inside a panel inside another panel) is too far; flatten. See [Composition & stacking](#composition--stacking) for the canonical rule and examples.
+- Do NOT nest a well inside another well — the double inset shadow creates a visually broken surface. Merge the content instead.
 
 ### See also
 
+- [Composition & stacking](#composition--stacking) — canonical nesting rules.
 - [Cards](#cards), [Panels](#panels), [Alerts](#alerts)
 - Source: `scss/_wells.scss`
 
 ## Alerts
+
+> **Rules**
+> - Use for persistent in-page status messages: form feedback, validation summaries, banner notices.
+> - Do NOT use for transient notifications that auto-dismiss — use [Toasts](#toasts) instead.
+> - Do NOT use for inline field-level errors — use `.nd-form-error` inside `.nd-form-group`.
+> - Always add `role="alert"` (error) or `role="status"` (non-error) for screen-reader announcement.
+> - An empty `.nd-alert` is still visually present; toggle with `hidden` attribute, not `display: none`.
 
 An alert is a static, in-page status message — success, error, warning, or info. Alerts are also the canonical class used by the auto-feedback slot inserted by `data-nd-action` and `data-nd-upload`, so any `.nd-alert` you place adjacent to a form participates in the same visual language as runtime-emitted messages.
 
@@ -2363,6 +2601,13 @@ Use `role="alert"` for error alerts (assertive announcement) and `role="status"`
 
 ## Badges
 
+> **Rules**
+> - Use for display-only inline status labels, counts, and tags — no JS required.
+> - Do NOT use for interactive controls or clickable items — use buttons or links instead.
+> - Always pair `.nd-badge` with a semantic variant (`.nd-badge-success`, etc.) — the unstyled base is near-invisible on a card surface.
+> - `.nd-badge-dot` ignores text content; keep it empty.
+> - Badges inside a button inherit `vertical-align: middle` — do not override `line-height` on the parent.
+
 Inline pill labels for status, counts, and metadata. Badges are display-only — no behavior, no JS contract.
 
 ### When to use
@@ -2409,6 +2654,13 @@ Inline pill labels for status, counts, and metadata. Badges are display-only —
 - Source: `scss/_badges.scss`
 
 ## Breadcrumbs
+
+> **Rules**
+> - Use for multi-level navigation where users need to jump back to an ancestor (3+ levels deep).
+> - Do NOT use for two-level navigation — a back link is clearer. Do NOT use for linear flows — use a stepper.
+> - The class is `.nd-breadcrumb` (singular) — `.nd-breadcrumbs` does NOT exist.
+> - The current page MUST be plain text (not a link) with `aria-current="page"` on the `<li>`.
+> - Do NOT add `.nd-nav` to the breadcrumb `<nav>` — `.nd-breadcrumb` overrides the top-bar treatment; mixing both produces undefined results.
 
 Hierarchical location trail. Use a native `<nav>` containing an ordered list — the runtime does NOT manage breadcrumbs, but `.nd-breadcrumb` resets the top-bar `<nav>` styles inherited from `_nav.scss` so the trail renders inline.
 
@@ -2457,6 +2709,13 @@ Use `aria-label="Breadcrumb"` on the `<nav>` and `aria-current="page"` on the fi
 - Source: `scss/_breadcrumbs.scss`
 
 ## Pagination
+
+> **Rules**
+> - Use for server-paged lists where the URL carries `?page=N` — tables, search results, log viewers.
+> - Do NOT use for infinite-scroll feeds — use `data-nd-mode="append"` with a "Load more" trigger instead.
+> - Pair each page link with `data-nd-bind-trigger` to refetch the bound list without a full page reload.
+> - The ellipsis MUST be `<span aria-hidden="true">` — a linked ellipsis breaks keyboard navigation order.
+> - Do NOT add `.nd-nav` to the `.nd-pagination` container.
 
 Page-number trail for paged lists. Like breadcrumbs, pagination is a native `<nav>` containing an ordered list of links. The runtime does NOT manage page state — pair pagination with `data-nd-bind-trigger` to refetch a bound list when the user clicks a page link.
 
@@ -2531,6 +2790,13 @@ See [Data binding → data-nd-bind](#data-nd-bind--fetch-and-render) for trigger
 
 ## Skeletons
 
+> **Rules**
+> - Use inside `<template data-nd-loading>` for `data-nd-bind` elements — the runtime shows/hides them automatically.
+> - Do NOT use for sub-100ms operations or for button feedback — use `.nd-loading` on the button instead.
+> - `.nd-skeleton` MUST be on every shape element — the shape classes alone only set dimensions, not the shimmer.
+> - Skeleton elements MUST be `display: block` (or `inline-flex`) for width to apply — a bare `<span>` in flowing text collapses.
+> - Do NOT add a manual animation on top — the shimmer respects `prefers-reduced-motion` automatically.
+
 Animated shimmer placeholders that occupy the same shape as the content they will be replaced with. The idiomatic use is inside a `<template data-nd-loading>` — the runtime renders the template into the bound element while the fetch is in flight, then replaces it with the real content.
 
 ### When to use
@@ -2592,6 +2858,13 @@ Animated shimmer placeholders that occupy the same shape as the content they wil
 - Source: `scss/_skeletons.scss`
 
 ## Progress
+
+> **Rules**
+> - Use for file uploads (`data-nd-upload`) and long-running operations with a known percentage.
+> - Do NOT use for a loading indicator inside a button — use `.nd-loading` on the button.
+> - Do NOT use for a loading indicator on a list — use [Skeletons](#skeletons).
+> - The `<progress class="nd-upload-progress">` MUST start with the `hidden` attribute — the runtime removes it on submit; do NOT set `display: block` manually.
+> - `<progress value="">` or no `value` = indeterminate. Use `value="0"` for an explicit empty bar.
 
 Native `<progress>` is fully styled — determinate (with a `value`) and indeterminate (no `value`). No wrapper class is required. The `.nd-upload-progress` class hooks into the file-upload XHR runtime, which toggles the element's visibility and updates `value` as bytes transfer.
 
@@ -2663,6 +2936,13 @@ See [Upload](#upload) for the full attribute set, server payload, and CSRF behav
 
 ## Avatars
 
+> **Rules**
+> - The class is `.avatar` — NOT `.nd-avatar`. The `nd-` prefix is absent by design.
+> - Use for user initials or profile images beside names in lists, comment threads, and nav account menus.
+> - Initials MUST be 1–2 uppercase characters — longer strings overflow the small variants.
+> - An `<img>` inside `.avatar` MUST have an `alt` attribute (user name, or `""` if purely decorative alongside visible name).
+> - Override `--nd-accent` per-avatar via inline style for user-specific colors.
+
 Circular badges showing user initials or a profile image. The class is `.avatar` (NOT `.nd-avatar`) — kept short because avatars appear inline in dense markup such as user lists, comment threads, and presence indicators.
 
 ### When to use
@@ -2704,6 +2984,13 @@ The base `.avatar` is `display: inline-flex` and clips overflow, so an `<img>` c
 - Source: `scss/_avatars.scss`
 
 ## Asides
+
+> **Rules**
+> - Use asides for SMALL tangential callouts only: tips, notes, sidebar quotes. Keep them brief.
+> - Place asides OUTSIDE the main data panel — never nest an aside inside a panel or card.
+> - Do NOT use for status messages — use [Alerts](#alerts).
+> - Do NOT use for general bordered grouping — use [Panels](#panels).
+> - `.fold` MUST be a direct child of a container with viewport-edge padding — it will clip inside a card.
 
 Bare `<aside>` is styled by default as a simple bordered callout with a left accent strip — drop it into the document for tangentially related content. The `.fold` variant overrides this with an edge-pinned geometric callout that bleeds to the viewport edge for sidebar-style notes.
 
@@ -2759,10 +3046,18 @@ The default `.fold` (no semantic variant) renders without an accent — pair it 
 
 ### See also
 
+- [Composition & stacking](#composition--stacking) — where asides belong in the page hierarchy.
 - [Alerts](#alerts), [Panels](#panels), [Wells](#wells)
 - Source: `scss/_asides.scss`
 
 ## Modals
+
+> **Rules**
+> - Use the native `<dialog>` element — custom `<div class="modal">` markup is NOT supported and will not open.
+> - Use for single-record edits, destructive-action confirms, and multi-step forms that feed back into the parent view.
+> - Do NOT use for transient feedback — use [Toasts](#toasts).
+> - On a form inside a modal, add `data-nd-success="close-modal,refresh:#target"` to close on save and refresh the parent view.
+> - Server-driven chained confirmation (`next_confirm` on response) is NOT implemented — compose multi-step confirms client-side with nested `data-nd-confirm`.
 
 ndesign uses the browser's native `<dialog>` element for every modal. There
 is no custom modal container, no portal, and no focus-trap implementation
@@ -2907,6 +3202,13 @@ the same dialog is safe.
 
 ## Toasts
 
+> **Rules**
+> - Use for transient acknowledgements that auto-dismiss: "Saved", "Copied", recoverable background errors.
+> - Do NOT use for confirmations or destructive choices — use a confirm [Modal](#modals).
+> - Do NOT use for form-field validation — those belong inline next to the field.
+> - Toast text is plain text only — HTML markup is escaped and rendered as literal entities.
+> - `duration: 0` keeps the toast persistent until the user dismisses it manually.
+
 Toasts are transient, non-blocking notifications that slide in from the
 top-right of the viewport. The runtime auto-creates a single
 `.nd-toast-container` in `<body>` on first use; individual toasts append to
@@ -3019,6 +3321,13 @@ mutate it after creation.
 
 ## Tooltips
 
+> **Rules**
+> - Use to clarify icon-only buttons or annotate compact controls — add `data-nd-tooltip="TEXT"` to any focusable element.
+> - Do NOT apply to non-focusable elements (`<div>`, `<span>`) without adding `tabindex="0"` — keyboard users will never see it.
+> - Do NOT use for interactive content (links, forms) — tooltips are `pointer-events: none`. Use a [Dropdown](#dropdowns) instead.
+> - Content is plain text only; HTML markup renders as literal characters.
+> - Only one tooltip is visible at a time — do not design UIs that require stacked tooltips.
+
 Tooltips are short descriptive popups that anchor to an element on hover
 or focus. ndesign uses a single shared `<div class="nd-tooltip">`
 appended to `<body>` and re-positioned for each anchor; there is no
@@ -3106,6 +3415,13 @@ additional wiring.
 - Source: `js/tooltip.js`, `scss/_tooltips.scss`
 
 ## Tabs
+
+> **Rules**
+> - Use to switch between views of the same record or alternate representations of one dataset — peers, not steps.
+> - Do NOT use for top-level page navigation — use [Navigation](#navigation).
+> - Do NOT use for a linear progression of steps — use a stepper/wizard pattern.
+> - Each `[role="tab"]` MUST carry `aria-controls="PANEL_ID"` and each `[role="tabpanel"]` MUST carry a matching `id`.
+> - Activation is manual (click/Enter/Space) — arrow keys move focus only. Do NOT wire auto-activation unless you accept the accessibility trade-off.
 
 Tabs partition a single screen into mutually exclusive content panels.
 ndesign implements the WAI-ARIA Authoring Practices tab pattern with
@@ -3235,6 +3551,13 @@ interchangeably for user convenience.
 
 ## Dropdowns
 
+> **Rules**
+> - Use for action menus (row actions, account menus) and compact lists of secondary commands.
+> - Do NOT use for form input — use [Select](#select) which keeps native form validation semantics.
+> - The trigger MUST be a direct-child `<button>` of `.nd-dropdown` — the runtime uses `:scope > button` selection.
+> - Menu items MUST be `<li> <a>` or `<li> <button>` to receive `role="menuitem"`.
+> - The dropdown does not auto-flip near viewport edges — use `.nd-dropdown-up` or `.nd-dropdown-right` declaratively.
+
 A dropdown is a click-to-toggle menu anchored to a trigger button. ndesign
 wires `role="menu"` and `role="menuitem"` automatically, supports keyboard
 navigation, and closes on outside click. The trigger is a real `<button>`,
@@ -3351,6 +3674,13 @@ dropdown. Opening a second dropdown closes any already-open one.
 - Source: `js/dropdown.js`, `scss/_dropdowns.scss`
 
 ## Navigation
+
+> **Rules**
+> - Use `<nav>` for top-bar or sidebar page navigation and mobile hamburger menus.
+> - Do NOT use for in-page panel switching — use [Tabs](#tabs).
+> - Do NOT use for action menus — use [Dropdowns](#dropdowns).
+> - Do NOT mix `.nd-nav-side` and `data-nd-toggle="sidebar"` on the same element — they are independent code paths and will double-toggle.
+> - `.nd-nav-toggle` MUST be inside a `<nav>` or `.nd-nav` ancestor — toggles outside that scope are silently ignored.
 
 ndesign styles the native `<nav>` element by default and provides
 responsive top-bar and sidebar layouts. The runtime wires hamburger
@@ -3484,6 +3814,34 @@ on the toggle button.
 - Source: `js/nav.js`, `scss/_nav.scss`
 
 ## Select
+
+> **Rules**
+> - Every non-`multiple` `<select>` is auto-enhanced — write a plain `<select>` and ndesign wraps it; do NOT build `.nd-select` markup by hand.
+> - For **dynamic options from JSON**: add `data-nd-bind` + `data-nd-options='VALUE:LABEL'` to the `<select>`. Static options (e.g. placeholder) are preserved across fetches; runtime options carry `data-nd-generated`.
+> - After any programmatic `<option>` mutation, call `NDesign.refreshSelect(selectEl)` to rebuild the themed wrapper. Binding-driven population does this automatically.
+> - Opt out of enhancement with `multiple` OR by pre-wrapping in `.nd-select` before `initSelects()` runs.
+> - The open dropdown MUST NOT be clipped — ancestor panels, cards, and tables must NOT have `overflow: hidden` while a select is open.
+
+### Dynamic-options recipe
+
+Populate a `<select>` from a JSON array at runtime:
+
+```html
+<!-- Server returns: [{"id":1,"name":"Run A"},{"id":2,"name":"Run B"}] -->
+<label for="run">Training run</label>
+<select id="run" name="run"
+        data-nd-bind="${api}/api/training/runs"
+        data-nd-options="id:name">
+  <option value="">Choose a run…</option>   <!-- static; preserved on refetch -->
+</select>
+```
+
+- `data-nd-options="id:name"` — `value` from `item.id`, visible label from `item.name`.
+- Runtime-generated options receive a `data-nd-generated` attribute; only these are removed on refetch.
+- The custom-dropdown wrapper is rebuilt automatically by `refreshSelect()` after population; no extra JS needed.
+- To refresh on a store change: `data-nd-success="refresh:#run"` or dispatch `nd:refresh` on the select element.
+
+---
 
 ndesign auto-enhances every non-multi `<select>` on the page into a
 themed `.nd-select` wrapper at init time. The native `<select>` is hidden
@@ -3634,6 +3992,13 @@ trigger label and the highlighted option after a deferred tick.
 
 ## Theme
 
+> **Rules**
+> - Register each theme with a `<meta name="nd-theme" content="NAME" data-href="URL">` and mark the active stylesheet `<link class="theme" data-theme="NAME">`.
+> - Do NOT use `title="..."` on the theme `<link>` — it becomes an alternate stylesheet the browser will not apply.
+> - The active `<link>` MUST carry `class="theme"` — without it `setTheme()` no-ops because there is nothing to replace.
+> - `prefers-color-scheme` is NOT consulted automatically — read the media query and call `NDesign.setTheme()` on first load if you want OS-driven defaults.
+> - The runtime does not persist theme choice across reloads — use `localStorage` or a server-rendered class on `<html>`.
+
 ndesign ships two themes — `light` and `dark` — and supports any number
 of custom themes registered via `<meta>` tags. The runtime swaps the
 active stylesheet by replacing a single `<link class="theme">` element
@@ -3751,6 +4116,13 @@ NDesign.getThemes();                // → [{name, label, active}, ...]
   `scss/themes/light.scss`, `scss/themes/dark.scss`.
 
 ## Sortable
+
+> **Rules**
+> - Use for reordering children where order is meaningful: todo lists, queues, kanban columns.
+> - Do NOT use for column-header alphabetic/numeric sorting — use `data-nd-bind` with sort params instead.
+> - Add `data-id` to every child; without it the emitted `order` array is positional indices, which is useless server-side.
+> - The container MUST be stable — replacing it wholesale with `data-nd-bind mode="replace"` discards the `MutationObserver`. Wrap the binding INSIDE the sortable.
+> - Keyboard drag is constrained to one container — cross-container moves are mouse-only by design.
 
 `data-nd-sortable` turns a container's direct children into a
 drag-and-drop reorderable list with full keyboard support, optional
@@ -3977,6 +4349,13 @@ the `draggable` / `tabindex` attributes the runtime added.
 
 ## Upload
 
+> **Rules**
+> - Use for any form containing `<input type="file">` — `data-nd-action` uses `fetch` and cannot expose upload progress.
+> - `data-nd-upload` is valid ONLY on `<form>` — applying it to a `<button>` is a silent no-op.
+> - File inputs MUST have a `name` attribute — `FormData` silently omits unnamed inputs.
+> - The `<progress class="nd-upload-progress">` MUST start with `hidden` — the runtime removes it on submit.
+> - Do NOT set `Content-Type` manually — the browser injects the multipart boundary; overriding it breaks server-side parsing.
+
 `data-nd-upload` intercepts a `<form>` submit and routes it through
 `XMLHttpRequest` so the upload progress event is observable. The browser
 serializes the form via `FormData` (so `<input type="file">` works
@@ -4169,8 +4548,9 @@ processes.
 | `data-nd-defer`            | Skip the initial auto-fetch on a `data-nd-bind` element.                              | [Deferred fetch](#deferred-fetch--data-nd-defer) |
 | `data-nd-dismiss`          | On a button inside `<dialog>`: closes the dialog.                                     | [Modals](#modals) |
 | `data-nd-empty`            | `<template data-nd-empty>`: shown when a bound array is empty.                        | [Loading, empty, and error templates](#loading-empty-and-error-templates) |
-| `data-nd-error`            | `<template data-nd-error>`: rendered when a bound fetch fails.                        | [Loading, empty, and error templates](#loading-empty-and-error-templates) |
+| `data-nd-error`            | `<template data-nd-error>`: rendered when a bound fetch fails. Also: comma-separated chain of post-error actions on `[data-nd-action]` (same verb grammar as `data-nd-success`). | [Loading, empty, and error templates](#loading-empty-and-error-templates), [Action lifecycle hooks](#action-lifecycle-hooks) |
 | `data-nd-feedback`         | ID of a feedback element that receives server messages for this action/upload.        | [Feedback element](#feedback-element--data-nd-feedbackid-and-the-auto-slot) |
+| `data-nd-finally`          | Comma-separated chain of actions on `[data-nd-action]` that run after BOTH success and error phases. Navigation verbs suppressed if already navigated. | [Action lifecycle hooks](#action-lifecycle-hooks) |
 | `data-nd-field`            | Dot-path extracting a scalar from response data (for bind/sse/ws).                    | [Scalar field binding](#scalar-field-binding--data-nd-fieldpath) |
 | `data-nd-if`               | Inside a template: remove the element when the named field is falsy.                  | [Templates and {{field}} interpolation](#templates-and-field-interpolation) |
 | `data-nd-loading`          | `<template data-nd-loading>`: shown while a bound fetch is in flight.                 | [Loading, empty, and error templates](#loading-empty-and-error-templates) |
@@ -4240,6 +4620,7 @@ attached to `window`; these are the supported entry points.
 | Name                                          | Description                                                       | Section |
 |-----------------------------------------------|-------------------------------------------------------------------|---------|
 | `NDesign.configure(partial)`                  | Merge runtime configuration.                                       | [Configuration](#configuration) |
+| `NDesign.registerHook(verb, handler)`         | Register a custom verb — or override a built-in — for use in `data-nd-success`, `data-nd-error`, and `data-nd-finally` chains. `handler(arg, ctx)` where `ctx = { element, response, data, error, phase }`. MAY return a Promise. | [Action lifecycle hooks](#action-lifecycle-hooks) |
 | `NDesign.init()`                              | Re-init the runtime (tears down first).                           | [Lifecycle and initialization](#lifecycle-and-initialization) |
 | `NDesign.store.get(path)`                     | Read a var by dot-path.                                           | [Store API](#store-api) |
 | `NDesign.store.set(path, value)`              | Write a var by dot-path; fires `nd:var-change`.                   | [Store API](#store-api) |

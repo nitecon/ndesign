@@ -1,5 +1,12 @@
 ## Navigation
 
+> **Rules**
+> - Use `<nav>` for top-bar or sidebar page navigation and mobile hamburger menus.
+> - Do NOT use for in-page panel switching — use [Tabs](#tabs).
+> - Do NOT use for action menus — use [Dropdowns](#dropdowns).
+> - Do NOT mix `.nd-nav-side` and `data-nd-toggle="sidebar"` on the same element — they are independent code paths and will double-toggle.
+> - `.nd-nav-toggle` MUST be inside a `<nav>` or `.nd-nav` ancestor — toggles outside that scope are silently ignored.
+
 ndesign styles the native `<nav>` element by default and provides
 responsive top-bar and sidebar layouts. The runtime wires hamburger
 toggles, side-nav overlays, and an auto-close on resize above the large

@@ -1,5 +1,12 @@
 ## Avatars
 
+> **Rules**
+> - The class is `.avatar` — NOT `.nd-avatar`. The `nd-` prefix is absent by design.
+> - Use for user initials or profile images beside names in lists, comment threads, and nav account menus.
+> - Initials MUST be 1–2 uppercase characters — longer strings overflow the small variants.
+> - An `<img>` inside `.avatar` MUST have an `alt` attribute (user name, or `""` if purely decorative alongside visible name).
+> - Override `--nd-accent` per-avatar via inline style for user-specific colors.
+
 Circular badges showing user initials or a profile image. The class is `.avatar` (NOT `.nd-avatar`) — kept short because avatars appear inline in dense markup such as user lists, comment threads, and presence indicators.
 
 ### When to use

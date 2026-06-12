@@ -1,5 +1,12 @@
 ## Panels
 
+> **Rules**
+> - Panels are the PRIMARY container for raw/primary data in the main grid — reach for a panel first.
+> - Do NOT use for content that needs a distinct header/footer band — use [Cards](#cards) instead.
+> - Do NOT use for recessed/inset backgrounds — use [Wells](#wells) inside a panel.
+> - Cards and wells nest INSIDE panels; asides live OUTSIDE. See [Composition](#composition--stacking).
+> - `.nd-panel-header` and `.nd-panel-footer` MUST be direct children of `.nd-panel` — wrapping them breaks edge-to-edge bleed.
+
 A panel is a single-region bordered content block — lighter than a card (no separate header/body/footer architecture) but visually grouped. Use panels for sidebar widgets, settings sub-sections, and bordered grouping inside another container.
 
 ### When to use
@@ -60,5 +67,6 @@ A panel is a single-region bordered content block — lighter than a card (no se
 
 ### See also
 
+- [Composition & stacking](#composition--stacking) — canonical nesting rules for Panel/Card/Well.
 - [Cards](#cards), [Wells](#wells), [Asides](#asides)
 - Source: `scss/_panels.scss`

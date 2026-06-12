@@ -1,5 +1,12 @@
 ## Sortable
 
+> **Rules**
+> - Use for reordering children where order is meaningful: todo lists, queues, kanban columns.
+> - Do NOT use for column-header alphabetic/numeric sorting — use `data-nd-bind` with sort params instead.
+> - Add `data-id` to every child; without it the emitted `order` array is positional indices, which is useless server-side.
+> - The container MUST be stable — replacing it wholesale with `data-nd-bind mode="replace"` discards the `MutationObserver`. Wrap the binding INSIDE the sortable.
+> - Keyboard drag is constrained to one container — cross-container moves are mouse-only by design.
+
 `data-nd-sortable` turns a container's direct children into a
 drag-and-drop reorderable list with full keyboard support, optional
 server-sync POST on every reorder, automatic revert on failure, and

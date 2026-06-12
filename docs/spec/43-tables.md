@@ -1,5 +1,12 @@
 ## Tables
 
+> **Rules**
+> - Use for tabular data with a clear row/column relationship — NOT for page layout.
+> - Bind rows dynamically by putting `data-nd-bind` on `<tbody>` with a sibling `<template>` for the row markup.
+> - Wrap in `<div class="nd-table-responsive">` — NOT on the `<table>` itself — for overflow-x scrolling on narrow viewports.
+> - Do NOT put the `<template>` outside `<tbody>` — browsers will move stray `<tr>` elements out of the table and break the bind.
+> - `.nd-table-sortable` only renders the sort chevron; the consumer MUST handle `click` on `th[data-nd-sort]` and refetch.
+
 Native `<table>` is fully styled. Add modifier classes for striping, hover, density, and overflow. The `<tbody>` is the natural target for templated rendering driven by `data-nd-bind`.
 
 ### When to use

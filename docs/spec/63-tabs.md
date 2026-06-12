@@ -1,5 +1,12 @@
 ## Tabs
 
+> **Rules**
+> - Use to switch between views of the same record or alternate representations of one dataset — peers, not steps.
+> - Do NOT use for top-level page navigation — use [Navigation](#navigation).
+> - Do NOT use for a linear progression of steps — use a stepper/wizard pattern.
+> - Each `[role="tab"]` MUST carry `aria-controls="PANEL_ID"` and each `[role="tabpanel"]` MUST carry a matching `id`.
+> - Activation is manual (click/Enter/Space) — arrow keys move focus only. Do NOT wire auto-activation unless you accept the accessibility trade-off.
+
 Tabs partition a single screen into mutually exclusive content panels.
 ndesign implements the WAI-ARIA Authoring Practices tab pattern with
 **manual activation**: arrow keys move focus between tabs, but the panel

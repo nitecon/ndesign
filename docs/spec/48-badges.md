@@ -1,5 +1,12 @@
 ## Badges
 
+> **Rules**
+> - Use for display-only inline status labels, counts, and tags — no JS required.
+> - Do NOT use for interactive controls or clickable items — use buttons or links instead.
+> - Always pair `.nd-badge` with a semantic variant (`.nd-badge-success`, etc.) — the unstyled base is near-invisible on a card surface.
+> - `.nd-badge-dot` ignores text content; keep it empty.
+> - Badges inside a button inherit `vertical-align: middle` — do not override `line-height` on the parent.
+
 Inline pill labels for status, counts, and metadata. Badges are display-only — no behavior, no JS contract.
 
 ### When to use

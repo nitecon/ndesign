@@ -1,5 +1,12 @@
 ## Modals
 
+> **Rules**
+> - Use the native `<dialog>` element — custom `<div class="modal">` markup is NOT supported and will not open.
+> - Use for single-record edits, destructive-action confirms, and multi-step forms that feed back into the parent view.
+> - Do NOT use for transient feedback — use [Toasts](#toasts).
+> - On a form inside a modal, add `data-nd-success="close-modal,refresh:#target"` to close on save and refresh the parent view.
+> - Server-driven chained confirmation (`next_confirm` on response) is NOT implemented — compose multi-step confirms client-side with nested `data-nd-confirm`.
+
 ndesign uses the browser's native `<dialog>` element for every modal. There
 is no custom modal container, no portal, and no focus-trap implementation
 beyond what the platform provides. The runtime only adds declarative open /

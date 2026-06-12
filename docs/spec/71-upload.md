@@ -1,5 +1,12 @@
 ## Upload
 
+> **Rules**
+> - Use for any form containing `<input type="file">` — `data-nd-action` uses `fetch` and cannot expose upload progress.
+> - `data-nd-upload` is valid ONLY on `<form>` — applying it to a `<button>` is a silent no-op.
+> - File inputs MUST have a `name` attribute — `FormData` silently omits unnamed inputs.
+> - The `<progress class="nd-upload-progress">` MUST start with `hidden` — the runtime removes it on submit.
+> - Do NOT set `Content-Type` manually — the browser injects the multipart boundary; overriding it breaks server-side parsing.
+
 `data-nd-upload` intercepts a `<form>` submit and routes it through
 `XMLHttpRequest` so the upload progress event is observable. The browser
 serializes the form via `FormData` (so `<input type="file">` works

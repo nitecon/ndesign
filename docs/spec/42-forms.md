@@ -1,5 +1,12 @@
 ## Forms
 
+> **Rules**
+> - Write plain `<form>` markup; ndesign styles and wires it — no wrapper class required.
+> - Every form that submits to an API needs `data-nd-action="METHOD URL"`. Without it the form does a full-page submit.
+> - Every input MUST have a `name` attribute — unnamed inputs are silently skipped by the serializer.
+> - Use `data-nd-success`, `data-nd-error`, and `data-nd-finally` to declaratively chain post-submit actions. See [Action lifecycle hooks](#action-lifecycle-hooks) below.
+> - Use `data-nd-upload` (not `data-nd-action`) for any form containing a `<input type="file">`.
+
 Forms are plain `<form>` markup. ndesign styles native inputs, selects, and textareas, and provides `.nd-form-group` / `.nd-form-label` wrappers for tabbed labels and validation slots. Submit handling, JSON serialization, and server-error mapping live on `data-nd-action` (see [Data binding → data-nd-action](#data-nd-action--forms-and-button-actions)) — the markup stays declarative.
 
 ### When to use
@@ -62,12 +69,76 @@ Forms are plain `<form>` markup. ndesign styles native inputs, selects, and text
 
 Pair every form with `data-nd-action="METHOD URL"`. The runtime intercepts the `submit` event, serializes named inputs into a JSON object (dot-notation names create nested objects), submits via `fetch`, and:
 
-- On success: removes `nd-error` classes, runs the `data-nd-success` chain, optionally writes response data into the store via `data-nd-set`.
+- On success: removes `nd-error` classes, optionally writes response data into the store via `data-nd-set` (BEFORE the lifecycle chain runs, so verbs like `emit` and `refresh` observe updated data), then runs the `data-nd-success` chain.
 - On error: parses the unified error envelope, sets `.nd-error` on each field whose name appears in `errors`, writes the matching `errors[name]` message into that field's `.nd-form-error`, and writes the global error message into the form's feedback element.
 
 If the form does NOT declare `data-nd-feedback`, the runtime auto-creates an `.nd-alert nd-form-feedback-auto` slot adjacent to the submit button on first error, so the global message is always visible. See [Data binding → data-nd-action](#data-nd-action--forms-and-button-actions) for the full envelope shape and lifecycle.
 
 For multipart file uploads, use `data-nd-upload="METHOD URL"` instead of `data-nd-action` and add a `<progress class="nd-upload-progress" hidden>` element. See [Upload](#upload).
+
+### Action lifecycle hooks
+
+Three attributes on a `<form data-nd-action>` (or any `[data-nd-action]` element) declare comma-separated chains of verbs that run at different lifecycle phases:
+
+| Attribute | When it runs | Typical use |
+|---|---|---|
+| `data-nd-success` | After a **2xx** response | `close-modal`, `toast:Saved!`, `refresh:#list` |
+| `data-nd-error` | After a **non-2xx** or network failure | `toast:Failed`, `emit:submit-error` |
+| `data-nd-finally` | After EITHER phase, once the phase chain completes | `reset`, `refresh:#status` |
+
+#### Verb grammar (shared across all three attributes)
+
+| Verb | Effect | Stops chain? |
+|---|---|---|
+| `reset` | `form.reset()` (forms only) | No |
+| `reload` | `window.location.reload()` | Yes |
+| `redirect:URL` | `window.location.href = URL` | Yes |
+| `refresh:SELECTOR` | Dispatches `nd:refresh` on every matching element | No |
+| `emit:EVENT` | Dispatches a bubbling `CustomEvent(EVENT, {detail: responseData})` | No |
+| `toast:MESSAGE` | Shows a success toast with MESSAGE (composes with the toast subsystem) — **built-in** | No |
+| `close-modal` | Closes the nearest ancestor `<dialog>` | No |
+| Custom verbs | Registered via `NDesign.registerHook()` | Depends on handler |
+
+**Navigation verbs in `data-nd-finally`:** if the `success` or `error` chain already navigated (via `redirect` or `reload`), the `finally` chain suppresses any further navigation verb so the page is not navigated twice.
+
+**Ordering: `data-nd-set` runs BEFORE the phase chain.** If your form or button has both `data-nd-set` and `data-nd-success` (or `data-nd-error`), the store writes execute first, then the lifecycle chain runs. This allows verbs like `refresh:#target` and `emit:eventName` to observe the updated store values in real time.
+
+#### Example — success, error, and finally in one form
+
+```html
+<form data-nd-action="POST ${api}/api/records"
+      data-nd-success="close-modal,toast:Saved!"
+      data-nd-error="toast:Save failed — please retry"
+      data-nd-finally="refresh:#record-list">
+  <!-- fields -->
+  <button type="submit" class="nd-btn-primary">Save</button>
+</form>
+```
+
+#### Extending with `NDesign.registerHook(verb, handler)`
+
+Register a custom verb for use in any `data-nd-success`, `data-nd-error`, or `data-nd-finally` attribute.
+
+```javascript
+// Register a custom verb — then use it in any lifecycle chain:
+NDesign.registerHook('confetti', (arg, ctx) => launchConfetti(ctx.data));
+// data-nd-success='close-modal,confetti'
+```
+
+`registerHook` can also **override a built-in** (e.g. re-point `toast` at a different notifier) — the registry has no special-casing, so a re-registered verb simply replaces the previous handler.
+
+**Handler signature:** `handler(arg, ctx)` where:
+
+| Parameter | Type | Description |
+|---|---|---|
+| `arg` | `string` | The portion after the colon in `verb:arg`. Empty string when no arg. |
+| `ctx.element` | `HTMLElement` | The form or button that triggered the action. |
+| `ctx.response` | `Response \| null` | The raw `fetch` Response (null on network failure). |
+| `ctx.data` | `any` | Parsed JSON response body, or `null`. |
+| `ctx.error` | `{errors: Object} \| null` | The unified error envelope (null on success), with shape `{errors: {error?: string, fieldName?: string, ...}}`. |
+| `ctx.phase` | `'success' \| 'error' \| 'finally'` | Which phase is running. |
+
+A handler MAY return a `Promise` — the runtime awaits it before advancing the chain. Unknown verbs are silently ignored (no console warning). Built-in verbs (`reset`, `reload`, `redirect`, `refresh`, `emit`, `toast`, `close-modal`) can be overridden by calling `registerHook` with the same verb name.
 
 ### Pitfalls
 

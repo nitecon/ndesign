@@ -1,5 +1,12 @@
 ## Alerts
 
+> **Rules**
+> - Use for persistent in-page status messages: form feedback, validation summaries, banner notices.
+> - Do NOT use for transient notifications that auto-dismiss — use [Toasts](#toasts) instead.
+> - Do NOT use for inline field-level errors — use `.nd-form-error` inside `.nd-form-group`.
+> - Always add `role="alert"` (error) or `role="status"` (non-error) for screen-reader announcement.
+> - An empty `.nd-alert` is still visually present; toggle with `hidden` attribute, not `display: none`.
+
 An alert is a static, in-page status message — success, error, warning, or info. Alerts are also the canonical class used by the auto-feedback slot inserted by `data-nd-action` and `data-nd-upload`, so any `.nd-alert` you place adjacent to a form participates in the same visual language as runtime-emitted messages.
 
 ### When to use

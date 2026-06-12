@@ -1,5 +1,12 @@
 ## Typography
 
+> **Rules**
+> - Use semantic HTML first: `<h1>`–`<h6>` for headings, `<code>` for inline code, `<kbd>` for keys — no class required.
+> - Reach for a modifier class only to change color, weight, or alignment beyond the semantic default.
+> - Do NOT use `.nd-h1`–`.nd-h6` on heading elements — use the actual element so document outline and screen readers work correctly.
+> - Do NOT wrap a UI region in `.nd-prose` — it constrains width to 75ch and is for long-form reading content only.
+> - Pages served offline MUST self-host Inter/JetBrains Mono and override `--nd-font-family-*` tokens.
+
 ndesign styles the full HTML5 text-level vocabulary by default. Native headings (`<h1>`–`<h6>`), inline elements (`<code>`, `<kbd>`, `<samp>`, `<abbr>`, `<cite>`, `<mark>`), and block elements (`<pre>`, `<address>`, `<figure>`, `<details>`) render correctly without any classes. Modifier classes only exist for cases the native vocabulary cannot express.
 
 ### When to use

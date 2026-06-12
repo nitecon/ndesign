@@ -1,5 +1,12 @@
 ## Breadcrumbs
 
+> **Rules**
+> - Use for multi-level navigation where users need to jump back to an ancestor (3+ levels deep).
+> - Do NOT use for two-level navigation — a back link is clearer. Do NOT use for linear flows — use a stepper.
+> - The class is `.nd-breadcrumb` (singular) — `.nd-breadcrumbs` does NOT exist.
+> - The current page MUST be plain text (not a link) with `aria-current="page"` on the `<li>`.
+> - Do NOT add `.nd-nav` to the breadcrumb `<nav>` — `.nd-breadcrumb` overrides the top-bar treatment; mixing both produces undefined results.
+
 Hierarchical location trail. Use a native `<nav>` containing an ordered list — the runtime does NOT manage breadcrumbs, but `.nd-breadcrumb` resets the top-bar `<nav>` styles inherited from `_nav.scss` so the trail renders inline.
 
 ### When to use
