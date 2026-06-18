@@ -279,9 +279,15 @@ select {
   z-index: $nd-z-dropdown;
   margin: 2px 0 0;
   background: var(--nd-bg-surface);
-  border: 1px solid var(--nd-input-border);
+  border: 1px solid var(--nd-glass-border, var(--nd-input-border));
   border-radius: $nd-radius-md;
-  box-shadow: var(--nd-shadow-md);
+  // Liquid glass — floats above the page; frost the content behind so the
+  // translucent surface stays readable instead of bleeding into page content.
+  box-shadow:
+    var(--nd-glass-highlight, none),
+    var(--nd-shadow-md);
+  backdrop-filter: blur(var(--nd-glass-blur, 0)) saturate(var(--nd-glass-saturate, 100%));
+  -webkit-backdrop-filter: blur(var(--nd-glass-blur, 0)) saturate(var(--nd-glass-saturate, 100%));
   max-height: 15rem;
   overflow-y: auto;
   list-style: none;
